@@ -3,20 +3,7 @@ theme:
     custom_dir: material/material/templates
     language: zh
     palette:
-    -   media: '(prefers-color-scheme: light)'
         scheme: default
-        primary: white
-        accent: red
-        toggle:
-            icon: material/weather-sunny
-            name: 切换到暗色模式
-    -   media: '(prefers-color-scheme: dark)'
-        scheme: slate
-        primary: blue
-        accent: blue
-        toggle:
-            icon: material/weather-night
-            name: 切换到亮色模式
     features:
     - navigation.tracking
     - navigation.tabs
