@@ -15,7 +15,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 WORKDIR /app
 
 COPY scripts/ /app/scripts/
-COPY mkdocs-build.sh /usr/local/bin/mkdocs-build
-RUN chmod +x /usr/local/bin/mkdocs-build
+
+COPY --chmod=755 mkdocs-build.sh /usr/local/bin/mkdocs-build
+COPY --chmod=755 mkdocs-serve.sh /usr/local/bin/mkdocs-serve
+COPY --chmod=755 zensical-serve.sh /usr/local/bin/zensical-serve
 
 CMD ["/usr/local/bin/mkdocs-build"]

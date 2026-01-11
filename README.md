@@ -1,80 +1,143 @@
 # MkDocs Exporter Docker
 
 [![Docker Image](https://github.com/raineblog/mkdocs-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/raineblog/mkdocs-docker/actions/workflows/docker-publish.yml)
-[![Registry](https://img.shields.io/badge/Container-GHCR-blue)](https://github.com/raineblog/mkdocs-docker/pkgs/container/mkdocs-docker)
+[![Registry](https://img.shields.io/badge/Container-GHCR-blue?logo=github)](https://github.com/raineblog/mkdocs-docker/pkgs/container/mkdocs-docker)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)](https://www.python.org/)
 
-A streamlined, Dockerized MkDocs build environment based on **Python 3.12 Alpine**. This project is designed to provide a consistent, containerized toolchain for building documentation with a pre-configured set of plugins and a dynamic configuration generator.
+**MkDocs Exporter Docker** is a streamlined, containerized build environment designed for modern documentation workflows. Based on **Python 3.12 Alpine**, it provides a "batteries-included" toolchain specifically optimized for **GitHub Actions** and CI/CD pipelines.
 
-## 🚀 Overview
+---
 
-This image simplifies the MkDocs build process by:
+## ✨ Key Features
 
-1. **Dynamic Configuration**: Automatically merging metadata (`info.json`) and specific YAML fragments into a final `mkdocs.yml`.
-2. **Batteries Included**: Pre-installed with essential plugins like `glightbox`, `minify`, and `pymdown-extensions`.
-3. **CI/CD Ready**: Optimized specifically for use as a **GitHub Actions Job Container**.
+-   **🚀 Fast & Lightweight**: Built on Alpine Linux to ensure rapid image pulls and minimal resource footprint in CI environments.
+-   **🧩 Dynamic Configuration**: Automatically assembles your `mkdocs.yml` from separate sources (`info.json`, templates, and local overrides), allowing for easier metadata management.
+-   **🔋 Batteries Included**: Pre-configured with essential plugins:
+    -   `mkdocs-material` features (pre-configured)
+    -   `mkdocs-glightbox` for image zooming
+    -   `mkdocs-minify-plugin` for production optimization
+    -   `pymdown-extensions` for advanced Markdown syntax
+-   **🛠 GitHub Actions Optimized**: Includes `bash`, `git`, `tar`, and `gzip` to support common GHA steps seamlessly.
+-   **⚡ Specialized Serving**: Support for standard `mkdocs serve` and the specialized `zensical serve`.
 
-## 🛠 Features
+---
 
-- **Base Image**: `python:3.12-alpine` (Small footprint, fast pull).
-- **GHA Compatible**: Includes `bash`, `git`, `tar`, `gzip` for seamless integration with GitHub Actions steps (e.g., `actions/checkout`, `actions/upload-artifact`).
-- **Dynamic Generator**: Uses an internal Python script to assemble the site configuration from multiple sources.
-- **Post-processing**: Automatically handles site-dir merging and cleanup.
+## 🏗 How It Works
 
-## 📦 Required Files
+This builder uses a "Configuration-as-Data" approach. Instead of manually maintaining a complex `mkdocs.yml`, the environment generates it at runtime by merging three sources:
 
-To use this builder, your workspace should typically contain:
+1.  **Internal Template**: Base settings for theme, plugins, and extensions.
+2.  **`info.json`**: Your project's core metadata (name, description, navigation).
+3.  **`docs/assets/extra.yml`**: Any project-specific overrides or additional MkDocs configuration.
 
-| File | Description |
-| :--- | :--- |
-| `info.json` | Project metadata, navigation structure, and project-specific info. |
-| `docs/` | Your Markdown content. |
-| `docs/assets/extra.yml` | (Optional) Peer-level overrides/extra configuration for MkDocs. |
+### Directory Structure Requirement
+To use this image, your project should follow this structure:
+```text
+.
+├── info.json               # Required: Project metadata & Nav
+├── docs/                   # Required: Markdown content
+│   ├── index.md            # Required (used in intro)
+│   ├── intro/              # Required (used in intro)
+│   │   ├── format.md
+│   │   ├── usage.md
+│   │   └── discussion.md
+│   ├── madoka.md           # Required (used in intro)
+│   └── assets/             # Optional
+│       └── extra.yml       # Optional: MkDocs overrides
+└── ...
+```
 
-The builder merges these with an internal `template.yml` to produce the final `mkdocs.yml` at runtime.
+> [!NOTE]
+> This builder is opinionated and automatically prepends several "Introduction" pages to your navigation. Ensure these files exist in your `docs/` folder to avoid build errors.
 
-## 💻 Usage
+---
 
-### GitHub Actions (Recommended)
+## 🚀 Usage
 
-You can use this image directly as a job container in your workflow:
+### 1. GitHub Actions (Recommended)
+Add this image as a job container in your `.github/workflows/deploy.yml`:
 
 ```yaml
 jobs:
-  build-docs:
+  build-and-deploy:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/raineblog/mkdocs-docker:latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Build Documentation
         run: mkdocs-build
         
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: Deploy to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
 ```
 
-### Local Development
-
-Run the builder inside your project directory:
+### 2. Local Development
+You can mirror the production build process locally:
 
 ```bash
-docker run --rm -v $(pwd):/app/workspace -w /app/workspace ghcr.io/raineblog/mkdocs-docker:latest mkdocs-build
+docker run --rm \
+  -v $(pwd):/app/workspace \
+  -w /app/workspace \
+  ghcr.io/raineblog/mkdocs-docker:latest \
+  mkdocs-build
 ```
 
-## 🛠 Maintenance & Contributions
+To serve documentation with live-reload:
+```bash
+docker run --rm -it \
+  -v $(pwd):/app/workspace \
+  -w /app/workspace \
+  -p 8000:8000 \
+  ghcr.io/raineblog/mkdocs-docker:latest \
+  mkdocs-serve
+```
 
-**Please Note:** This project is a personal toolchain maintained for my own organization's needs.
+---
 
-- **Status**: Active but "Low-Maintenance". I use this regularly, but I have limited capacity to review large changes.
-- **Bug Reports & Corrections**: Highly welcomed! If you find a typo, a logic error in the build script, or a vulnerability, please open an issue or PR.
-- **Feature Requests**: I am generally **not accepting new features** or functional requests. I prefer to keep this toolchain specialized for its current purpose to minimize maintenance overhead.
+## ⚙️ Configuration Reference
 
-If you need a more flexible or feature-rich MkDocs environment, I recommend checking out the official [Squidfunk/mkdocs-material](https://github.com/squidfunk/mkdocs-material) image.
+### `info.json` Format
+The `info.json` file is the heart of your documentation metadata:
+
+```json
+{
+  "project": {
+    "site_name": "My Documentation",
+    "site_description": "A wonderful project description",
+    "repo_url": "https://github.com/user/repo"
+  },
+  "nav": [
+    {
+      "title": "Getting Started",
+      "children": [
+        "guide/install.md",
+        "guide/config.md"
+      ]
+    }
+  ],
+  "extra": {
+    "version": "1.0.0"
+  }
+}
+```
+
+---
+
+## 🛠 Maintenance & Community
+
+This project is a personal toolchain maintained by **raineblog**.
+
+-   **Status**: Active / Low-Maintenance.
+-   **Contributions**: I am happy to accept **bug reports** and **corrections** (typos, logic fixes, security patches).
+-   **Feature Requests**: I am currently **not accepting new features**. The tool is designed to be highly specialized for my specific workflow; if you need more flexibility, I recommend using the official [Squidfunk/mkdocs-material](https://github.com/squidfunk/mkdocs-material) image.
+
+---
 
 ## 📄 License
-
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+Distributed under the **MIT License**. See `LICENSE` for more information.
