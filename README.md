@@ -98,6 +98,18 @@ docker run --rm -it \
   mkdocs-serve
 ```
 
+To serve documentation with live-reload in Windows pwsh:
+```pwsh
+docker run --rm -it --init \
+  -v ${pwd}:/app/workspace \
+  -w /app/workspace \
+  -p 8000:8000 \
+  ghcr.io/raineblog/mkdocs-docker:latest \
+  mkdocs-serve
+```
+
+You can replace `mkdocs-serve` with `zensical-serve` for a better performance but with fewer features support. **NOT RECOMMENDED** for publish.
+
 ---
 
 ## ⚙️ Configuration Reference

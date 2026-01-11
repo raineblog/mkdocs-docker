@@ -32,7 +32,6 @@ def get_site_template():
     template = info['project']
     template = template | parse_yaml(os.path.join(script_dir, "template.serve.yml"))
     template = template | parse_yaml('docs/assets/extra.yml')
-    template['extra'] = info['extra']
     template['nav'] = intro + [{item['title']: item['children']} for item in info['nav']]
     del(template['site_url'])
     return template
