@@ -1,24 +1,32 @@
 # syntax=docker/dockerfile:1
+FROM node:lts-alpine AS builder
+
+WORKDIR /build
+
+RUN npm install -g markdownlint-cli2 pkg
+RUN npx pkg node_modules/markdownlint-cli2 \
+    --targets node18-alpine-x64 \
+    --output ./markdownlint
+
 FROM python:3.12-alpine
 
 RUN apk add --no-cache \
     bash \
     git \
-    ca-certificates
+    ca-certificates \
+    libstdc++
 
-COPY --from=davidanson/markdownlint-cli2:latest /usr/local/bin/markdownlint-cli2 /usr/local/bin/markdownlint-cli2
-
-WORKDIR /app
+COPY --from=builder --chmod=755 /build/markdownlint /usr/local/bin/markdownlint-cli2
 
 COPY requirements.txt .
-COPY .markdownlint.json .
-
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
+WORKDIR /app
+
+COPY .markdownlint.json .
+
 COPY scripts/ /app/scripts/
 COPY bin/ /usr/local/bin/
-RUN for f in /usr/local/bin/*.sh; do mv "$f" "${f%.sh}"; done && \
-    chmod +x /usr/local/bin/*
 
 CMD ["/usr/local/bin/mkdocs-build"]
