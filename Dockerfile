@@ -4,9 +4,8 @@ FROM node:lts-alpine AS builder
 WORKDIR /build
 
 RUN npm install -g markdownlint-cli2 pkg
-RUN npx pkg node_modules/markdownlint-cli2 \
-    --targets node18-alpine-x64 \
-    --output ./markdownlint
+RUN npx pkg /usr/local/lib/node_modules/markdownlint-cli2 \
+    --output /build/markdownlint
 
 FROM python:3.12-alpine
 
