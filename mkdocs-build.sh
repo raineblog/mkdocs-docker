@@ -1,16 +1,28 @@
 #!/bin/bash
-set -e  # 遇到错误立即退出
+set -e
 
-# 可以在这里打印一些日志，方便调试
-echo ">>> Starting mkdocs Build Process..."
+echo "========================================"
+echo ">>> [1/4] Starting Linting Process..."
+echo ">>> Linter: markdownlint-cli2"
+markdownlint-cli2 "docs/**/*.md" --config ".markdownlint.json" --fix > lint.log 2>&1 || true
+echo ">>> Linting finished. Results saved to lint.log (if any errors occurred, they were attempted to be fixed)."
+echo "========================================"
+
+echo ">>> [2/4] Running Python generation script..."
 echo ">>> Container Workdir: $(pwd)"
-
-# 调用 Python 脚本
 # "$@" 表示将传递给 shell 脚本的所有参数透传给 python 脚本
-# 使用 exec 可以让 python 进程替换当前 shell 进程，接收信号更准确
-
 python /app/scripts/generate.py "$@"
-mkdocs build --strict --clean
-python -c "import shutil; shutil.copytree('public', 'site', dirs_exist_ok=True)"
+echo ">>> Generation script finished."
+echo "========================================"
 
-echo ">>> Successful"
+echo ">>> [3/4] Running MkDocs build..."
+mkdocs build --strict --clean
+echo ">>> MkDocs build finished."
+echo "========================================"
+
+echo ">>> [4/4] Syncing build artifacts..."
+python -c "import shutil; shutil.copytree('public', 'site', dirs_exist_ok=True)"
+echo ">>> Sync finished."
+echo "========================================"
+
+echo ">>> [SUCCESS] All steps completed successfully."
