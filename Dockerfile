@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 # Stage 1: Install markdownlint-cli2
 FROM node:alpine AS linter-builder
 RUN npm install -g markdownlint-cli2
@@ -5,8 +7,6 @@ RUN npm install -g markdownlint-cli2
 # Stage 2: Final Image
 FROM python:3.12-alpine
 
-# Set working directory early to avoid repeating /app
-WORKDIR /app
 
 # 1. Install runtime essentials and Node.js (for linter)
 # git is needed for mkdocs-git plugins and git-auto-commit actions.
@@ -24,8 +24,10 @@ RUN printf '#!/bin/sh\nnode /usr/local/lib/node_modules/markdownlint-cli2/markdo
     chmod +x /usr/local/bin/markdownlint-cli2
 
 # 3. Install Python dependencies and clean up cache in one layer
+WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+COPY .markdownlint.json .
 
 # 4. Copy scripts and build script
 COPY scripts/ /app/scripts/
