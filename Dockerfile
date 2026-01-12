@@ -27,6 +27,6 @@ WORKDIR /app
 COPY .markdownlint.json .
 
 COPY scripts/ /app/scripts/
-COPY bin/ /usr/local/bin/
+COPY --chmod=755 bin/ /usr/local/bin/
 
 CMD ["/usr/local/bin/mkdocs-build"]
