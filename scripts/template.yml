@@ -62,7 +62,6 @@ plugins:
         date_from_meta:
             as_creation: document_dates_created
             as_update: document_dates_updated
-            datetime_format: "%Y-%m-%d %H:%M:%S"
         comments_path: "#__comments"
 -   minify:
         minify_html: true
