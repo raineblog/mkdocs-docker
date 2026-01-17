@@ -56,12 +56,3 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: false
-      - name: Clean up Old Images in GHCR
-        uses: quartx-analytics/ghcr-cleaner@v1
-        with:
-            owner-type: user
-            token: ${{ secrets.PAT_TOKEN }}
-            package-name: mkdocs-exporter
-            delete-untagged: true
-            keep-at-most: 3
-            skip-tags: v*,latest

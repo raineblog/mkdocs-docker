@@ -16,8 +16,8 @@ def load_json(file_path):
     return data
 
 def get_site_template():
-    info = load_json(script_dir / 'info.json')
-    del(info['project']['site_url'])
+    info = load_json('info.json')
+    info['project'].pop('site_url', None)
 
     template_defaults = parse_yaml(script_dir / 'template.serve.yml')
 
