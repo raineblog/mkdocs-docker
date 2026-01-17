@@ -63,5 +63,5 @@ jobs:
             token: ${{ secrets.PAT_TOKEN }}
             package-name: mkdocs-exporter
             delete-untagged: true
-            keep-at-most: 5
+            keep-at-most: 3
             skip-tags: v*,latest

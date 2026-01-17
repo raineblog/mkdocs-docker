@@ -50,8 +50,8 @@ plugins:
         position: bottom
         type: timeago
         show_author: text
-        recently-updated:
-            limit: 20
+-   recently-updated:
+        limit: 20
 markdown_extensions:
 - abbr
 - admonition
