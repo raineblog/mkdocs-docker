@@ -47,6 +47,13 @@ plugins:
         htmlmin_opts:
             remove_comments: true
         cache_safe: true
+-   document-dates:
+        position: bottom
+        type: datetime
+        date_format: '%Y-%m-%d'
+        time_format: '%H:%M:%S'
+        recently-updated:
+            limit: 20
 markdown_extensions:
 - abbr
 - admonition

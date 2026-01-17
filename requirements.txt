@@ -3,4 +3,5 @@ mkdocs
 mkdocs-glightbox
 mkdocs-minify-plugin
 pymdown-extensions
-zensical
+# zensical
+mkdocs-document-dates
