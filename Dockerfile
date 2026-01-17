@@ -17,7 +17,14 @@ RUN apk add --no-cache \
     openssh \
     tini \
     pngquant \
-    zlib-dev
+    zlib-dev \
+    curl \
+    wget \
+    tar \
+    zstd \
+    unzip \
+    zip \
+    gcompat
 
 RUN npm install -g markdownlint-cli2 && \
     npm cache clean --force
