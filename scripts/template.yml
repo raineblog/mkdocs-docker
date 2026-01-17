@@ -44,7 +44,7 @@ plugins:
 - glightbox
 -   document-dates:
         position: bottom
-        type: datetime
+        type: timeago
         date_format: '%Y-%m-%d'
         time_format: '%H:%M:%S'
         show_author: text
