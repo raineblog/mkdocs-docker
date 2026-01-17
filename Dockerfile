@@ -15,6 +15,7 @@ RUN apk add --no-cache \
     git-fast-import \
     jpeg-dev \
     openssh \
+    tini \
     pngquant \
     zlib-dev
 
@@ -22,6 +23,12 @@ RUN npm install -g markdownlint-cli2 && \
     npm cache clean --force
 
 WORKDIR /app
+
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+RUN git config --global --add safe.directory "*"
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
@@ -34,4 +41,5 @@ COPY .markdownlint.json .
 COPY scripts/ /app/scripts/
 COPY --chmod=755 bin/ /usr/local/bin/
 
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/usr/local/bin/mkdocs-build"]
