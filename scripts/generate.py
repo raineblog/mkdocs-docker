@@ -15,25 +15,12 @@ def load_json(file_path):
         data = json.load(file)
     return data
 
-intro = [
-    {
-        '简介': [
-            'index.md',
-            'intro/format.md',
-            'intro/usage.md',
-            'intro/discussion.md',
-            'madoka.md'
-        ]
-    }
-]
-
 def get_site_template():
     info = load_json('info.json')
-    template = info['project']
-    template = template | parse_yaml(os.path.join(script_dir, "template.yml"))
-    template = template | parse_yaml('docs/assets/extra.yml')
+    template = info['project'] | parse_yaml(os.path.join(script_dir, "template.yml"))
     template['extra'] = info['extra']
-    template['nav'] = intro + [{item['title']: item['children']} for item in info['nav']]
+    template['nav'] = { '简介': info['front'] }
+    template['nav'] += [{item['title']: item['children']} for item in info['nav']]
     return template
 
 if __name__ == "__main__":

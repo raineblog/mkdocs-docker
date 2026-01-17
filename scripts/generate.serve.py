@@ -29,10 +29,9 @@ intro = [
 
 def get_site_template():
     info = load_json('info.json')
-    template = info['project']
-    template = template | parse_yaml(os.path.join(script_dir, "template.serve.yml"))
-    template = template | parse_yaml('docs/assets/extra.yml')
-    template['nav'] = intro + [{item['title']: item['children']} for item in info['nav']]
+    template = info['project'] | parse_yaml(os.path.join(script_dir, "template.serve.yml"))
+    template['nav'] = { '简介': info['front'] }
+    template['nav'] += [{item['title']: item['children']} for item in info['nav']]
     del(template['site_url'])
     return template
 
