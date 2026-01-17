@@ -15,25 +15,19 @@ def load_json(file_path):
         data = json.load(file)
     return data
 
-intro = [
-    {
-        '简介': [
-            'index.md',
-            'intro/format.md',
-            'intro/usage.md',
-            'intro/discussion.md',
-            'madoka.md'
-        ]
-    }
-]
-
 def get_site_template():
-    info = load_json('info.json')
-    template = info['project'] | parse_yaml(os.path.join(script_dir, "template.serve.yml"))
-    template['nav'] = { '简介': info['front'] }
-    template['nav'] += [{item['title']: item['children']} for item in info['nav']]
-    del(template['site_url'])
-    return template
+    info = load_json(script_dir / 'info.json')
+    del(info['project']['site_url'])
+
+    template_defaults = parse_yaml(script_dir / 'template.serve.yml')
+
+    nav = [{'简介': info['front']}]
+    nav.extend({item['title']: item['children']} for item in info['nav'])
+
+    return info['project'] | template_defaults | {
+        'extra': info['extra'],
+        'nav': nav
+    }
 
 if __name__ == "__main__":
     with open('mkdocs.yml', 'w', encoding='utf-8') as file:

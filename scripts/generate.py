@@ -16,12 +16,16 @@ def load_json(file_path):
     return data
 
 def get_site_template():
-    info = load_json('info.json')
-    template = info['project'] | parse_yaml(os.path.join(script_dir, "template.yml"))
-    template['extra'] = info['extra']
-    template['nav'] = { '简介': info['front'] }
-    template['nav'] += [{item['title']: item['children']} for item in info['nav']]
-    return template
+    info = load_json(script_dir / 'info.json')
+    template_defaults = parse_yaml(script_dir / 'template.yml')
+
+    nav = [{'简介': info['front']}]
+    nav.extend({item['title']: item['children']} for item in info['nav'])
+
+    return info['project'] | template_defaults | {
+        'extra': info['extra'],
+        'nav': nav
+    }
 
 if __name__ == "__main__":
     with open('mkdocs.yml', 'w', encoding='utf-8') as file:
