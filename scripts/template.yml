@@ -110,7 +110,7 @@ markdown_extensions:
 - pymdownx.tasklist
 - pymdownx.tabbed
 watch:
-  - includes
+  - docs/includes
 exclude_docs: |
     /test/
     /cultural/
