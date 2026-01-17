@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+git config --global --add safe.directory "*"
+
 echo "========================================"
 echo ">>> [1/4] Running MkDocs linting..."
 mkdocs-lint

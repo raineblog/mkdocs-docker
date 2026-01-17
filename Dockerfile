@@ -18,8 +18,6 @@ RUN apk add --no-cache \
     pngquant \
     zlib-dev
 
-RUN git config --global --add safe.directory "*"
-
 RUN npm install -g markdownlint-cli2 && \
     npm cache clean --force
 
