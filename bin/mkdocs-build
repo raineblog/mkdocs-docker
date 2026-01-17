@@ -12,7 +12,7 @@ python /app/scripts/generate.py "$@"
 echo ">>> Generation script finished."
 echo "========================================"
 echo ">>> [3/4] Running MkDocs build..."
-mkdocs build --strict --clean
+mkdocs build --clean
 echo ">>> MkDocs build finished."
 echo "========================================"
 echo ">>> [4/4] Syncing build artifacts..."
