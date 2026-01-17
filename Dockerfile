@@ -17,6 +17,9 @@ WORKDIR /app
 
 COPY .markdownlint.json .
 
+RUN git clone https://github.com/raineblog/mkdocs-material.git && \
+    pip install --no-cache-dir ./mkdocs-material
+
 COPY scripts/ /app/scripts/
 COPY --chmod=755 bin/ /usr/local/bin/
 

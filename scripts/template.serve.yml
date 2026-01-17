@@ -1,6 +1,5 @@
 theme:
-    name: null
-    custom_dir: material/material/templates
+    name: material
     language: zh
     palette:
         scheme: default

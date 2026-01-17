@@ -1,6 +1,5 @@
 theme:
-    name: null
-    custom_dir: material/material/templates
+    name: material
     language: zh
     palette:
     -   media: '(prefers-color-scheme: light)'
@@ -49,9 +48,8 @@ plugins:
         cache_safe: true
 -   document-dates:
         position: bottom
-        type: datetime
-        date_format: '%Y-%m-%d'
-        time_format: '%H:%M:%S'
+        type: timeago
+        show_author: text
         recently-updated:
             limit: 20
 markdown_extensions:

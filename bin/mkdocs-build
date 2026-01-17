@@ -2,16 +2,20 @@
 set -e
 
 echo "========================================"
-echo ">>> [1/3] Running Python generation script..."
+echo ">>> [1/4] Running MkDocs linting..."
+mkdocs-lint
+echo ">>> Linting finished."
+echo "========================================"
+echo ">>> [2/4] Running Python generation script..."
 echo ">>> Container Workdir: $(pwd)"
 python /app/scripts/generate.py "$@"
 echo ">>> Generation script finished."
 echo "========================================"
-echo ">>> [2/3] Running MkDocs build..."
+echo ">>> [3/4] Running MkDocs build..."
 mkdocs build --strict --clean
 echo ">>> MkDocs build finished."
 echo "========================================"
-echo ">>> [3/3] Syncing build artifacts..."
+echo ">>> [4/4] Syncing build artifacts..."
 python -c "import shutil; shutil.copytree('public', 'site', dirs_exist_ok=True)"
 echo ">>> Sync finished."
 echo "========================================"
