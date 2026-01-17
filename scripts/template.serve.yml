@@ -57,3 +57,12 @@ markdown_extensions:
 - pymdownx.smartsymbols
 - pymdownx.tasklist
 - pymdownx.tabbed
+extra_javascript:
+- assets/katex/katex.min.js
+- assets/katex/contrib/mhchem.min.js
+- assets/katex/contrib/auto-render.min.js
+- assets/katex/contrib/copy-tex.min.js
+- assets/javascripts/jquery.min.js
+- assets/katex.render.js
+extra_css:
+- assets/katex/katex.min.css

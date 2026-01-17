@@ -58,6 +58,7 @@ plugins:
         cards_layout: default/variant
         cards_layout_options:
             font_family: Noto Serif SC
+            background_color: deeppink
 -   rss:
         date_from_meta:
             as_creation: document_dates_created
@@ -72,7 +73,7 @@ plugins:
         cache_safe: true
 -   optimize:
         optimize_png_speed: 1
-        optimize_jpg_quality: 75
+        optimize_jpg_quality: 65
 markdown_extensions:
 - abbr
 - admonition
@@ -115,3 +116,12 @@ exclude_docs: |
     /test/
     /cultural/
     /includes/
+extra_javascript:
+- assets/katex/katex.min.js
+- assets/katex/contrib/mhchem.min.js
+- assets/katex/contrib/auto-render.min.js
+- assets/katex/contrib/copy-tex.min.js
+- assets/javascripts/jquery.min.js
+- assets/katex.render.js
+extra_css:
+- assets/katex/katex.min.css

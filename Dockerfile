@@ -41,11 +41,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-COPY .markdownlint.json .
+COPY assets/.markdownlint.json .
+COPY assets/katex.render.js assets/
+
 COPY scripts/ /app/scripts/
 COPY --chmod=755 bin/ /usr/local/bin/
 
 RUN git clone --depth 1 https://github.com/raineblog/mkdocs-material.git && \
+    python3 scripts/install_katex.py && \
     pip install --no-cache-dir ./mkdocs-material
 
 ENTRYPOINT ["/sbin/tini", "--"]
