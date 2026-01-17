@@ -1,7 +1,14 @@
 pyyaml
 mkdocs
-mkdocs-glightbox
-mkdocs-minify-plugin
 pymdown-extensions
+
+mkdocs-glightbox
+mkdocs-rss-plugin
+mkdocs-minify-plugin
+mkdocs-redirects
+
+pillow
+cairosvg
+
 mkdocs-document-dates
 mkdocs-recently-updated-docs

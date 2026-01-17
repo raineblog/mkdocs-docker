@@ -5,7 +5,17 @@ RUN apk add --no-cache \
     bash \
     git \
     ca-certificates \
-    nodejs-lts npm
+    nodejs \
+    npm \
+    cairo \
+    freetype-dev \
+    git \
+    git-fast-import \
+    jpeg-dev \
+    openssh \
+    pngquant \
+    tini \
+    zlib-dev
 
 RUN npm install -g markdownlint-cli2 && \
     npm cache clean --force
