@@ -34,12 +34,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-RUN git clone --depth 1 https://github.com/raineblog/mkdocs-material.git && \
-    pip install --no-cache-dir ./mkdocs-material
-
 COPY .markdownlint.json .
 COPY scripts/ /app/scripts/
 COPY --chmod=755 bin/ /usr/local/bin/
+
+RUN git clone --depth 1 https://github.com/raineblog/mkdocs-material.git && \
+    pip install --no-cache-dir ./mkdocs-material
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/usr/local/bin/mkdocs-build"]
