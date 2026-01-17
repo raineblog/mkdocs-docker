@@ -41,7 +41,7 @@ plugins:
 - glightbox
 -   document-dates:
         position: bottom
-        type: timeago
+        type: datetime
         date_format: '%Y-%m-%d'
         time_format: '%H:%M:%S'
         show_author: text
@@ -54,8 +54,8 @@ plugins:
 -   social:
         cards_layout: default/variant
         cards_layout_options:
-            font_family: Noto Serif SC
-            background_color: deeppink
+            font_family: Noto Serif CJK SC
+            background_color: blue
 -   rss:
         date_from_meta:
             as_creation: document_dates_created

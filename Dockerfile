@@ -24,7 +24,12 @@ RUN apk add --no-cache \
     zstd \
     unzip \
     zip \
-    gcompat
+    gcompat \
+    fontconfig \
+    ttf-dejavu \
+    font-noto-cjk \
+    font-noto-cjk-extra \
+    && fc-cache -fv
 
 RUN npm install -g markdownlint-cli2 && \
     npm cache clean --force
