@@ -13,4 +13,3 @@ pillow
 cairosvg
 
 mkdocs-document-dates
-mkdocs-recently-updated-docs

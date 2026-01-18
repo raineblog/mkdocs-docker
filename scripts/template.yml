@@ -47,8 +47,6 @@ plugins:
         show_author: text
         recently-updated:
             limit: 50
-# -   recently-updated:
-#         limit: 50
 -   privacy:
         assets_exclude:
             - giscus.app/*
