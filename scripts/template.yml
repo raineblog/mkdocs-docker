@@ -45,8 +45,10 @@ plugins:
         date_format: '%Y-%m-%d'
         time_format: '%H:%M:%S'
         show_author: text
--   recently-updated:
-        limit: 50
+        recently-updated:
+            limit: 50
+# -   recently-updated:
+#         limit: 50
 -   privacy:
         assets_exclude:
             - giscus.app/*
