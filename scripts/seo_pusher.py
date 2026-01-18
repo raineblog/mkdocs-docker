@@ -110,13 +110,40 @@ class SeoSubmitter:
 
 # ================= 主程序 =================
 
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 def main():
+    # ================= 防反爬与重试配置 =================
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
+        "Referer": SITE_BASE,
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+    }
+    
+    # 配置重试策略：共重试 5 次，包含常见 5xx 错误和 429
+    retry_strategy = Retry(
+        total=5,
+        backoff_factor=1,  # 指数增长等待时间: 1s, 2s, 4s, 8s...
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"]
+    )
+    
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session = requests.Session()
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    
     try:
-        response = requests.get(FEED_URL)
+        # 添加 15 秒超时，并携带模拟浏览器的 headers
+        response = session.get(FEED_URL, headers=headers, timeout=15)
         response.raise_for_status()
         data = response.json()
     except Exception as e:
-        print(f"[-] 获取 Feed 数据失败: {e}")
+        print(f"[-] 获取 Feed 数据失败 (已尝试重试): {e}")
         return
 
     submitter = SeoSubmitter(data)
