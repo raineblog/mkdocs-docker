@@ -1,4 +1,6 @@
 pyyaml
+requests
+
 mkdocs
 pymdown-extensions
 
