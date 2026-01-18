@@ -25,7 +25,7 @@ def get_site_template():
     nav.extend({item['title']: item['children']} for item in info['nav'])
 
     return info['project'] | template_defaults | {
-        'extra': info['extra'],
+        # 'extra': info['extra'],
         'nav': nav
     }
 
