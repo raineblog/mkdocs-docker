@@ -48,7 +48,11 @@ plugins:
 -   recently-updated:
         limit: 20
 -   privacy:
-        assets: false
+        assets_exclude:
+            - giscus.app/*
+            - github.com/*
+            - api.github.com/*
+            - avatars.githubusercontent.com/*
         links_attr_map:
             target: _blank
 -   social:
