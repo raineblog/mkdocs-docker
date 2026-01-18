@@ -52,6 +52,7 @@ plugins:
             - giscus.app/*
             - github.com/*
             - api.github.com/*
+            - gist.github.com/*
             - avatars.githubusercontent.com/*
             - unpkg.com/*
             - cdn.jsdelivr.net/*
