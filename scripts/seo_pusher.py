@@ -151,8 +151,6 @@ def main():
     print("\n--- 开始执行 SEO 增强方案 ---")
     submitter.submit_to_indexnow() 
     submitter.submit_to_ping()
-    submitter.submit_to_bing_batch()
-    submitter.submit_to_bing_sitemap()
     submitter.submit_to_websub()
     submitter.submit_to_xml_rpc_broadcast()
     print("\n--- 执行完毕 ---")
