@@ -1,21 +1,25 @@
+import os
 import requests
 from urllib.parse import quote
 import xmlrpc.client
 
-# ================= 配置区域 (请修改这里) =================
-SITE_HOST = "raineblog.dpdns.org"
-SITE_URL = "https://raineblog.dpdns.org"
-SITE_NAME = "RainPPR's WHK Wiki"
+# ================= 配置区域 (从环境变量获取) =================
+SITE_HOST = os.environ["SITE_HOST"]
+SITE_NAME = os.environ["SITE_NAME"]
+SITE_PROJECT = os.environ["SITE_PROJECT"]
+INDEXNOW_KEY = os.environ["INDEXNOW_KEY"]
 
-RSS_URL = "https://raineblog.dpdns.org/whk/feed_rss_updated.xml"
-FEED_URL = "https://raineblog.dpdns.org/whk/feed_json_updated.json"
-SITEMAP_URL = "https://raineblog.dpdns.org/whk/sitemap.xml"
+SITE_BASE = f"https://{SITE_HOST}"
+SITE_URL = f"{SITE_BASE}/{SITE_PROJECT}"
+
+RSS_URL = f"{SITE_URL}/feed_rss_updated.xml"
+FEED_URL = f"{SITE_URL}/feed_json_updated.json"
+SITEMAP_URL = f"{SITE_URL}/sitemap.xml"
 
 ENCODED_URL = quote(SITE_URL)
 ENCODED_NAME = quote(SITE_NAME)
 ENCODED_SITEMAP = quote(SITEMAP_URL)
 
-INDEXNOW_KEY = "3f5e21c2643f47168fc4a7cc837c7359"
 INDEXNOW_KEY_LOCATION = f"https://{SITE_HOST}/{INDEXNOW_KEY}.txt"
 
 PING_LIST = {
