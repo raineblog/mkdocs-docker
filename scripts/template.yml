@@ -46,7 +46,7 @@ plugins:
         time_format: '%H:%M:%S'
         show_author: text
 -   recently-updated:
-        limit: 20
+        limit: 50
 -   privacy:
         assets_exclude:
             - giscus.app/*
@@ -57,7 +57,6 @@ plugins:
             - unpkg.com/*
             - cdn.jsdelivr.net/*
             - esm.sh/*
-            - cdn.skypack.dev/*
         links_attr_map:
             target: _blank
 -   social:
