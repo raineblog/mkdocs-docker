@@ -46,7 +46,7 @@ plugins:
         time_format: '%H:%M:%S'
         show_author: text
 -   recently-updated:
-        limit: 50
+        limit: 25
 -   privacy:
         assets_exclude:
             - giscus.app/*
@@ -78,7 +78,7 @@ plugins:
         cache_safe: true
 -   optimize:
         optimize_png_speed: 1
-        optimize_jpg_quality: 65
+        optimize_jpg_quality: 60
 markdown_extensions:
 - abbr
 - admonition
