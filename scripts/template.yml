@@ -53,12 +53,16 @@ plugins:
             - github.com/*
             - api.github.com/*
             - avatars.githubusercontent.com/*
+            - unpkg.com/*
+            - cdn.jsdelivr.net/*
+            - esm.sh/*
+            - cdn.skypack.dev/*
         links_attr_map:
             target: _blank
 -   social:
         cards_layout: default/variant
         cards_layout_options:
-            font_family: Noto Serif CJK SC
+            font_family: Noto Serif SC
             background_color: blue
 -   rss:
         date_from_meta:
