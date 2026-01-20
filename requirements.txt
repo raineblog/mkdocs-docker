@@ -8,8 +8,6 @@ pymdown-extensions
 mkdocs-open-in-new-tab
 
 mkdocs-document-dates
-mkdocs-task-collector
-
 mkdocs-rss-plugin
 mkdocs-minify-html-plugin
 mkdocs-redirects

@@ -40,7 +40,6 @@ plugins:
 - meta
 -   open-in-new-tab:
         add_icon: true
-- macros # https://mkdocs-macros-plugin.readthedocs.io/en/latest/
 -   mkdocs-jupyter: # https://github.com/danielfrg/mkdocs-jupyter
         include: ["*.ipynb"] # Default: ["*.py", "*.ipynb"]
         execute: true
@@ -106,8 +105,6 @@ plugins:
 -   optimize:
         optimize_png_speed: 1
         optimize_jpg_quality: 60
--   task-collector:
-        output_file: 'tasks-list.md'
 markdown_extensions:
 - abbr
 - admonition
