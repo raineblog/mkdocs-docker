@@ -1,6 +1,5 @@
 import yaml
 import json
-import os
 from pathlib import Path
 
 script_dir = Path(__file__).parent.resolve()
@@ -18,7 +17,7 @@ def load_json(file_path):
 def get_site_template():
     info = load_json('info.json')
     template_defaults = parse_yaml(script_dir / 'template.yml')
-    nav = [{item['title']: item['children']} for item in info['nav']]
+    nav = { 'nav': [{item['title']: item['children']} for item in info['nav']] }
     return info['project'] | info['social'] | template_defaults | nav
 
 if __name__ == "__main__":
