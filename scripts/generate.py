@@ -17,6 +17,7 @@ def load_json(file_path):
 def get_site_template():
     info = load_json('info.json')
     template_defaults = parse_yaml(script_dir / 'template.yml')
+    template_defaults['theme'] |= info['theme']
     nav = { 'nav': [{item['title']: item['children']} for item in info['nav']] }
     return info['project'] | info['social'] | template_defaults | nav
 
