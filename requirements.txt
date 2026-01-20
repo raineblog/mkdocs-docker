@@ -16,6 +16,5 @@ mkdocs-redirects
 
 mkdocs-glightbox
 mkdocs-table-reader-plugin
-mkdocs-termage-plugin
 mkdocs-jupyter
 markdown-exec[ansi]

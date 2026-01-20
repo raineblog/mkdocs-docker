@@ -50,7 +50,6 @@ plugins:
         ansi: required
 - glightbox # https://github.com/blueswen/mkdocs-glightbox
 - table-reader # https://github.com/timvink/mkdocs-table-reader-plugin
-- termage # https://github.com/bczsalba/Termage
 -   document-dates: # https://jaywhj.netlify.app/document-dates-zh
         position: bottom
         type: datetime
