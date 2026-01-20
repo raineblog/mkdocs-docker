@@ -75,7 +75,7 @@ plugins:
             font_family: Noto Serif SC
             background_color: "#F5A9B8"
 -   rss: # https://guts.github.io/mkdocs-rss-plugin/
-        abstract_chars_count: -1
+        abstract_chars_count: 500
         date_from_meta:
             as_creation: document_dates_created
             as_update: document_dates_updated
