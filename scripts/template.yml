@@ -38,8 +38,20 @@ theme:
         view: material/eye
 plugins:
 - meta
-- glightbox
--   document-dates:
+-   open-in-new-tab:
+        add_icon: true
+- macros # https://mkdocs-macros-plugin.readthedocs.io/en/latest/
+-   mkdocs-jupyter: # https://github.com/danielfrg/mkdocs-jupyter
+        include: ["*.ipynb"] # Default: ["*.py", "*.ipynb"]
+        execute: true
+        include_requirejs: true
+        include_source: True
+-   markdown-exec: # https://github.com/pawamoy/markdown-exec
+        ansi: required
+- glightbox # https://github.com/blueswen/mkdocs-glightbox
+- table-reader # https://github.com/timvink/mkdocs-table-reader-plugin
+- termage # https://github.com/bczsalba/Termage
+-   document-dates: # https://jaywhj.netlify.app/document-dates-zh
         position: bottom
         type: datetime
         date_format: '%Y-%m-%d'
@@ -63,22 +75,40 @@ plugins:
         cards_layout: default/variant
         cards_layout_options:
             font_family: Noto Serif SC
-            background_color: blue
--   rss:
+            background_color: "#F5A9B8"
+-   rss: # https://guts.github.io/mkdocs-rss-plugin/
+        abstract_chars_count: -1
         date_from_meta:
             as_creation: document_dates_created
             as_update: document_dates_updated
             datetime_format: "%Y-%m-%dT%H:%M:%S%z"
             default_timezone: UTC
         comments_path: "#__comments"
--   minify:
-        minify_html: true
-        htmlmin_opts:
-            remove_comments: true
-        cache_safe: true
+        length: 100
+        pretty_print: true
+-   minify_html:
+    # https://docs.rs/minify-html/0.16.4/minify_html/struct.Cfg.html#fields
+    # https://github.com/monosans/mkdocs-minify-html-plugin
+        allow_noncompliant_unquoted_attribute_values: false
+        allow_optimal_entities: false
+        allow_removing_spaces_between_attributes: false
+        keep_closing_tags: true
+        keep_comments: false
+        keep_html_and_head_opening_tags: true
+        keep_input_type_text_attr: true
+        keep_ssi_comments: false
+        minify_css: true
+        minify_doctype: false
+        minify_js: true
+        preserve_brace_template_syntax: true
+        preserve_chevron_percent_template_syntax: true
+        remove_bangs: false
+        remove_processing_instructions: false
 -   optimize:
         optimize_png_speed: 1
         optimize_jpg_quality: 60
+-   task-collector:
+        output_file: 'tasks-list.md'
 markdown_extensions:
 - abbr
 - admonition

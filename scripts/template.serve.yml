@@ -23,6 +23,10 @@ theme:
         repo: fontawesome/brands/git-alt
         edit: material/pencil
         view: material/eye
+plugins:
+- table-reader
+-   task-collector:
+        output_file: 'tasks-list.md'
 markdown_extensions:
 - abbr
 - admonition
