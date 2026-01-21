@@ -11,6 +11,7 @@ mkdocs-document-dates
 mkdocs-rss-plugin
 mkdocs-minify-html-plugin
 mkdocs-redirects
+mkdocs-ultralytics-plugin
 
 mkdocs-glightbox
 mkdocs-table-reader-plugin
