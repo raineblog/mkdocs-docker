@@ -69,14 +69,14 @@ plugins:
             - esm.sh/*
         links_attr_map:
             target: _blank
-# -   social:
-#         cards_layout: default/variant
-#         cards_layout_options:
-#             font_family: Noto Serif SC
-#             background_color: "#E4E2DD"
+-   social:
+        cards_layout: default/variant
+        cards_layout_options:
+            font_family: Noto Serif SC
+            background_color: "#E4E2DD"
 -   ultralytics:
         add_desc: true
-        add_image: true
+        add_image: false
         add_keywords: true
         add_share_buttons: true
         add_authors: true
