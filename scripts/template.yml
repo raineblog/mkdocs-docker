@@ -18,6 +18,7 @@ theme:
             name: 切换到亮色模式
     features:
     - navigation.tracking
+    - navigation.indexes
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
@@ -106,6 +107,14 @@ plugins:
 -   optimize:
         optimize_png_speed: 1
         optimize_jpg_quality: 60
+-   blog:
+        blog_toc: true
+        post_date_format: long
+        post_excerpt: required
+        post_readtime: false
+        archive_name: Archive
+        authors_profiles: true
+        categories: false
 markdown_extensions:
 - abbr
 - admonition

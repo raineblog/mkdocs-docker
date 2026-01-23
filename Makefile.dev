@@ -1,0 +1,46 @@
+# 🚀 MkDocs Development Makefile (Portable)
+# Copy this file to any repository with mkdocs content to use the local builder image.
+# Image source: https://github.com/raineblog/mkdocs-docker
+
+IMAGE_NAME = mkdocs-builder
+TAG = latest
+PORT = 8000
+
+# Helper to run docker with consistent flags
+DOCKER_RUN = docker run --rm -it \
+	-v "$$(pwd):/app/work" \
+	-w /app/work \
+	-p $(PORT):8000 \
+	$(IMAGE_NAME):$(TAG)
+
+.PHONY: dev build bash tree help
+
+help:
+	@echo "========================================================================"
+	@echo "🌟 MkDocs Local Development Workstation"
+	@echo "========================================================================"
+	@echo "This Makefile uses the locally built '$(IMAGE_NAME)' image."
+	@echo ""
+	@echo "Commands:"
+	@echo "  make dev            - Start local server with livereload (port $(PORT))"
+	@echo "  make build          - Run full generation and build process"
+	@echo "  make bash           - Enter interactive bash shell in this repo"
+	@echo "  make tree           - Show file structure inside container"
+	@echo "========================================================================"
+
+dev:
+	@echo "🛰️  Starting MkDocs serve..."
+	@echo "🔗 Local address: http://localhost:$(PORT)"
+	$(DOCKER_RUN) mkdocs-serve
+
+build:
+	@echo "🏗️  Starting full build process..."
+	$(DOCKER_RUN) mkdocs-build
+
+bash:
+	@echo "🐚 Opening interactive shell..."
+	$(DOCKER_RUN) bash
+
+tree:
+	@echo "🌲 Project Structure:"
+	@$(DOCKER_RUN) tree -L 2 -I "site|.git|.cache"
