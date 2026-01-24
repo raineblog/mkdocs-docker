@@ -33,7 +33,10 @@ PING_LIST = {
 INDEXNOW_LIST = {
     "IndexNow": "https://api.indexnow.org/indexnow",
     "Bing": "https://www.bing.com/indexnow",
-    "Yandex": "https://yandex.com/indexnow"
+    "Yandex": "https://yandex.com/indexnow",
+    "Naver": "https://searchadvisor.naver.com/indexnow",
+    "Seznam": "https://search.seznam.cz/indexnow",
+    "Yep": "https://indexnow.yep.com/indexnow"
 }
 
 RPC_LIST = [
