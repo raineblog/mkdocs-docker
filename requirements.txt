@@ -5,7 +5,6 @@ cairosvg
 
 mkdocs
 pymdown-extensions
-mkdocs-open-in-new-tab
 
 mkdocs-document-dates
 mkdocs-rss-plugin

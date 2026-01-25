@@ -60,5 +60,4 @@ markdown_extensions:
 - pymdownx.tasklist
 - pymdownx.tabbed
 extra_javascript:
-- assets/javascripts/jquery.min.js
 - assets/katex.render.js

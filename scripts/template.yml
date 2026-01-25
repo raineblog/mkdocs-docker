@@ -39,18 +39,29 @@ theme:
         view: material/eye
 plugins:
 - meta
--   open-in-new-tab:
-        add_icon: true
--   mkdocs-jupyter: # https://github.com/danielfrg/mkdocs-jupyter
-        include: ["*.ipynb"] # Default: ["*.py", "*.ipynb"]
+-   mkdocs-jupyter:
+        # https://github.com/danielfrg/mkdocs-jupyter
+        include: ["*.ipynb"]
         execute: true
         include_requirejs: true
         include_source: True
--   markdown-exec: # https://github.com/pawamoy/markdown-exec
+        # https://mkdocs-jupyter.danielfrg.com/demo-nb/
+        # https://mkdocs-jupyter.danielfrg.com/variational-inference-nb/
+-   markdown-exec:
+        # https://github.com/pawamoy/markdown-exec
         ansi: required
-- glightbox # https://github.com/blueswen/mkdocs-glightbox
-- table-reader # https://github.com/timvink/mkdocs-table-reader-plugin
--   document-dates: # https://jaywhj.netlify.app/document-dates-zh
+        # https://pawamoy.github.io/markdown-exec/gallery/
+        # https://pawamoy.github.io/markdown-exec/usage/shell/
+-   glightbox:
+        # https://github.com/blueswen/mkdocs-glightbox
+        auto_themed: true
+        auto_caption: true
+        # 需要整改文档，自动将所有 alt 文本作为 caption
+- table-reader
+        # https://github.com/timvink/mkdocs-table-reader-plugin
+        # 在 Markdown 里面用这个引入 csv（是否是一个好习惯？
+-   document-dates:
+        # https://jaywhj.netlify.app/document-dates-zh
         position: bottom
         type: datetime
         date_format: '%Y-%m-%d'
@@ -76,7 +87,8 @@ plugins:
         cards_layout_options:
             font_family: Noto Serif SC
             background_color: "#E4E2DD"
--   rss: # https://guts.github.io/mkdocs-rss-plugin/
+-   rss:
+        # https://guts.github.io/mkdocs-rss-plugin/
         abstract_chars_count: 500
         date_from_meta:
             as_creation: document_dates_created
@@ -84,11 +96,11 @@ plugins:
             datetime_format: "%Y-%m-%dT%H:%M:%S%z"
             default_timezone: UTC
         comments_path: "#__comments"
-        length: 100
+        length: 500 # 放这么多，会有性能问题吗？
         pretty_print: true
 -   minify_html:
-    # https://docs.rs/minify-html/0.16.4/minify_html/struct.Cfg.html#fields
-    # https://github.com/monosans/mkdocs-minify-html-plugin
+        # https://docs.rs/minify-html/0.16.4/minify_html/struct.Cfg.html#fields
+        # https://github.com/monosans/mkdocs-minify-html-plugin
         allow_noncompliant_unquoted_attribute_values: false
         allow_optimal_entities: false
         allow_removing_spaces_between_attributes: false
@@ -158,5 +170,4 @@ exclude_docs: |
     /cultural/
     /includes/
 extra_javascript:
-- assets/javascripts/jquery.min.js
-- assets/katex.render.js
+- assets/katex.render.js # 准备写 katex ssr？！
