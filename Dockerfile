@@ -31,7 +31,7 @@ RUN apk add --no-cache \
     font-noto-cjk-extra \
     && fc-cache -fv
 
-RUN npm install -g markdownlint-cli2 && \
+RUN npm install -g markdownlint-cli2 katex && \
     npm cache clean --force
 
 WORKDIR /app

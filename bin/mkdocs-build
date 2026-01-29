@@ -12,6 +12,7 @@ python /app/scripts/generate.py "$@"
 echo ">>> Generation script finished."
 echo "========================================"
 echo ">>> [3/4] Running MkDocs build..."
+npm install katex
 mkdocs build --clean
 echo ">>> MkDocs build finished."
 echo "========================================"
