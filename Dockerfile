@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1
 FROM python:3.12-alpine
-ENV TZ=UTC
 
 RUN apk add --no-cache \
     bash \
@@ -26,9 +25,7 @@ RUN apk add --no-cache \
     zip \
     gcompat \
     fontconfig \
-    ttf-dejavu \
     font-noto-cjk \
-    font-noto-cjk-extra \
     && fc-cache -fv
 
 RUN npm install -g markdownlint-cli2 katex && \
