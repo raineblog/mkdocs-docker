@@ -21,8 +21,7 @@ const loadKaTeX = () => {
         const scripts = [
             "katex.min.js",
             "contrib/mhchem.min.js",
-            "contrib/auto-render.min.js",
-            "contrib/copy-tex.min.js"
+            "contrib/auto-render.min.js"
         ];
 
         const loadNext = (i) => {
