@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
 FROM python:3.12-alpine
+ENV TZ=Etc/UTC
 
 RUN apk add --no-cache \
     bash \
@@ -23,6 +24,7 @@ RUN apk add --no-cache \
     zstd \
     unzip \
     zip \
+    tzdata \
     gcompat \
     fontconfig \
     font-noto-cjk \
