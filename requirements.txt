@@ -16,3 +16,5 @@ mkdocs-glightbox
 mkdocs-table-reader-plugin
 mkdocs-jupyter
 markdown-exec[ansi]
+
+git+https://github.com/raineblog/mkdocs-material.git

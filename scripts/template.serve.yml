@@ -60,4 +60,4 @@ markdown_extensions:
 - pymdownx.tasklist
 - pymdownx.tabbed
 extra_javascript:
-- assets/katex.render.js
+- https://cdn.jsdelivr.net/gh/raineblog/mkdocs-docker@latest/assets/katex.render.js
