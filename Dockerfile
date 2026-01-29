@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-alpine
+FROM python:alpine
 ENV TZ=Etc/UTC
 
 RUN apk add --no-cache \
