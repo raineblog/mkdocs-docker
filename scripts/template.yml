@@ -67,6 +67,7 @@ plugins:
         ssr_contribs:
             - mhchem
         katex_options:
+            trust: true
             macros:
                 "\\RR": "\\mathbb{R}"
                 "\\i": "\\mathrm{i}"
