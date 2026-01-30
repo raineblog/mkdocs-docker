@@ -6,6 +6,7 @@ cairosvg
 mkdocs
 pymdown-extensions
 mkdocs-katex-ssr
+mkdocs-advanced-seo
 
 mkdocs-document-dates
 mkdocs-rss-plugin

@@ -4,7 +4,6 @@ ENV TZ=Etc/UTC
 
 RUN apk add --no-cache \
     bash \
-    tree \
     git \
     ca-certificates \
     nodejs \
@@ -21,14 +20,7 @@ RUN apk add --no-cache \
     curl \
     wget \
     tar \
-    zstd \
-    unzip \
-    zip \
-    tzdata \
-    gcompat \
-    fontconfig \
-    font-noto-cjk \
-    && fc-cache -fv
+    zstd
 
 RUN npm install -g markdownlint-cli2 katex && \
     npm cache clean --force
