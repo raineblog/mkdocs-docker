@@ -163,7 +163,7 @@ plugins:
 -   social:
         cards_layout: default/variant
         cards_layout_options:
-            font_family: Noto Sans SC
+            font_family: Noto Serif SC
             background_color: "#E4E2DD"
 -   advanced-seo:
         support_document_dates: true
