@@ -61,6 +61,7 @@ plugins:
         # https://github.com/timvink/mkdocs-table-reader-plugin
         # 在 Markdown 里面用这个引入 csv（是否是一个好习惯？
 -   katex-ssr: # 自己做的插件
+        verbose: true
         katex_dist: "https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/"
         add_katex_css: true
         katex_css_filename: "katex-swap.min.css"
