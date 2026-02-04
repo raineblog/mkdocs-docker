@@ -160,17 +160,6 @@ plugins:
             background_color: "#E4E2DD"
 -   advanced-seo:
         support_document_dates: true
--   rss:
-        # https://guts.github.io/mkdocs-rss-plugin/
-        abstract_chars_count: 500
-        date_from_meta:
-            as_creation: document_dates_created
-            as_update: document_dates_updated
-            datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-            default_timezone: UTC
-        comments_path: "#__comments"
-        length: 500 # 放这么多，会有性能问题吗？
-        pretty_print: true
 -   minify_html:
         # https://docs.rs/minify-html/0.16.4/minify_html/struct.Cfg.html#fields
         # https://github.com/monosans/mkdocs-minify-html-plugin
