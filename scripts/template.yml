@@ -70,6 +70,7 @@ plugins:
         katex_options:
             trust: true
             macros:
+                # 下面是一些符号的兼容性定义
                 "\\RR": "\\mathbb{R}"
                 "\\i": "\\mathrm{i}"
                 "\\d": "\\mathrm{d}"
@@ -80,29 +81,24 @@ plugins:
                 "\\N": "\\mathbb{N}"
                 "\\P": "\\mathbb{P}"
                 "\\degree": "^\\circ"
+                "\\rank": "\\operatorname{rank}" # 矩阵的秩
+                # 下面是一些简写的定义
                 "\\op": "\\operatorname"
-                "\\la": "\\left\\langle"
-                "\\ra": "\\right\\rangle"
-                "\\lc": "\\left\\lceil"
-                "\\rc": "\\right\\rceil"
-                "\\lf": "\\left\\lfloor"
-                "\\rf": "\\right\\rfloor"
-                "\\lv": "\\left\\lvert"
-                "\\rv": "\\right\\rvert"
                 "\\paren": "\\left({#1}\\right)"
                 "\\bracket": "\\left[{#1}\\right]"
                 "\\brace": "\\left\\{{#1}\\right\\}"
                 "\\ceil": "\\left\\lceil{#1}\\right\\rceil"
                 "\\floor": "\\left\\lfloor{#1}\\right\\rfloor"
                 "\\vert": "\\left\\lvert{#1}\\right\\rvert"
-                "\\vec": "\\bm"
-                "\\vecc": "\\overrightarrow"
-                "\\mol": "\\operatorname{mol}"
-                "\\thermo": "\\ce{#1};\\quad\\Delta H=\\pu{#2}"
-                "\\cat": "\\ce{催化剂}"
-                "\\heat": "\\triangle"
-                "\\poly": "\\ce{-\\!\\!\\![ #1 ]_n\\!\\!\\!\\!\\!-}"
-                "\\el": "#1\\mathrm{#2}^{#3}"
+                "\\vec": "\\bm" # 默认使用粗体表示向量
+                "\\vecc": "\\overrightarrow" # 默认使用上标箭头表示有向线段
+                # 下面是一些文化课用的定义
+                "\\poly": "\\ce{-\\!\\!\\![ #1 ]_n\\!\\!\\!\\!\\!-}" # 有机化学 聚合物
+                "\\el": "#1\\mathrm{#2}^{#3}" # 结构化学 能级
+                "\\pH": "p\\ce{H}"
+                "\\pOH": "p\\ce{OH}"
+                "\\con": "\\left[\\ce{#1}\\right]" # 化学计量 一般表示摩尔浓度
+                # 下面都是一些不标准的 Unicode 转移
                 "’": "'"
                 "，": ","
                 "。": "."
@@ -120,12 +116,6 @@ plugins:
                 "·": "\\cdot"
                 "->": "\\to"
                 "<-": "\\gets"
-                "\\pH": "p\\ce{H}"
-                "\\pOH": "p\\ce{OH}"
-                "\\con": "\\left[\\ce{#1}\\right]"
-                "\\rank": "\\operatorname{rank}"
-                "\\trans": "^{\\mathrm{T}}"
-                "\\sgn": "\\operatorname{sgn}"
 -   document-dates:
         # https://jaywhj.netlify.app/document-dates-zh
         position: bottom
