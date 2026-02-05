@@ -7,11 +7,8 @@ mkdocs
 pymdown-extensions
 mkdocs-katex-ssr
 mkdocs-advanced-seo
-
 mkdocs-document-dates
-mkdocs-rss-plugin
 mkdocs-minify-html-plugin
-mkdocs-redirects
 
 mkdocs-glightbox
 mkdocs-table-reader-plugin
