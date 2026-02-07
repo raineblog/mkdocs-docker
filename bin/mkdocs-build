@@ -1,23 +1,30 @@
 #!/bin/bash
 set -e
-
 echo "========================================"
-echo ">>> [1/4] Running MkDocs linting..."
+echo ">>> [1/6] Running MkDocs linting..."
 mkdocs-lint
 echo ">>> Linting finished."
 echo "========================================"
-echo ">>> [2/4] Running Python generation script..."
-echo ">>> Container Workdir: $(pwd)"
+echo ">>> [2/6] Preparing Node environment..."
+cp /app/package.json .
+cp /app/gulpfile.js .
+cp -r /app/node_modules .
+echo ">>> Node environment prepared."
+echo "========================================"
+echo ">>> [3/6] Running Python generation script..."
 python /app/scripts/generate.py "$@"
 echo ">>> Generation script finished."
 echo "========================================"
-echo ">>> [3/4] Running MkDocs build..."
-npm install katex
+echo ">>> [4/6] Running MkDocs build..."
 mkdocs build --clean
 echo ">>> MkDocs build finished."
 echo "========================================"
-echo ">>> [4/4] Syncing build artifacts..."
-python -c "import shutil; shutil.copytree('public', 'site', dirs_exist_ok=True)"
+echo ">>> [5/6] Syncing build artifacts..."
+cp -af public/. site/
 echo ">>> Sync finished."
+echo "========================================"
+echo ">>> [6/6] Running posthtml..."
+npx gulp --input-dir site --output-dir dist
+echo ">>> posthtml finished."
 echo "========================================"
 echo ">>> [SUCCESS] All steps completed successfully."
