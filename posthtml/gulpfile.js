@@ -53,14 +53,20 @@ const htmlmin_options = {
 };
 
 function processHtml() {
-  return gulp.src(`${inputDir}/**/*.html`, { dot: true })
+  return gulp.src(
+    `${inputDir}/**/*.html`,
+    { dot: true }
+  )
     .pipe(posthtml(posthtml_plugins))
     .pipe(htmlmin(htmlmin_options))
     .pipe(gulp.dest(outputDir));
 }
 
 function processJs() {
-  return gulp.src(`${inputDir}/**/*.js`, { dot: true })
+  return gulp.src(
+    `${inputDir}/**/*.js`,
+    { dot: true }
+  )
     .pipe(sourcemaps.init())
     .pipe(terser({
       keep_classnames: true,
@@ -76,7 +82,10 @@ function copyAssets() {
     `!${inputDir}/**/*.html`,
     `!${inputDir}/**/*.css`,
     `!${inputDir}/**/*.js`
-  ], { dot: true }).pipe(gulp.dest(outputDir));
+  ], {
+    dot: true,
+    encoding: false
+  }).pipe(gulp.dest(outputDir));
 }
 
 function processCss() {
