@@ -12,9 +12,9 @@ mkdocs-advanced-seo
 # mkdocs-document-dates
 git+https://github.com/raineblog/mkdocs-document-dates.git
 
+mkdocs-glightbox
 mkdocs-minify-html-plugin
 
-mkdocs-glightbox
 mkdocs-table-reader-plugin
 mkdocs-jupyter
 markdown-exec[ansi]
