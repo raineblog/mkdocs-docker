@@ -189,6 +189,20 @@ plugins:
         comments_path: "#__comments"
         length: 500 # 放这么多，会有性能问题吗？
         pretty_print: true
+-   llmstxt:
+        sections:
+            About:
+            - index.md
+            - home/*.md
+            All:
+            - *.md
+-   backlinks_section:
+        title: 反向链接
+        description: 以下站内页面链接到了此页面：
+        description_no_links: 没有站内链接至此页面。
+        ignore_links_from:
+        - index.md
+        - home/*.md
 markdown_extensions:
 - abbr
 - admonition

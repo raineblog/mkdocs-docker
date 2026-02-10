@@ -3,20 +3,24 @@ requests
 pillow
 cairosvg
 
+# mkdocs
 mkdocs
 pymdown-extensions
+git+https://github.com/raineblog/mkdocs-material.git
+
+# better
 mkdocs-rss-plugin
 mkdocs-katex-ssr
-mkdocs-advanced-seo
-
-# mkdocs-document-dates
-git+https://github.com/raineblog/mkdocs-document-dates.git
-
-mkdocs-glightbox
 mkdocs-minify-html-plugin
 
+# seo
+mkdocs-advanced-seo
+mkdocs-llmstxt
+mkdocs-backlinks-section-plugin
+
+# beautiful
+mkdocs-glightbox
 mkdocs-table-reader-plugin
 mkdocs-jupyter
 markdown-exec[ansi]
-
-git+https://github.com/raineblog/mkdocs-material.git
+git+https://github.com/raineblog/mkdocs-document-dates.git
