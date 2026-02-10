@@ -181,7 +181,7 @@ plugins:
         authors_profiles: true
         categories: false
 -   rss:
-        # https://guts.github.io/mkdocs-rss-plugin/
+    # https://guts.github.io/mkdocs-rss-plugin/
         abstract_chars_count: 500
         date_from_meta:
             as_creation: document_dates_created
@@ -190,6 +190,7 @@ plugins:
         length: 500 # 放这么多，会有性能问题吗？
         pretty_print: true
 -   llmstxt:
+    # https://pawamoy.github.io/mkdocs-llmstxt/
         sections:
             About:
             - index.md
@@ -197,9 +198,11 @@ plugins:
             All:
             - *.md
 -   backlinks_section:
+    # https://github.com/six-two/mkdocs-backlinks-section-plugin
         title: 反向链接
         description: 以下站内页面链接到了此页面：
         description_no_links: 没有站内链接至此页面。
+        hide_if_empty: true
         ignore_links_from:
         - index.md
         - home/*.md
