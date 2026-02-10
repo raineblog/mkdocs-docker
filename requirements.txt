@@ -16,7 +16,6 @@ mkdocs-minify-html-plugin
 # seo
 mkdocs-advanced-seo
 mkdocs-llmstxt
-mkdocs-backlinks-section-plugin
 
 # beautiful
 mkdocs-glightbox

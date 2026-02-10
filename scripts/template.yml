@@ -195,18 +195,6 @@ plugins:
             All:
             - index.md
             - "*/**/*.md"
--   backlinks_section:
-    # https://github.com/six-two/mkdocs-backlinks-section-plugin
-        title: 反向链接
-        description: 以下站内页面链接到了此页面：
-        description_no_links: 没有站内链接至此页面。
-        hide_if_empty: true
-        ignore_links_from:
-        - index.md
-        - home/*.md
-        ignore_links_to:
-        - blog/*.md
-        - blog/**/*.md
 markdown_extensions:
 - abbr
 - admonition
