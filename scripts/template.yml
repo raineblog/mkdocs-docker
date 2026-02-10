@@ -169,9 +169,6 @@ plugins:
         preserve_chevron_percent_template_syntax: true
         remove_bangs: false
         remove_processing_instructions: false
--   optimize:
-        optimize_png_speed: 1
-        optimize_jpg_quality: 75
 -   blog:
         blog_toc: true
         post_date_format: long
@@ -196,7 +193,8 @@ plugins:
             - index.md
             - home/*.md
             All:
-            - '*.md'
+            - index.md
+            - "*/**/*.md"
 -   backlinks_section:
     # https://github.com/six-two/mkdocs-backlinks-section-plugin
         title: 反向链接
