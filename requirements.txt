@@ -8,7 +8,11 @@ pymdown-extensions
 mkdocs-rss-plugin
 mkdocs-katex-ssr
 mkdocs-advanced-seo
-mkdocs-document-dates
+
+# mkdocs-document-dates
+git+https://github.com/raineblog/mkdocs-document-dates.git
+# 自己的重构版
+
 mkdocs-minify-html-plugin
 
 mkdocs-glightbox
