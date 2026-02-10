@@ -203,6 +203,9 @@ plugins:
         ignore_links_from:
         - index.md
         - home/*.md
+        ignore_links_to:
+        - blog/*.md
+        - blog/**/*.md
 markdown_extensions:
 - abbr
 - admonition
