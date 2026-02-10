@@ -11,7 +11,7 @@ mkdocs-advanced-seo
 
 # mkdocs-document-dates
 git+https://github.com/raineblog/mkdocs-document-dates.git
-# 自己的重构版
+# 自己的重构版，输出不是 isoformat 了
 
 mkdocs-minify-html-plugin
 
