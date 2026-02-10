@@ -181,6 +181,7 @@ plugins:
         authors_profiles: true
         categories: false
 -   rss:
+        use_git: false
         abstract_chars_count: 500
         length: 500
         pretty_print: true
