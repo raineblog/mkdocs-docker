@@ -6,6 +6,7 @@ import posthtml from 'gulp-posthtml';
 import htmlmin from 'gulp-htmlmin';
 import postcss from 'gulp-postcss';
 import terser from 'gulp-terser';
+import path from 'path';
 
 // PostHTML Plugins
 import posthtmlPostcss from 'posthtml-postcss';
@@ -22,6 +23,20 @@ import cssnano from 'cssnano';
 import combineSelectors from 'postcss-combine-duplicated-selectors';
 import atImport from 'postcss-import';
 
+const posthtmlImgAlt = () => (tree) => {
+  tree.walk((node) => {
+    if (node.tag === 'img' && node.attrs && node.attrs.src) {
+      if (!node.attrs.alt || node.attrs.alt.trim() === '') {
+        const src = node.attrs.src;
+        // Use path.posix.basename to handle forward slashes in URLs correctly
+        const fileName = path.posix.basename(src, path.posix.extname(src));
+        node.attrs.alt = decodeURIComponent(fileName) || 'image';
+      }
+    }
+    return node;
+  });
+};
+
 const argv = yargs(hideBin(process.argv)).argv;
 const inputDir = argv.inputDir || 'dist';
 const outputDir = argv.outputDir || 'dest';
@@ -36,6 +51,7 @@ const postcss_plugins = [
 
 const posthtml_plugins = [
   posthtmlPostcss(postcss_plugins),
+  posthtmlImgAlt(),
   posthtmlAltAlways(),
   mergeInlineLonghand(),
   posthtmlLinkPreload(),
