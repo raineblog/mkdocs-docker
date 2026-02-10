@@ -196,7 +196,7 @@ plugins:
             - index.md
             - home/*.md
             All:
-            - *.md
+            - '*.md'
 -   backlinks_section:
     # https://github.com/six-two/mkdocs-backlinks-section-plugin
         title: 反向链接
