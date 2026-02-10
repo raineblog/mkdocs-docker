@@ -181,9 +181,14 @@ plugins:
         authors_profiles: true
         categories: false
 -   rss:
-        use_git: false
+        # https://guts.github.io/mkdocs-rss-plugin/
         abstract_chars_count: 500
-        length: 500
+        date_from_meta:
+            as_creation: document_dates_created[:16]
+            as_update: document_dates_updated[:16]
+            datetime_format: "%Y-%m-%dT%H:%M"
+        comments_path: "#__comments"
+        length: 500 # 放这么多，会有性能问题吗？
         pretty_print: true
 markdown_extensions:
 - abbr
