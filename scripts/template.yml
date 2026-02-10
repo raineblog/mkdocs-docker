@@ -220,5 +220,4 @@ watch:
   - docs/includes
 exclude_docs: |
     /test/
-    /cultural/
     /includes/
