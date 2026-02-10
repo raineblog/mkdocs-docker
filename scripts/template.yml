@@ -180,6 +180,13 @@ plugins:
         archive_name: Archive
         authors_profiles: true
         categories: false
+-   rss:
+        abstract_chars_count: 500
+        date_from_meta:
+            as_creation: "git"
+            as_update: "git"
+        length: 500
+        pretty_print: true
 markdown_extensions:
 - abbr
 - admonition
