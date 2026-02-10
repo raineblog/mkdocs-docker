@@ -23,10 +23,10 @@ ENCODED_SITEMAP = quote(SITEMAP_URL)
 INDEXNOW_KEY_LOCATION = f"https://{SITE_HOST}/{INDEXNOW_KEY}.txt"
 
 PING_LIST = {
-    # "Google": f"http://www.google.com/ping?sitemap={ENCODED_SITEMAP}",
-    # "Bing": f"https://www.bing.com/ping?sitemap={ENCODED_SITEMAP}",
-    # "Sogou": f"http://ping.sogou.com/ping?sitemap={ENCODED_SITEMAP}",
-    # "FeedBurner": f"http://www.feedburner.com/fb/a/pingSubmit?bloglink={ENCODED_URL}",
+    "Google": f"http://www.google.com/ping?sitemap={ENCODED_SITEMAP}",
+    "Bing": f"https://www.bing.com/ping?sitemap={ENCODED_SITEMAP}",
+    "Sogou": f"http://ping.sogou.com/ping?sitemap={ENCODED_SITEMAP}",
+    "FeedBurner": f"http://www.feedburner.com/fb/a/pingSubmit?bloglink={ENCODED_URL}",
     "Yandex": f"http://blogs.yandex.ru/pings/?blogname={ENCODED_NAME}&blogurl={ENCODED_URL}"
 }
 
@@ -41,8 +41,8 @@ INDEXNOW_LIST = {
 
 RPC_LIST = [
     "http://rpc.pingomatic.com",
-    # "http://blogsearch.google.com/ping/RPC2",
-    # "http://ping.feedburner.com"
+    "http://blogsearch.google.com/ping/RPC2",
+    "http://ping.feedburner.com"
 ]
 
 # =======================================================
