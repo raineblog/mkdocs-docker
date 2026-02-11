@@ -189,10 +189,13 @@ plugins:
 -   llmstxt:
     # https://pawamoy.github.io/mkdocs-llmstxt/
         sections:
-            About:
+            关于:
             - index.md
             - home/*.md
-            All:
+            博客:
+            - blog/*.md
+            - blog/**/*.md
+            所有（包含上面两类）:
             - index.md
             - "*/**/*.md"
 markdown_extensions:
