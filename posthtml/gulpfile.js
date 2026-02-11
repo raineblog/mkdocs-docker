@@ -50,10 +50,10 @@ const postcss_plugins = [
 ];
 
 const posthtml_plugins = [
-  posthtmlPostcss(postcss_plugins),
+  // posthtmlPostcss(postcss_plugins),
   posthtmlImgAlt(),
   posthtmlAltAlways(),
-  // mergeInlineLonghand(),
+  mergeInlineLonghand(),
   posthtmlLinkPreload(),
   posthtmlExternalLink(),
   posthtmlRemoveDuplicates('meta')
