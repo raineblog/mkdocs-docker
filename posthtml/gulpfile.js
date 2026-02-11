@@ -8,6 +8,8 @@ import postcss from 'gulp-postcss';
 import terser from 'gulp-terser';
 import path from 'path';
 
+import plumber from 'gulp-plumber';
+
 // PostHTML Plugins
 import posthtmlPostcss from 'posthtml-postcss';
 import posthtmlAltAlways from 'posthtml-alt-always';

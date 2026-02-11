@@ -132,16 +132,7 @@ plugins:
             - blog/*
         # 这个插件更新好频繁跟不上了真的好诡异（
 -   privacy:
-        assets_exclude:
-            - giscus.app/*
-            - github.com/*
-            - api.github.com/*
-            - gist.github.com/*
-            - avatars.githubusercontent.com/*
-            - unpkg.com/*
-            - cdn.jsdelivr.net/*
-            - esm.sh/*
-            - q1.qlogo.cn/*
+        assets_fetch: false
         links_attr_map:
             target: _blank
 -   social:
