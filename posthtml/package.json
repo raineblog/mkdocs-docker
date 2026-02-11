@@ -10,8 +10,6 @@
     "gulp-terser": "^2.1.0",
     "katex": "^0.16.28",
     "postcss": "^8.5.6",
-    "postcss-combine-duplicated-selectors": "^10.0.3",
-    "postcss-import": "^16.1.1",
     "postcss-nested": "^7.0.2",
     "posthtml": "^0.16.6",
     "posthtml-alt-always": "^1.0.1",

@@ -9,7 +9,7 @@ import terser from 'gulp-terser';
 import path from 'path';
 
 // PostHTML Plugins
-// import posthtmlPostcss from 'posthtml-postcss';
+import posthtmlPostcss from 'posthtml-postcss';
 import posthtmlAltAlways from 'posthtml-alt-always';
 import posthtmlLinkPreload from 'posthtml-plugin-link-preload';
 import { posthtmlExternalLink } from 'posthtml-external-link';
@@ -20,8 +20,8 @@ import mergeInlineLonghand from 'posthtml-postcss-merge-longhand';
 import autoprefixer from 'autoprefixer';
 import postcssNested from 'postcss-nested';
 import cssnano from 'cssnano';
-import combineSelectors from 'postcss-combine-duplicated-selectors';
-import atImport from 'postcss-import';
+// import combineSelectors from 'postcss-combine-duplicated-selectors';
+// import atImport from 'postcss-import';
 
 const posthtmlImgAlt = () => (tree) => {
   tree.walk((node) => {
@@ -42,15 +42,15 @@ const inputDir = argv.inputDir || 'dist';
 const outputDir = argv.outputDir || 'dest';
 
 const postcss_plugins = [
-  autoprefixer(),
   postcssNested(),
+  autoprefixer(),
   cssnano(),
-  combineSelectors({ removeDuplicatedProperties: true }),
-  atImport()
+  // combineSelectors({ removeDuplicatedProperties: true }),
+  // atImport()
 ];
 
 const posthtml_plugins = [
-  // posthtmlPostcss(postcss_plugins),
+  posthtmlPostcss(postcss_plugins),
   posthtmlImgAlt(),
   posthtmlAltAlways(),
   mergeInlineLonghand(),
