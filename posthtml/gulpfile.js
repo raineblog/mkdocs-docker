@@ -73,6 +73,7 @@ function processHtml() {
     `${inputDir}/**/*.html`,
     { dot: true }
   )
+    .pipe(plumber())
     .pipe(posthtml(posthtml_plugins))
     .pipe(htmlmin(htmlmin_options))
     .pipe(gulp.dest(outputDir));
@@ -83,6 +84,7 @@ function processJs() {
     `${inputDir}/**/*.js`,
     { dot: true }
   )
+    .pipe(plumber())
     .pipe(sourcemaps.init())
     .pipe(terser({
       keep_classnames: true,
@@ -106,6 +108,7 @@ function copyAssets() {
 
 function processCss() {
   return gulp.src(`${inputDir}/**/*.css`, { dot: true })
+    .pipe(plumber())
     .pipe(sourcemaps.init())
     .pipe(postcss(postcss_plugins))
     .pipe(sourcemaps.write('.'))
