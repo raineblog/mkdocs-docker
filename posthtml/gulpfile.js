@@ -9,7 +9,7 @@ import terser from 'gulp-terser';
 import path from 'path';
 
 // PostHTML Plugins
-import posthtmlPostcss from 'posthtml-postcss';
+// import posthtmlPostcss from 'posthtml-postcss';
 import posthtmlAltAlways from 'posthtml-alt-always';
 import posthtmlLinkPreload from 'posthtml-plugin-link-preload';
 import { posthtmlExternalLink } from 'posthtml-external-link';
