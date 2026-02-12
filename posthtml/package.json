@@ -19,6 +19,5 @@
     "posthtml-postcss-merge-longhand": "^3.1.4",
     "posthtml-remove-duplicates": "^0.0.4",
     "yargs": "^17.7.2",
-		"gulp-plumber": "^1.2.1"
   }
 }

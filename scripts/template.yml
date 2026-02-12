@@ -32,6 +32,7 @@ theme:
     - content.action.view
     - content.code.copy
     - content.code.select
+    - content.code.annotate
     - content.tooltips
     icon:
         repo: fontawesome/brands/git-alt
@@ -39,14 +40,6 @@ theme:
         view: material/eye
 plugins:
 - meta
--   mkdocs-jupyter:
-        # https://github.com/danielfrg/mkdocs-jupyter
-        include: ["*.ipynb"]
-        execute: true
-        include_requirejs: true
-        include_source: True
-        # https://mkdocs-jupyter.danielfrg.com/demo-nb/
-        # https://mkdocs-jupyter.danielfrg.com/variational-inference-nb/
 -   markdown-exec:
         # https://github.com/pawamoy/markdown-exec
         ansi: required
@@ -55,8 +48,6 @@ plugins:
 -   glightbox:
         # https://github.com/blueswen/mkdocs-glightbox
         auto_themed: true
-        auto_caption: true
-        # 需要整改文档，自动将所有 alt 文本作为 caption
 - table-reader
         # https://github.com/timvink/mkdocs-table-reader-plugin
         # 在 Markdown 里面用这个引入 csv（是否是一个好习惯？

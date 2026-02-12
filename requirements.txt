@@ -20,6 +20,5 @@ mkdocs-llmstxt
 # beautiful
 mkdocs-glightbox
 mkdocs-table-reader-plugin
-mkdocs-jupyter
 markdown-exec[ansi]
 git+https://github.com/raineblog/mkdocs-document-dates.git

@@ -8,7 +8,7 @@ import postcss from 'gulp-postcss';
 import terser from 'gulp-terser';
 import path from 'path';
 
-import plumber from 'gulp-plumber';
+// import plumber from 'gulp-plumber';
 
 // PostHTML Plugins
 import posthtmlPostcss from 'posthtml-postcss';
@@ -75,7 +75,7 @@ function processHtml() {
     `${inputDir}/**/*.html`,
     { dot: true }
   )
-    .pipe(plumber())
+    // .pipe(plumber())
     .pipe(posthtml(posthtml_plugins))
     .pipe(htmlmin(htmlmin_options))
     .pipe(gulp.dest(outputDir));
@@ -86,7 +86,7 @@ function processJs() {
     `${inputDir}/**/*.js`,
     { dot: true }
   )
-    .pipe(plumber())
+    // .pipe(plumber())
     .pipe(sourcemaps.init())
     .pipe(terser({
       keep_classnames: true,
@@ -110,7 +110,7 @@ function copyAssets() {
 
 function processCss() {
   return gulp.src(`${inputDir}/**/*.css`, { dot: true })
-    .pipe(plumber())
+    // .pipe(plumber())
     .pipe(sourcemaps.init())
     .pipe(postcss(postcss_plugins))
     .pipe(sourcemaps.write('.'))
