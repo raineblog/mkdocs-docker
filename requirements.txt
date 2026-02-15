@@ -22,3 +22,7 @@ mkdocs-glightbox
 mkdocs-table-reader-plugin
 markdown-exec[ansi]
 git+https://github.com/raineblog/mkdocs-document-dates.git
+
+# exec
+matplotlib
+numpy
