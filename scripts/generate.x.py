@@ -16,6 +16,7 @@ def load_json(file_path):
 
 def get_site_template():
     info = load_json('info.json')
+    info['social']['site_url'] = 'https://whk-x.pages.dev/'
     template_defaults = parse_yaml(script_dir / 'template.x.yml')
     template_defaults['theme'] |= info['theme']
     nav = { 'nav': [{item['title']: item['children']} for item in info['nav']] }
