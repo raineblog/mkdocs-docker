@@ -5,10 +5,11 @@ cairosvg
 
 # mkdocs
 mkdocs==1.6.1
-zensical
+# zensical
 
 pymdown-extensions
 git+https://github.com/raineblog/mkdocs-material.git
+mkdocs-materialx
 
 # better
 mkdocs-rss-plugin

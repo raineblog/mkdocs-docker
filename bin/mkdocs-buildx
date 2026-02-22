@@ -12,11 +12,11 @@ cp -r /app/node_modules .
 echo ">>> Node environment prepared."
 echo "========================================"
 echo ">>> [3/6] Running Python generation script..."
-python /app/scripts/generate.py "$@"
+python /app/scripts/generate.x.py "$@"
 echo ">>> Generation script finished."
 echo "========================================"
 echo ">>> [4/6] Running MkDocs build..."
-zensical build --clean
+mkdocs build --clean
 echo ">>> MkDocs build finished."
 echo "========================================"
 echo ">>> [5/6] Syncing build artifacts..."
