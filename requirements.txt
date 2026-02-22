@@ -4,7 +4,9 @@ pillow
 cairosvg
 
 # mkdocs
-mkdocs
+mkdocs==1.6.1
+zensical
+
 pymdown-extensions
 git+https://github.com/raineblog/mkdocs-material.git
 
