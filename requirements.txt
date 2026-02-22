@@ -3,14 +3,6 @@ requests
 pillow
 cairosvg
 
-# mkdocs
-mkdocs==1.6.1
-# zensical
-
-pymdown-extensions
-git+https://github.com/raineblog/mkdocs-material.git
-mkdocs-materialx
-
 # better
 mkdocs-rss-plugin
 mkdocs-katex-ssr
@@ -29,3 +21,11 @@ git+https://github.com/raineblog/mkdocs-document-dates.git
 # exec
 matplotlib
 numpy
+
+# mkdocs
+mkdocs==1.6.1
+# zensical
+
+pymdown-extensions
+git+https://github.com/raineblog/mkdocs-material.git
+mkdocs-materialx
