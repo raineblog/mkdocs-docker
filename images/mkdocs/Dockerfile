@@ -25,7 +25,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY posthtml/gulpfile.js .
+
 COPY scripts/ /app/scripts/
+copy templates/ /app/templates/
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/usr/local/bin/mkdocs-build"]
