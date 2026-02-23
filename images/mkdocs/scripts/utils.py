@@ -30,7 +30,7 @@ def get_site_template(copy_extra, template_name):
     nav = { 'nav': get_nav() }
     if copy_extra == True:
         info |= load_json('config/extra.json')
-    template_defaults = get_template(f'/app/templates/{template_name}.yml')
+    template_defaults = get_template('/app/templates/' + template_name)
     return info | template_defaults | nav
 
 def write_site_template(config_path, copy_extra, template_name):
