@@ -27,20 +27,6 @@ plugins:
         preserve_chevron_percent_template_syntax: true
         remove_bangs: false
         remove_processing_instructions: false
-markdown_extensions:
-- abbr
-- admonition
-- attr_list
-- def_list
-- footnotes
-- md_in_html
-- tables
--   toc:
-        permalink: false
-        toc_depth: 3
--   pymdownx.arithmatex:
-        generic: true
-
 -   katex-ssr: # 自己做的插件
         # disable: true # 禁用 ssr，仅植入 js 代码
         katex_dist: "https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/"
@@ -99,6 +85,19 @@ markdown_extensions:
                 "·": "\\cdot"
                 "->": "\\to"
                 "<-": "\\gets"
+markdown_extensions:
+- abbr
+- admonition
+- attr_list
+- def_list
+- footnotes
+- md_in_html
+- tables
+-   toc:
+        permalink: false
+        toc_depth: 3
+-   pymdownx.arithmatex:
+        generic: true
 - pymdownx.caret
 - pymdownx.keys
 - pymdownx.mark
