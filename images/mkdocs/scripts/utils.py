@@ -25,7 +25,7 @@ def get_template(template_path):
     template_defaults['theme'] |= project_config['theme']
     return template_defaults
 
-def get_site_config(copy_extra, template_name):
+def get_site_template(copy_extra, template_name):
     info = load_json('config/project.json')['info']
     nav = { 'nav': get_nav() }
     if copy_extra == True:
@@ -35,7 +35,6 @@ def get_site_config(copy_extra, template_name):
 
 def write_site_template(config_path, copy_extra, template_name):
     config = get_site_template(copy_extra, template_name)
-
     config_path = config_path.strip()
     if config_path.endswith(('.yml', '.yaml')):
         with open(config_path, 'w', encoding='utf-8') as file:
