@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 cp /app/package.json .
 cp /app/gulpfile.js .
 cp -r /app/node_modules .

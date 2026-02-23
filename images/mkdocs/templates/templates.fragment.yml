@@ -1,0 +1,67 @@
+theme:
+    name: null
+    custom_dir: /app/mkdocs-fragment-theme/
+    language: zh
+    palette:
+        scheme: default
+    icon:
+        repo: fontawesome/brands/git-alt
+        edit: material/pencil
+        view: material/eye
+plugins:
+- markdown-exec
+- table-reader
+-   minify_html:
+        allow_noncompliant_unquoted_attribute_values: false
+        allow_optimal_entities: false
+        allow_removing_spaces_between_attributes: false
+        keep_closing_tags: true
+        keep_comments: false
+        keep_html_and_head_opening_tags: true
+        keep_input_type_text_attr: true
+        keep_ssi_comments: false
+        minify_css: true
+        minify_doctype: false
+        minify_js: true
+        preserve_brace_template_syntax: true
+        preserve_chevron_percent_template_syntax: true
+        remove_bangs: false
+        remove_processing_instructions: false
+markdown_extensions:
+- abbr
+- admonition
+- attr_list
+- def_list
+- footnotes
+- md_in_html
+- tables
+-   toc:
+        permalink: false
+        toc_depth: 3
+-   pymdownx.arithmatex:
+        generic: true
+- pymdownx.caret
+- pymdownx.keys
+- pymdownx.mark
+- pymdownx.tilde
+- pymdownx.betterem
+- pymdownx.blocks.admonition
+- pymdownx.blocks.details
+- pymdownx.blocks.caption
+- pymdownx.blocks.tab
+-   pymdownx.highlight:
+        anchor_linenums: true
+        line_spans: __span
+        pygments_lang_class: true
+        linenums: true
+- pymdownx.inlinehilite
+-   pymdownx.snippets:
+        auto_append:
+        - docs/includes/abbreviations.md
+- pymdownx.superfences
+- pymdownx.magiclink
+- pymdownx.smartsymbols
+- pymdownx.tasklist
+- pymdownx.tabbed
+watch:
+  - docs/includes

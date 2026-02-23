@@ -27,7 +27,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY posthtml/gulpfile.js .
 
 COPY scripts/ /app/scripts/
-copy templates/ /app/templates/
+COPY templates/ /app/templates/
+COPY mkdocs-fragment-theme/ /app/mkdocs-fragment-theme/
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/usr/local/bin/mkdocs-build"]
