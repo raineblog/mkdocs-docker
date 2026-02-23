@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 cp /app/package.json .
 cp /app/gulpfile.js .
@@ -9,4 +8,3 @@ python /app/scripts/generate.py "$@"
 
 mkdocs build --clean
 cp -af public/. site/
-npx gulp --input-dir site --output-dir dist
