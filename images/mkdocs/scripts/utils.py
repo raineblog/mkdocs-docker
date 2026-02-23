@@ -1,3 +1,4 @@
+import os
 import yaml
 import json
 import toml
@@ -27,6 +28,8 @@ def get_template(template_path):
 
 def get_site_template(copy_extra, template_name):
     info = load_json('config/project.json')['info']
+    if site_url := os.getenv('site_url'):
+        info['site_url'] = site_url
     nav = { 'nav': get_nav() }
     if copy_extra == True:
         info['extra'] = load_json('config/extra.json')
