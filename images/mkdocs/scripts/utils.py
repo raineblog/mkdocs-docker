@@ -33,6 +33,8 @@ def get_site_template(copy_extra, template_name):
     nav = { 'nav': get_nav() }
     if copy_extra == True:
         info['extra'] = load_json('config/extra.json')
+        if os.getenv('disable_giscus') == 'true':
+            info['extra'].pop('giscus', None)
     template_defaults = get_template('/app/templates/' + template_name)
     return info | template_defaults | nav
 
