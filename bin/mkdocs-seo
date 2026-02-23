@@ -1,3 +1,0 @@
-#!/bin/bash
-set -e
-python /app/scripts/seo_pusher.py "$@"

@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 FROM python:alpine
 
+COPY --chmod=755 bin/ /usr/local/bin/
+
 RUN apk add --no-cache \
     bash tini tar zstd \
     git git-fast-import \
@@ -8,7 +10,7 @@ RUN apk add --no-cache \
     nodejs npm zlib-dev \
     cairo freetype-dev jpeg-dev openssh pngquant
 
-RUN npm install -g npm markdownlint-cli2
+RUN git config --system --add safe.directory /__w/*
 
 WORKDIR /app
 
@@ -20,14 +22,10 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY .markdownlint.json .
 COPY posthtml/gulpfile.js .
-
 COPY scripts/ /app/scripts/
-COPY --chmod=755 bin/ /usr/local/bin/
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/usr/local/bin/mkdocs-build"]

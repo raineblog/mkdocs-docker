@@ -1,0 +1,49 @@
+import yaml
+import json
+import toml
+
+def parse_yaml(yaml_path):
+    with open(yaml_path, 'r', encoding='utf-8') as file:
+        text = file.read()
+    return yaml.load(text, Loader=yaml.FullLoader)
+
+def load_json(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    return data
+
+def get_nav():
+    nav_config = load_json('config/nav.json')
+    nav = []
+    for item in nav_config:
+        nav.append({item['title']: item['children']})
+    return nav
+
+def get_template(template_path):
+    template_defaults = parse_yaml(template_path)
+    project_config = load_json('config/project.json')
+    template_defaults['theme'] |= project_config['theme']
+    return template_defaults
+
+def get_site_config(copy_extra, template_name):
+    info = load_json('config/project.json')['info']
+    nav = { 'nav': get_nav() }
+    if copy_extra == True:
+        info |= load_json('config/extra.json')
+    template_defaults = get_template(f'/app/templates/{template_name}.yml')
+    return info | template_defaults | nav
+
+def write_site_template(config_path, copy_extra, template_name):
+    config = get_site_template(copy_extra, template_name)
+
+    config_path = config_path.strip()
+    if config_path.endswith(('.yml', '.yaml')):
+        with open(config_path, 'w', encoding='utf-8') as file:
+            yaml.dump(config, file, allow_unicode=True, indent=4, sort_keys=False)
+    elif config_path.endswith('.toml'):
+        import toml
+        with open(config_path, 'w', encoding='utf-8') as file:
+            toml.dump(config, file)
+    elif config_path.endswith('.json'):
+        with open(config_path, 'w', encoding='utf-8') as file:
+            json.dump(config, file, allow_unicode=True, indent=4, sort_keys=False)
