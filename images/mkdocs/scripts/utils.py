@@ -29,7 +29,7 @@ def get_site_template(copy_extra, template_name):
     info = load_json('config/project.json')['info']
     nav = { 'nav': get_nav() }
     if copy_extra == True:
-        info |= load_json('config/extra.json')
+        info['extra'] = load_json('config/extra.json')
     template_defaults = get_template('/app/templates/' + template_name)
     return info | template_defaults | nav
 
