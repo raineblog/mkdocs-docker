@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+cp /app/package.json .
+cp /app/gulpfile.js .
+cp -r /app/node_modules .
+
+python /app/scripts/generate.fragment.py "$@"
+
+mkdocs build --clean
+cp -af public/. site/
