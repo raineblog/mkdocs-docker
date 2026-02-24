@@ -11,56 +11,66 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  setup:
+  prepare:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-      filters: ${{ steps.set-matrix.outputs.filters }}
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
-      - id: set-matrix
+      
+      - id: set-filters
+        run: |
+          python3 -c "
+          import yaml, os
+          with open('config.yml', 'r') as f:
+              config = yaml.safe_load(f)
+          images = config.get('images', [])
+          filters = {img['name']: [f\"{img['context'].lstrip('./')}/**\"] for img in images}
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write('filters<<EOF\n')
+              f.write(yaml.dump(filters))
+              f.write('EOF\n')
+          "
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: ${{ steps.set-filters.outputs.filters }}
+
+      - id: generate-matrix
         run: |
           python3 -c "
           import yaml, json, os
           with open('config.yml', 'r') as f:
               config = yaml.safe_load(f)
           images = config.get('images', [])
-          filters = {}
-          for img in images:
-              path = img['context']
-              if path.startswith('./'): path = path[2:]
-              filters[img['name']] = [f'{path}/**']
+          
+          changes = json.loads(os.environ.get('CHANGES', '[]'))
+          event = os.environ.get('EVENT_NAME')
+          ref_type = os.environ.get('REF_TYPE')
+          is_build_all = event in ['schedule', 'workflow_dispatch'] or ref_type == 'tag'
+          
+          if is_build_all:
+              matrix = images
+          else:
+              matrix = [img for img in images if img['name'] in changes]
+          
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f'matrix={json.dumps(images)}\n')
-              f.write('filters<<EOF\n')
-              f.write(yaml.dump(filters))
-              f.write('EOF\n')
+              f.write(f'matrix={json.dumps(matrix)}\n')
           "
-
-  filter-changes:
-    needs: setup
-    runs-on: ubuntu-latest
-    outputs:
-      changes: ${{ steps.filter.outputs.changes }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: ${{ needs.setup.outputs.filters }}
+        env:
+          CHANGES: ${{ steps.filter.outputs.changes }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
 
   build:
     name: Build ${{ matrix.name }} Dockerfile and Push
-    needs: [setup, filter-changes]
-    if: |
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' ||
-      github.ref_type == 'tag' ||
-      contains(fromJSON(needs.filter-changes.outputs.changes), matrix.name)
+    needs: prepare
+    if: needs.prepare.outputs.matrix != '[]'
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.setup.outputs.matrix) }}
+        include: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
