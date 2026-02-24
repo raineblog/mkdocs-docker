@@ -23,6 +23,9 @@ jobs:
           - name: mkdocs
             context: ./images/mkdocs
             image: raineblog/mkdocs-docker
+          - name: fragment
+            context: ./images/fragment
+            image: raineblog/mkdocs-docker-fragment
           # - name: starlight
           #   context: ./images/starlight
           #   image: raineblog/mkdocs-compatible-starlight
