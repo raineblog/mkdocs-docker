@@ -28,7 +28,7 @@ COPY posthtml/gulpfile.js .
 
 COPY scripts/ /app/scripts/
 COPY templates/ /app/templates/
-COPY mkdocs-fragment-theme/ /app/mkdocs-fragment-theme/
+# COPY mkdocs-fragment-theme/ /app/mkdocs-fragment-theme/
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/usr/local/bin/mkdocs-build"]
