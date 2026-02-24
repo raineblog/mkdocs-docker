@@ -35,11 +35,9 @@ markdown_extensions:
 - footnotes
 - md_in_html
 - tables
--   toc:
-        permalink: false
-        toc_depth: 3
-# -   pymdownx.arithmatex:
-#         generic: false
+# -   toc:
+#         permalink: false
+#         toc_depth: 3
 - pymdownx.caret
 - pymdownx.keys
 - pymdownx.mark
