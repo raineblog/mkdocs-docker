@@ -132,13 +132,9 @@ export default defineConfig({
   title: projectConfig.info.site_name,
   description: projectConfig.info.site_description,
   lang: 'zh',
-  logoText: 'rspress',
-  icon: projectConfig.theme.favicon.startsWith('.') 
-    ? projectConfig.theme.favicon 
-    : `/${projectConfig.theme.favicon}`,
-  logo: projectConfig.theme.logo.startsWith('.')
-    ? projectConfig.theme.logo
-    : `/${projectConfig.theme.logo}`,
+  logoText: projectConfig.info.site_name,
+  icon: `./docs/${projectConfig.theme.favicon}`,
+  logo: `./docs/${projectConfig.theme.logo}`,
   llms: true,
   globalStyles: path.join(__dirname, 'styles/custom.css'),
   themeConfig: {
