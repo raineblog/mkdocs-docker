@@ -1,10 +1,5 @@
 #!/bin/bash
 set -e
-
-# cp /app/package.json .
-# cp -r /app/node_modules .
-
-python /app/scripts/generate.fragment.py "$@"
-
+python /app/scripts/generate.py
 mkdocs build --clean
-cp -af public/. site/
+python /app/scripts/convert.py
