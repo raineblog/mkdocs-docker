@@ -9,7 +9,7 @@ def fix_paths(content):
         prefix = match.group(1)
         path = match.group(2)
         # 修复路径：将开头的 ../ 替换为 ./
-        path = re.sub(r'^(\.\./)+', './', path)
+        # path = re.sub(r'^(\.\./)+', './', path)
         # 解码中文文件名
         return prefix + urllib.parse.unquote(path) + ')'
 
@@ -20,7 +20,7 @@ def fix_paths(content):
         prefix = match.group(1)
         path = match.group(2)
         # 修复路径：将开头的 ../ 替换为 ./
-        path = re.sub(r'^(\.\./)+', './', path)
+        # path = re.sub(r'^(\.\./)+', './', path)
         # 解码中文文件名
         return prefix + urllib.parse.unquote(path) + '"'
 
