@@ -53,7 +53,7 @@ def main():
     lua_filter_path = os.path.join(script_dir, 'html-cleanup.lua')
     
     filters = [lua_filter_path]
-    pdoc_args = ['--wrap=none', '--standalone']
+    pdoc_args = ['--wrap=none', '--standalone', '--indent=4']
     auto_convert_file(pdoc_args, filters)
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ FROM python:alpine
 
 COPY --chmod=755 seo-push /usr/local/bin/
 
-RUN apk add \
+RUN apk add --no-cache \
     bash tini tar zstd \
     git git-fast-import \
     ca-certificates curl wget
@@ -16,7 +16,7 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN pip install requests
+RUN pip install --no-cache-dir requests
 
 COPY main.py .
 
