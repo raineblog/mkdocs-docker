@@ -16,12 +16,12 @@ mkdocs-llmstxt
 # beautiful
 mkdocs-glightbox
 mkdocs-table-reader-plugin
-markdown-exec[ansi]
+# markdown-exec[ansi]
 git+https://github.com/raineblog/mkdocs-document-dates.git
 
 # exec
-matplotlib
-numpy
+# matplotlib
+# numpy
 
 # mkdocs
 mkdocs==1.6.1

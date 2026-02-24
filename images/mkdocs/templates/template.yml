@@ -40,9 +40,9 @@ theme:
         view: material/eye
 plugins:
 - meta
--   markdown-exec:
+# -   markdown-exec:
         # https://github.com/pawamoy/markdown-exec
-        ansi: required
+        # ansi: required
         # https://pawamoy.github.io/markdown-exec/gallery/
         # https://pawamoy.github.io/markdown-exec/usage/shell/
 -   glightbox:
@@ -199,7 +199,7 @@ markdown_extensions:
 - tables
 -   toc:
         permalink: false
-        toc_depth: 3
+        toc_depth: 4
 -   pymdownx.arithmatex:
         generic: true
 - pymdownx.caret

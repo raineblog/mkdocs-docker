@@ -9,7 +9,7 @@ theme:
         edit: material/pencil
         view: material/eye
 plugins:
-- markdown-exec
+# - markdown-exec
 - table-reader
 # -   minify_html:
 #         allow_noncompliant_unquoted_attribute_values: false
@@ -38,6 +38,10 @@ markdown_extensions:
 # -   toc:
 #         permalink: false
 #         toc_depth: 3
+-   pymdownx.arithmatex:
+        generic: true
+        tex_inline_wrap: ['$', '$']
+        tex_block_wrap: ['$$', '$$']
 - pymdownx.caret
 - pymdownx.keys
 - pymdownx.mark

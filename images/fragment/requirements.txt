@@ -16,12 +16,12 @@ pyyaml
 # beautiful
 # mkdocs-glightbox
 mkdocs-table-reader-plugin
-markdown-exec
+# markdown-exec
 # git+https://github.com/raineblog/mkdocs-document-dates.git
 
 # exec
-matplotlib
-numpy
+# matplotlib
+# numpy
 
 # mkdocs
 mkdocs==1.6.1
