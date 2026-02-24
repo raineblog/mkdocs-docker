@@ -1,0 +1,17 @@
+.git
+.github
+*.log
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.vscode
+.idea
+.DS_Store
+site/
+public/
+# requirements.txt  <-- Needed for build
+# Dockerfile       <-- Usually good to keep or ignored by default
+# README.md        <-- Optional but good to keep
+# etc.

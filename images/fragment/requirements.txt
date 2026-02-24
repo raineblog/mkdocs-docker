@@ -1,0 +1,34 @@
+pyyaml
+# toml
+
+# pillow
+# cairosvg
+
+# better
+# mkdocs-rss-plugin
+# mkdocs-katex-ssr
+# mkdocs-minify-html-plugin
+
+# seo
+# mkdocs-advanced-seo
+# mkdocs-llmstxt
+
+# beautiful
+# mkdocs-glightbox
+mkdocs-table-reader-plugin
+markdown-exec
+# git+https://github.com/raineblog/mkdocs-document-dates.git
+
+# exec
+matplotlib
+numpy
+
+# mkdocs
+mkdocs==1.6.1
+# zensical
+
+pymdown-extensions
+# git+https://github.com/raineblog/mkdocs-material.git
+# mkdocs-materialx
+
+pypandoc
