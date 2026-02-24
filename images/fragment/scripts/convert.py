@@ -1,14 +1,30 @@
 import pypandoc
 import os
 import re
+import urllib.parse
 
 def fix_paths(content):
     # 处理 Markdown 图片和链接: ![alt](../path) 或 [text](../../path)
-    # 使用正则匹配 (!?\[.*?\]\() 并查找紧随其后的一个或多个 ../
-    content = re.sub(r'(!?\[.*?\]\()(\.\./)+', r'\1./', content)
+    def md_callback(match):
+        prefix = match.group(1)
+        path = match.group(2)
+        # 修复路径：将开头的 ../ 替换为 ./
+        path = re.sub(r'^(\.\./)+', './', path)
+        # 解码中文文件名
+        return prefix + urllib.parse.unquote(path) + ')'
+
+    content = re.sub(r'(!?\[.*?\]\()([^)]+)\)', md_callback, content)
     
     # 处理 HTML 标签: <img src="../path"> 或 <a href="../../path">
-    content = re.sub(r'(src="|href=")(\.\./)+', r'\1./', content)
+    def html_callback(match):
+        prefix = match.group(1)
+        path = match.group(2)
+        # 修复路径：将开头的 ../ 替换为 ./
+        path = re.sub(r'^(\.\./)+', './', path)
+        # 解码中文文件名
+        return prefix + urllib.parse.unquote(path) + '"'
+
+    content = re.sub(r'(src="|href=")([^"]+)"', html_callback, content)
     
     return content
 
