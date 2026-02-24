@@ -7,7 +7,7 @@ pyyaml
 # better
 # mkdocs-rss-plugin
 # mkdocs-katex-ssr
-# mkdocs-minify-html-plugin
+mkdocs-minify-html-plugin
 
 # seo
 # mkdocs-advanced-seo

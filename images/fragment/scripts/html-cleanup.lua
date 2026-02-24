@@ -72,9 +72,11 @@ end
 function Span(el)
   if el.classes and el.classes:includes("arithmatex") then
     local text = pandoc.utils.stringify(el.content)
-    text = text:gsub("^%s*%[", ""):gsub("%]%s*$", "")   -- 去 []
+    -- 更加激进地清理公式前后的各种包装符号
+    text = text:gsub("^%s*[\\%[%(%$%]]+", ""):gsub("[\\%]%)%$%s]+$", "")
     text = unescape_math(text)
-    return pandoc.Math("InlineMath", text)
+    -- 确保是单 $ 包裹
+    return pandoc.RawInline("markdown", "$" .. text .. "$")
   end
 end
 
@@ -85,7 +87,9 @@ function Div(el)
     local text = pandoc.utils.stringify(el.content)
     text = text:gsub("^%s*[$]+", ""):gsub("[$]+%s*$", "")
     text = unescape_math(text)
-    return pandoc.Math("DisplayMath", text)
+    -- 修复 $$ 与内容之间的换行。
+    -- 如果直接写 "\n\n" 会导致多余空行，这里使用 "\n" 
+    return pandoc.RawBlock("markdown", "$$\n" .. text .. "\n$$")
   end
 
   -- 识别 callout 类型
@@ -135,6 +139,12 @@ function Div(el)
 
     local full_md = opening .. "\n\n" .. inner_md .. "\n" .. fence .. "\n"
     return pandoc.RawBlock("markdown", full_md)
+  end
+
+  -- 处理多余的容器（如 .grid 或 .v-pre 等非语义化 Div）
+  -- 如果 Div 只有渲染意义而用户不希望在 Markdown 中保留 ::: {.grid}
+  if el.classes and (el.classes:includes("grid") or el.classes:includes("v-pre")) then
+    return el.content
   end
 
   return el
