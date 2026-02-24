@@ -11,24 +11,56 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      filters: ${{ steps.set-matrix.outputs.filters }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: |
+          python3 -c "
+          import yaml, json, os
+          with open('config.yml', 'r') as f:
+              config = yaml.safe_load(f)
+          images = config.get('images', [])
+          filters = {}
+          for img in images:
+              path = img['context']
+              if path.startswith('./'): path = path[2:]
+              filters[img['name']] = [f'{path}/**']
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f'matrix={json.dumps(images)}\n')
+              f.write('filters<<EOF\n')
+              f.write(yaml.dump(filters))
+              f.write('EOF\n')
+          "
+
+  filter-changes:
+    needs: setup
+    runs-on: ubuntu-latest
+    outputs:
+      changes: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: ${{ needs.setup.outputs.filters }}
+
   build:
     name: Build ${{ matrix.name }} Dockerfile and Push
+    needs: [setup, filter-changes]
+    if: |
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_type == 'tag' ||
+      contains(fromJSON(needs.filter-changes.outputs.changes), matrix.name)
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: seo
-            context: ./images/seo
-            image: raineblog/mkdocs-seo
-          - name: mkdocs
-            context: ./images/mkdocs
-            image: raineblog/mkdocs-docker
-          - name: fragment
-            context: ./images/fragment
-            image: raineblog/mkdocs-docker-fragment
-          # - name: starlight
-          #   context: ./images/starlight
-          #   image: raineblog/mkdocs-compatible-starlight
+        include: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -38,8 +38,8 @@ markdown_extensions:
 -   toc:
         permalink: false
         toc_depth: 3
--   pymdownx.arithmatex:
-        generic: false
+# -   pymdownx.arithmatex:
+#         generic: false
 - pymdownx.caret
 - pymdownx.keys
 - pymdownx.mark

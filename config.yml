@@ -1,0 +1,10 @@
+images:
+  - name: seo
+    context: ./images/seo
+    image: raineblog/mkdocs-seo
+  - name: mkdocs
+    context: ./images/mkdocs
+    image: raineblog/mkdocs-docker
+  - name: fragment
+    context: ./images/fragment
+    image: raineblog/mkdocs-docker-fragment
