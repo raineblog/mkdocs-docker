@@ -1,0 +1,24 @@
+{
+  "name": "whk",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rspress build",
+    "dev": "rspress dev",
+    "preview": "rspress preview"
+  },
+  "dependencies": {
+    "@rspress/core": "^2.0.2",
+    "rspress-plugin-reading-time": "^1.0.0"
+  },
+  "devDependencies": {
+    "@rspress/plugin-rss": "^2.0.3",
+    "@rspress/plugin-sitemap": "^2.0.3",
+    "@types/node": "^22.8.1",
+    "@types/react": "^19.2.13",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  }
+}

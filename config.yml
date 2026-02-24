@@ -8,3 +8,6 @@ images:
   - name: fragment
     context: ./images/fragment
     image: raineblog/mkdocs-docker-fragment
+  - name: rspress
+    context: ./images/rspress
+    image: raineblog/mkdocs-rspress-docker

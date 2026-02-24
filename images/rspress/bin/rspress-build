@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+cp /app/package.json .
+cp -r /app/styles .
+
+cp /app/rspress.config.ts .
+cp /app/tsconfig.json .
+
+rspress build "$@"
