@@ -15,10 +15,10 @@ const projectConfig = readConfig('project');
 const navConfig = readConfig('nav');
 const extraConfig = readConfig('extra');
 
-// 获取并校验 SITE_URL 环境变量
-const siteUrl = process.env.SITE_URL;
+// 获取并校验 site_url 环境变量
+const siteUrl = process.env.site_url;
 if (!siteUrl) {
-  throw new Error('SITE_URL environment variable is required');
+  throw new Error('site_url environment variable is required');
 }
 
 let base = '/';
@@ -29,7 +29,7 @@ try {
     base += '/';
   }
 } catch (e) {
-  throw new Error(`Invalid SITE_URL: "${siteUrl}". It must be a valid absolute URL (e.g., https://example.com/ or https://example.com/docs).`);
+  throw new Error(`Invalid site_url: "${siteUrl}". It must be a valid absolute URL (e.g., https://example.com/ or https://example.com/docs).`);
 }
 
 // 解析 nav.json 为 Rspress 格式
