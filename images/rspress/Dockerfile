@@ -1,13 +1,14 @@
 # syntax=docker/dockerfile:1
-FROM node:alpine
-RUN apk add --no-cache \
+FROM node:lts-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
     bash tini tar zstd \
-    git git-fast-import \
-    ca-certificates curl wget
+    git \
+    ca-certificates curl wget \
+    && rm -rf /var/lib/apt/lists/*
 COPY --chmod=755 bin/ /usr/local/bin/
 RUN git config --system --add safe.directory /__w/*
 WORKDIR /app
 COPY templates/ /app/
 RUN npm install
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/usr/local/bin/rspress-build"]
