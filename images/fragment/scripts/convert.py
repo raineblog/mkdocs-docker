@@ -48,8 +48,12 @@ def auto_convert_file(extra_args, filters):
                     f.write(fixed_content)
 
 def main():
-    filters = ['html-cleanup.lua']
-    pdoc_args = ['--wrap=none']
+    # 动态获取当前脚本所在目录，确保在 Docker 或本地运行都能找到过滤器
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    lua_filter_path = os.path.join(script_dir, 'html-cleanup.lua')
+    
+    filters = [lua_filter_path]
+    pdoc_args = ['--wrap=none', '--standalone']
     auto_convert_file(pdoc_args, filters)
 
 if __name__ == "__main__":

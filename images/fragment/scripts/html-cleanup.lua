@@ -1,9 +1,11 @@
 -- html-cleanup-v2.lua
--- HTML → commonmark_x 终极清理版（支持任意嵌套 callout + 完整反转义）
+-- HTML → commonmark_x 终极清理版（支持任意嵌套 callout + 完整反转义 + 元数据提取）
 
 local function unescape_math(s)
   if not s then return "" end
-  s = pandoc.utils.stringify(s)
+  if type(s) ~= "string" then
+    s = pandoc.utils.stringify(s)
+  end
   -- HTML entities 完整解码
   s = s:gsub("&amp;", "&")
        :gsub("&lt;", "<")
@@ -36,7 +38,37 @@ local function max_fence_length(str)
   return maxn
 end
 
--- 1. Inline arithmatex: [\$F_1\'\$] → $F_1'$
+-- 转换元数据（如果需要作为 frontmatter 写入）
+function Pandoc(doc)
+    local meta = doc.meta
+    -- 尝试从 RawBlocks 中搜寻元数据（启发式）
+    for i, el in ipairs(doc.blocks) do
+        if el.t == "RawBlock" and el.format == "html" then
+            local title = el.text:match('data%-title="([^"]+)"')
+            local url = el.text:match('data%-url="([^"]+)"')
+            if title then meta.title = title end
+            if url then meta.url = url end
+        end
+    end
+    
+    -- 移除那些提取完后的元数据注释
+    local new_blocks = pandoc.List()
+    for _, el in ipairs(doc.blocks) do
+        local skip = false
+        if el.t == "RawBlock" and el.format == "html" then
+            if el.text:match('mkdocs%-fragment') or el.text:match('</article>') then
+                skip = true
+            end
+        end
+        if not skip then
+            new_blocks:insert(el)
+        end
+    end
+    doc.blocks = new_blocks
+    return doc
+end
+
+-- 2. Inline arithmatex: [\$F_1\'\$] → $F_1'$
 function Span(el)
   if el.classes and el.classes:includes("arithmatex") then
     local text = pandoc.utils.stringify(el.content)
@@ -46,7 +78,7 @@ function Span(el)
   end
 end
 
--- 2. Block arithmatex + Admonition + details
+-- 3. Block arithmatex + Admonition
 function Div(el)
   -- arithmatex display math
   if el.classes and el.classes:includes("arithmatex") then
@@ -64,12 +96,12 @@ function Div(el)
       break
     end
   end
-  if not callout_type and el.classes and el.classes:includes("admonition") then
+  if not callout_type and el.classes and (el.classes:includes("admonition") or el.classes:includes("details")) then
     callout_type = "note"
   end
 
   if callout_type then
-    -- 提取标题（admonition-title / Header / <summary>）
+    -- 提取标题
     local title = nil
     local body = pandoc.List{}
     for _, blk in ipairs(el.content) do
@@ -92,10 +124,7 @@ function Div(el)
       end
     end
 
-    -- 写入内部内容（已经过 filter 处理）
     local inner_md = pandoc.write(pandoc.Pandoc(body), "commonmark_x")
-
-    -- 动态 fence 长度：比内部最大多 1，保证嵌套绝对安全
     local fence_len = math.max(3, max_fence_length(inner_md) + 1)
     local fence = string.rep(":", fence_len)
 
@@ -111,22 +140,8 @@ function Div(el)
   return el
 end
 
--- 3. 清除所有标题的 {#_1} {#_2} 等 id
-function Header(el)
-  el.identifier = ""
-  return el
-end
-
--- 4. 处理被 skipped 的 <details>
-function RawBlock(el)
-  if el.format == "html" and el.text:match("^%s*<details") then
-    return pandoc.Div(pandoc.List{}, pandoc.Attr("", {"details"}))
-  end
-end
-
 return {
+  {Pandoc = Pandoc},
   {Span = Span},
-  {Div = Div},
-  {Header = Header},
-  {RawBlock = RawBlock}
+  {Div = Div}
 }
