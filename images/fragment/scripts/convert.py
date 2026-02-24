@@ -34,18 +34,8 @@ def auto_convert_file(extra_args, filters):
             if file.endswith('.html'):
                 input_path = os.path.join(root, file)
                 
-                # 确定输出路径: 某个文件夹/xxx/index.html -> 某个文件夹/xxx.md
-                rel_path = os.path.relpath(input_path, 'site')
-                dirname = os.path.dirname(rel_path)
-                
-                if dirname == "":
-                    # 根目录下的 index.html -> index.md
-                    output_name = os.path.splitext(file)[0] + '.md'
-                    output_path = os.path.join('site', output_name)
-                else:
-                    # 子目录下的 index.html -> 子目录名.md
-                    # 例如: site/posts/index.html -> site/posts.md
-                    output_path = os.path.join('site', dirname + '.md')
+                # 确定输出路径: 某个文件夹/xxx/index.html -> 某个文件夹/xxx/index.md
+                output_path = os.path.splitext(input_path)[0] + '.md'
 
                 # 先转换为字符串，进行处理后再写入文件
                 output = pypandoc.convert_file(

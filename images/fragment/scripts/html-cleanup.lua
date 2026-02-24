@@ -150,8 +150,39 @@ function Div(el)
   return el
 end
 
+-- 4. 代码块清理 (CodeBlock)
+function CodeBlock(el)
+  -- 提取真正的语言类名 (language-xxx -> xxx)
+  local lang = nil
+  for _, class in ipairs(el.classes) do
+    if class:match("^language%-") then
+      lang = class:match("^language%-(.+)")
+      break
+    end
+  end
+
+  -- 如果只有 highlight 类，或者识别到了具体的语言
+  if lang then
+    el.classes = {lang}
+  elseif el.classes:includes("highlight") then
+    -- 启发式判断：如果内容包含 python 关键字或特定的 exptree
+    if el.text:match("exptree%(") or el.text:match("import ") or el.text:match("def ") then
+      el.classes = {"python"}
+    elseif el.text:match("^git ") or el.text:match("^cd ") or el.text:match("^submodule ") then
+      el.classes = {"sh"}
+    else
+      -- 默认清理掉 highlight，让它变成无语言代码块或保持原样
+      -- 这里根据用户要求，如果识别不出，先尝试设为 text 或清理
+      el.classes = {}
+    end
+  end
+
+  return el
+end
+
 return {
   {Pandoc = Pandoc},
   {Span = Span},
-  {Div = Div}
+  {Div = Div},
+  {CodeBlock = CodeBlock}
 }
