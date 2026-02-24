@@ -15,6 +15,23 @@ const projectConfig = readConfig('project');
 const navConfig = readConfig('nav');
 const extraConfig = readConfig('extra');
 
+// 获取并校验 SITE_URL 环境变量
+const siteUrl = process.env.SITE_URL;
+if (!siteUrl) {
+  throw new Error('SITE_URL environment variable is required');
+}
+
+let base = '/';
+try {
+  const url = new URL(siteUrl);
+  base = url.pathname;
+  if (!base.endsWith('/')) {
+    base += '/';
+  }
+} catch (e) {
+  throw new Error(`Invalid SITE_URL: "${siteUrl}". It must be a valid absolute URL (e.g., https://example.com/ or https://example.com/docs).`);
+}
+
 // 解析 nav.json 为 Rspress 格式
 function parseNavAndSidebar(config: any[]) {
   const nav: any[] = [];
@@ -111,6 +128,7 @@ const SUPPORTED_SOCIAL_ICONS = [
 
 export default defineConfig({
   root: path.join(__dirname, 'docs'),
+  base: base,
   title: projectConfig.info.site_name,
   description: projectConfig.info.site_description,
   lang: 'zh',
@@ -124,8 +142,8 @@ export default defineConfig({
   llms: true,
   globalStyles: path.join(__dirname, 'styles/custom.css'),
   themeConfig: {
-    nav,
-    sidebar,
+    nav: nav,
+    sidebar: sidebar,
     llmsUI: false,
     enableContentAnimation: true,
     enableAppearanceAnimation: true,
@@ -180,7 +198,7 @@ export default defineConfig({
       defaultLocale: 'zh-CN',
     }),
     pluginRss({
-      siteUrl: projectConfig.info.repo_url,
+      siteUrl: siteUrl,
       feed: {
         id: 'blog',
         test: '/blog/',
@@ -200,7 +218,7 @@ export default defineConfig({
       },
     }),
     pluginSitemap({
-      siteUrl: projectConfig.info.repo_url,
+      siteUrl: siteUrl,
     }),
   ],
 });
