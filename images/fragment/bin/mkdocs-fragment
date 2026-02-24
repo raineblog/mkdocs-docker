@@ -3,3 +3,4 @@ set -e
 python /app/scripts/generate.py
 mkdocs build --clean
 python /app/scripts/convert.py
+cp -af public/. site/
