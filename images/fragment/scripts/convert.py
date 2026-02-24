@@ -4,25 +4,33 @@ import re
 import urllib.parse
 
 def fix_paths(content):
-    # 处理 Markdown 图片和链接: ![alt](../path) 或 [text](../../path)
+    def adjust_path(path):
+        # 解码中文文件名
+        path = urllib.parse.unquote(path)
+        
+        # 排除外部链接、绝对路径、锚点
+        if re.match(r'^(https?://|mailto:|tel:|/|#)', path):
+            return path
+            
+        # 如果不是以 ./ 或 ../ 开头，则补齐 ./
+        if not re.match(r'^(\./|\.\./)', path):
+            path = './' + path
+            
+        return path
+
+    # 处理 Markdown 图片和链接: ![alt](path)
     def md_callback(match):
         prefix = match.group(1)
-        path = match.group(2)
-        # 修复路径：将开头的 ../ 替换为 ./
-        # path = re.sub(r'^(\.\./)+', './', path)
-        # 解码中文文件名
-        return prefix + urllib.parse.unquote(path) + ')'
+        path = adjust_path(match.group(2))
+        return prefix + path + ')'
 
     content = re.sub(r'(!?\[.*?\]\()([^)]+)\)', md_callback, content)
     
-    # 处理 HTML 标签: <img src="../path"> 或 <a href="../../path">
+    # 处理 HTML 标签: <img src="path"> 或 <a href="path">
     def html_callback(match):
         prefix = match.group(1)
-        path = match.group(2)
-        # 修复路径：将开头的 ../ 替换为 ./
-        # path = re.sub(r'^(\.\./)+', './', path)
-        # 解码中文文件名
-        return prefix + urllib.parse.unquote(path) + '"'
+        path = adjust_path(match.group(2))
+        return prefix + path + '"'
 
     content = re.sub(r'(src="|href=")([^"]+)"', html_callback, content)
     
