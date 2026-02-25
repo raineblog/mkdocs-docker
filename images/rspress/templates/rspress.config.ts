@@ -28,6 +28,9 @@ function localKatexPlugin() {
   return {
     name: 'local-katex-plugin',
     markdown: {
+      shiki: {
+        langs: ['math'],
+      },
       remarkPlugins: [remarkMath, remarkCodeBlockToMath],
       rehypePlugins: [
         [rehypeKatex as any, { 
@@ -214,6 +217,11 @@ export default defineConfig({
   logo: `./docs/${projectConfig.theme.logo}`,
   llms: true,
   globalStyles: path.join(__dirname, 'styles/custom.css'),
+  markdown: {
+    shiki: {
+      langs: ['highlight'],
+    },
+  },
   builderConfig: {
     html: {
       tags: [
