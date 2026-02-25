@@ -72,10 +72,6 @@ end
 function Span(el)
   if el.classes and el.classes:includes("arithmatex") then
     local text = pandoc.utils.stringify(el.content)
-    -- 更加精准地清理公式前后的各种包装符号，避免误删内部内容
-    text = text:gsub("^%s*%$%$?%s*", ""):gsub("%s*%$%$?%s*$", "")
-    text = text:gsub("^%s*\\%[%s*", ""):gsub("%s*\\]%s*$", "")
-    text = text:gsub("^%s*\\%(%s*", ""):gsub("%s*\\%)%s*$", "")
     text = unescape_math(text)
     -- 确保是单 $ 包裹
     return pandoc.RawInline("markdown", "$" .. text .. "$")
@@ -87,7 +83,6 @@ function Div(el)
   -- arithmatex display math
   if el.classes and el.classes:includes("arithmatex") then
     local text = pandoc.utils.stringify(el.content)
-    text = text:gsub("^%s*[$]+", ""):gsub("[$]+%s*$", "")
     text = unescape_math(text)
     -- 修复 $$ 与内容之间的换行。
     -- 如果直接写 "\n\n" 会导致多余空行，这里使用 "\n" 

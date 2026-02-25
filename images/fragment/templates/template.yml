@@ -40,8 +40,8 @@ markdown_extensions:
 #         toc_depth: 3
 -   pymdownx.arithmatex:
         generic: true
-        tex_inline_wrap: ['$', '$']
-        tex_block_wrap: ['$$', '$$']
+        tex_inline_wrap: ['', '']
+        tex_block_wrap: ['', '']
 - pymdownx.caret
 - pymdownx.keys
 - pymdownx.mark
@@ -51,13 +51,13 @@ markdown_extensions:
 - pymdownx.blocks.details
 - pymdownx.blocks.caption
 - pymdownx.blocks.tab
--   pymdownx.snippets:
-        auto_append:
-        - docs/includes/abbreviations.md
+# -   pymdownx.snippets:
+#         auto_append:
+#         - docs/includes/abbreviations.md
 - pymdownx.superfences
 - pymdownx.magiclink
 - pymdownx.smartsymbols
 - pymdownx.tasklist
 - pymdownx.tabbed
-watch:
-  - docs/includes
+# watch:
+#   - docs/includes

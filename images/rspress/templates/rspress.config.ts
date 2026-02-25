@@ -24,6 +24,64 @@ const remarkCodeBlockToMath: Plugin = () => {
   };
 };
 
+function localKatexPlugin() {
+  return {
+    name: 'local-katex-plugin',
+    markdown: {
+      remarkPlugins: [remarkMath, remarkCodeBlockToMath],
+      rehypePlugins: [
+        [rehypeKatex as any, { 
+          trust: true, 
+          macros: {
+            "\\RR": "\\mathbb{R}",
+            "\\i": "\\mathrm{i}",
+            "\\d": "\\mathrm{d}",
+            "\\C": "\\mathbb{C}",
+            "\\R": "\\mathbb{R}",
+            "\\Q": "\\mathbb{Q}",
+            "\\Z": "\\mathbb{Z}",
+            "\\N": "\\mathbb{N}",
+            "\\P": "\\mathbb{P}",
+            "\\degree": "^\\circ",
+            "\\rank": "\\operatorname{rank}",
+            "\\op": "\\operatorname",
+            "\\paren": "\\left({#1}\\right)",
+            "\\bracket": "\\left[{#1}\\right]",
+            "\\brace": "\\left\\{{#1}\\right\\}",
+            "\\ceil": "\\left\\lceil{#1}\\right\\rceil",
+            "\\floor": "\\left\\lfloor{#1}\\right\\rfloor",
+            "\\vert": "\\left\\lvert{#1}\\right\\rvert",
+            "\\vec": "\\bm",
+            "\\vecc": "\\overrightarrow",
+            "\\poly": "\\ce{-\\!\\!\\![ #1 ]_n\\!\\!\\!\\!\\!-}",
+            "\\el": "#1\\mathrm{#2}^{#3}",
+            "\\pH": "p\\ce{H}",
+            "\\pOH": "p\\ce{OH}",
+            "\\con": "\\left[\\ce{#1}\\right]",
+            "’": "'",
+            "，": ",",
+            "。": ".",
+            "；": ";",
+            "：": ":",
+            "！": "!",
+            "？": "?",
+            "【": "[",
+            "】": "]",
+            "（": "(",
+            "）": ")",
+            "、": ",",
+            "—": "-",
+            "…": "\\dots",
+            "·": "\\cdot",
+            "->": "\\to",
+            "<-": "\\gets"
+          }
+        }]
+      ] as any,
+    }
+  };
+}
+
 // 读取配置文件
 const readConfig = (name: string) => {
   const filePath = path.join(__dirname, 'config', `${name}.json`);
@@ -170,61 +228,6 @@ export default defineConfig({
       ]
     }
   },
-  markdown: {
-    remarkPlugins: [
-      remarkMath,
-      remarkCodeBlockToMath
-    ],
-    rehypePlugins: [
-      [rehypeKatex, { 
-        trust: true, 
-        macros: {
-          "\\RR": "\\mathbb{R}",
-          "\\i": "\\mathrm{i}",
-          "\\d": "\\mathrm{d}",
-          "\\C": "\\mathbb{C}",
-          "\\R": "\\mathbb{R}",
-          "\\Q": "\\mathbb{Q}",
-          "\\Z": "\\mathbb{Z}",
-          "\\N": "\\mathbb{N}",
-          "\\P": "\\mathbb{P}",
-          "\\degree": "^\\circ",
-          "\\rank": "\\operatorname{rank}",
-          "\\op": "\\operatorname",
-          "\\paren": "\\left({#1}\\right)",
-          "\\bracket": "\\left[{#1}\\right]",
-          "\\brace": "\\left\\{{#1}\\right\\}",
-          "\\ceil": "\\left\\lceil{#1}\\right\\rceil",
-          "\\floor": "\\left\\lfloor{#1}\\right\\rfloor",
-          "\\vert": "\\left\\lvert{#1}\\right\\rvert",
-          "\\vec": "\\bm",
-          "\\vecc": "\\overrightarrow",
-          "\\poly": "\\ce{-\\!\\!\\![ #1 ]_n\\!\\!\\!\\!\\!-}",
-          "\\el": "#1\\mathrm{#2}^{#3}",
-          "\\pH": "p\\ce{H}",
-          "\\pOH": "p\\ce{OH}",
-          "\\con": "\\left[\\ce{#1}\\right]",
-          "’": "'",
-          "，": ",",
-          "。": ".",
-          "；": ";",
-          "：": ":",
-          "！": "!",
-          "？": "?",
-          "【": "[",
-          "】": "]",
-          "（": "(",
-          "）": ")",
-          "、": ",",
-          "—": "-",
-          "…": "\\dots",
-          "·": "\\cdot",
-          "->": "\\to",
-          "<-": "\\gets"
-        }
-      }]
-    ]
-  },
   themeConfig: {
     nav: nav,
     sidebar: sidebar,
@@ -278,6 +281,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    localKatexPlugin(),
     readingTime({
       defaultLocale: 'zh-CN',
     }),
