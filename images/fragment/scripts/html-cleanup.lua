@@ -3,21 +3,66 @@
 
 local function unescape_math(s)
   if not s then return "" end
-  if type(s) ~= "string" then
-    s = pandoc.utils.stringify(s)
+
+  -- 1. 安全且精准地提取文本
+  -- 如果传入的是 Pandoc AST 元素（例如 Math, Str, Inlines）
+  if type(s) == "table" then
+    if s.t == "Math" then
+      s = s.text -- 如果是 Math 元素，直接提取其底层的原生 LaTeX 文本，避免 stringify 带来不可控的副作用
+    else
+      s = pandoc.utils.stringify(s)
+    end
+  elseif type(s) ~= "string" then
+    s = tostring(s)
   end
-  -- HTML entities 完整解码
-  s = s:gsub("&amp;", "&")
-       :gsub("&lt;", "<")
-       :gsub("&gt;", ">")
-       :gsub("&quot;", '"')
-       :gsub("&#39;", "'")
-       :gsub("&#(%d+);", function(n) return utf8.char(tonumber(n)) end)
-       :gsub("&#x([0-9a-fA-F]+);", function(h) return utf8.char(tonumber(h, 16)) end)
-  -- LaTeX 转义反转（最常见情况）
-  s = s:gsub("\\([%$%^_&%%#{}~\\])", "%1")
-       :gsub("\\\\", "\\")
-  return s:match("^%s*(.-)%s*$")
+
+  -- 2. 高性能、安全的 HTML 实体解码（单次遍历，避免多次内存分配）
+  local html_entities = {
+    ["&amp;"]  = "&",
+    ["&lt;"]   = "<",
+    ["&gt;"]   = ">",
+    ["&quot;"] = '"',
+    ["&apos;"] = "'",
+    ["&#39;"]  = "'"
+  }
+
+  s = s:gsub("&[%w#]+;", function(ent)
+    -- 匹配预定义的命名实体
+    if html_entities[ent] then return html_entities[ent] end
+
+    -- 安全匹配十进制 (例如 &#39;)
+    local n = ent:match("^&#(%d+);$")
+    if n then
+      local cp = tonumber(n)
+      -- 必须校验 Unicode 范围，且跳过 UTF-16 代理对范围(Surrogate pairs)，否则 Lua 会崩溃
+      if cp and cp >= 0 and cp <= 0x10FFFF and not (cp >= 0xD800 and cp <= 0xDFFF) then
+        return utf8.char(cp)
+      end
+    end
+
+    -- 安全匹配十六进制 (例如 &#x2A;)
+    local h = ent:match("^&#x([0-9a-fA-F]+);$")
+    if h then
+      local cp = tonumber(h, 16)
+      if cp and cp >= 0 and cp <= 0x10FFFF and not (cp >= 0xD800 and cp <= 0xDFFF) then
+        return utf8.char(cp)
+      end
+    end
+
+    -- 如果无法识别或不合法，原样返回，不作破坏
+    return ent
+  end)
+
+  -- 3. LaTeX 转义处理 (修复了原代码导致 \; 和 \% 出错的问题)
+  -- 警告：不要盲目剥离数学公式中的反斜杠！
+  -- 在 LaTeX 数学模式中，\% \$ \{ \} \_ \; \, \\ 都是合法且必须的。
+  -- 只有当 Pandoc 错误地将普通 Markdown 的转义（如 \~）带入到了纯文本中，且你确信需要清理时，才在这里进行替换。
+  
+  -- 如果你必须处理非法的 Markdown 残留（例如把连续三个斜杠清理掉等极端情况），可以在这里写具体规则。
+  -- 对于标准的 LaTeX 公式清洗，绝大多数情况下不需要去掉反斜杠。
+  
+  -- 仅去除首尾多余的空白字符，保持公式内容的纯净
+  return s:match("^%s*(.-)%s*$") or ""
 end
 
 local admon_types = pandoc.List{
@@ -178,31 +223,28 @@ function CodeBlock(el)
 end
 
 -- 5. 图片处理 (原样输出为 raw html tag)
--- ::img[描述]{src="./img.png" width="300" align="right"}
 
 local function img_to_html(el)
-  local html = '::img'
+  local html = '!'
   
   local alt = pandoc.utils.stringify(el.caption)
   if alt and alt ~= "" then
     html = html .. '[' .. alt:gsub('"', '&quot;') .. ']'
+  else
+    html = html .. '[alt text]'
   end
 
-  html = html .. '{src="' .. el.src .. '"'
-
-  if el.classes and #el.classes > 0 then
-    html = html .. ' class="' .. table.concat(el.classes, ' '):gsub('"', '&quot;') .. '"'
-  end
-  if el.identifier and el.identifier ~= "" then
-    html = html .. ' id="' .. el.identifier:gsub('"', '&quot;') .. '"'
-  end
+  html = html .. '(' .. el.src
+  
   for k, v in pairs(el.attributes) do
-    if k ~= "src" and k ~= "alt" then
-      html = html .. ' ' .. k .. '="' .. v:gsub('"', '&quot;') .. '"'
+    if k ~= "src" and k ~= "alt" and k ~= "width" then
+      html = html .. '#' .. k .. '="' .. v:gsub('"', '&quot;') .. '"'
+    elseif k == "width" then:
+      html = html .. '#float='.. v:gsub('"', '&quot;') .. '"'
     end
   end
 
-  html = html .. '}'
+  -- html = html .. '}'
   return html
 end
 
@@ -246,9 +288,9 @@ function Plain(el)
   end
 end
 
--- function Image(el)
---   return pandoc.RawInline("markdown", img_to_html(el))
--- end
+function Image(el)
+  return pandoc.RawInline("markdown", img_to_html(el))
+end
 
 return {
   {Pandoc = Pandoc},
@@ -256,5 +298,5 @@ return {
   {Div = Div},
   {CodeBlock = CodeBlock},
   {Para = Para, Plain = Plain}
-  -- {Image = Image}
+  {Image = Image}
 }
