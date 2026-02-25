@@ -183,7 +183,7 @@ function CodeBlock(el)
 end
 
 -- 5. 图片处理 (原样输出为 raw html tag)
-function Image(el)
+local function img_to_html(el)
   local html = '<img src="' .. el.src .. '"'
   
   if el.classes and #el.classes > 0 then
@@ -208,7 +208,23 @@ function Image(el)
   end
   
   html = html .. '>'
-  return pandoc.RawInline("html", html)
+  return html
+end
+
+function Para(el)
+  if #el.content == 1 and el.content[1].t == "Image" then
+    return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
+  end
+end
+
+function Plain(el)
+  if #el.content == 1 and el.content[1].t == "Image" then
+    return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
+  end
+end
+
+function Image(el)
+  return pandoc.RawInline("markdown", img_to_html(el))
 end
 
 return {
@@ -216,5 +232,6 @@ return {
   {Span = Span},
   {Div = Div},
   {CodeBlock = CodeBlock},
+  {Para = Para, Plain = Plain},
   {Image = Image}
 }

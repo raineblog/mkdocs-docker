@@ -6,6 +6,23 @@ import { pluginSitemap } from '@rspress/plugin-sitemap';
 import readingTime from 'rspress-plugin-reading-time';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { visit } from 'unist-util-visit';
+import type { Plugin } from 'unified';
+
+const remarkCodeBlockToMath: Plugin = () => {
+  return (tree: any) => {
+    visit(tree, 'code', (node: any) => {
+      if (node.lang === 'math') {
+        node.data = {
+          hName: 'div',
+          hProperties: { className: ['math', 'math-display'] },
+        };
+        delete node.lang;
+        delete node.meta;
+      }
+    });
+  };
+};
 
 // 读取配置文件
 const readConfig = (name: string) => {
@@ -155,7 +172,8 @@ export default defineConfig({
   },
   markdown: {
     remarkPlugins: [
-      remarkMath
+      remarkMath,
+      remarkCodeBlockToMath
     ],
     rehypePlugins: [
       [rehypeKatex, { 
