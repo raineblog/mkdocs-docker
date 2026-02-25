@@ -225,28 +225,34 @@ end
 -- 5. 图片处理 (原样输出为 raw html tag)
 
 local function img_to_html(el)
-  local html = '!'
+  local alt_full = '!['
   
   local alt = pandoc.utils.stringify(el.caption)
   if alt and alt ~= "" then
-    html = html .. '[' .. alt:gsub('"', '&quot;') .. ']'
+    alt_full = alt_full .. alt:gsub('"', '&quot;')
   else
-    html = html .. '[alt text]'
+    alt_full = alt_full .. 'alt text'
   end
 
-  html = html .. '(' .. el.src .. '#class="custom-img"'
-
   for k, v in pairs(el.attributes) do
-    if k ~= "src" and k ~= "alt" and k ~= "width" then
-      html = html .. ';' .. k .. '="' .. v:gsub('"', '&quot;') .. '"'
+    if k == "align" then
+      alt_full = alt_full .. '|' .. v
     elseif k == "width" then
-      html = html .. ';float="'.. v:gsub('"', '&quot;') .. '"'
+      alt_full = alt_full .. '|w' .. v
+    elseif k == "height" then
+      alt_full = alt_full .. '|h' .. v
     end
   end
 
-  html = html .. ')'
+  local html = '![' .. alt_full .. '](' .. el.src .. ')'
   return html
 end
+
+    -- if k ~= "src" and k ~= "alt" and k ~= "width" then
+    --   html = html .. ';' .. k .. '=' .. v:gsub('"', '&quot;')
+    -- elseif k == "width" then
+    --   html = html .. ';float='.. v:gsub('"', '&quot;')
+    -- end
 
 -- local function img_to_html(el)
 --   local html = '<img src="' .. el.src .. '"'

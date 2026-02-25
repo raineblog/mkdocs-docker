@@ -14,9 +14,10 @@
     "remark-cjk-friendly": "^2.0.1",
     "remark-emoji": "^5.0.2",
     "remark-gfm": "^4.0.1",
-    "remark-image-attributes": "^0.2.1",
     "remark-math": "^6.0.0",
-    "rspress-plugin-reading-time": "^1.0.0"
+    "rspress-plugin-reading-time": "^1.0.0",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@rspress/plugin-rss": "^2.0.3",
