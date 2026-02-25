@@ -6,10 +6,11 @@ import { pluginSitemap } from '@rspress/plugin-sitemap';
 import readingTime from 'rspress-plugin-reading-time';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-//import { visit } from 'unist-util-visit';
-// import type { Plugin } from 'unified';
 
-/*const remarkCodeBlockToMath: Plugin = () => {
+import { visit } from 'unist-util-visit';
+import type { Plugin } from 'unified';
+
+const remarkCodeBlockToMath: Plugin = () => {
   return (tree: any) => {
     visit(tree, 'code', (node: any) => {
       if (node.lang === 'math') {
@@ -22,7 +23,7 @@ import rehypeKatex from 'rehype-katex';
       }
     });
   };
-};*/
+};
 
 function localKatexPlugin() {
   return {
@@ -31,7 +32,7 @@ function localKatexPlugin() {
       shiki: {
         langs: ['math', 'highlight'],
       },
-      remarkPlugins: [remarkMath/*, remarkCodeBlockToMath*/],
+      remarkPlugins: [remarkMath, remarkCodeBlockToMath],
       rehypePlugins: [
         [rehypeKatex as any, { 
           trust: true, 
