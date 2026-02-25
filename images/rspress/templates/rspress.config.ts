@@ -23,11 +23,22 @@ import { visit } from 'unist-util-visit';
 const remarkCodeBlockToMath: Plugin = () => {
   return (tree) => {
     visit(tree, 'code', (node: any) => {
+      // 匹配 ```math 语法的代码块
       if (node.lang === 'math') {
+        
+        // 1. 改变节点类型，伪装成原生的块级公式节点
+        // 这将完美避开 Rspress/MDX 把代码块强制转为 <pre><code> 的行为
+        node.type = 'math';
+        
+        // 2. 注入 rehype-katex 严格需要的数据结构
         node.data = {
           hName: 'div',
           hProperties: { className: ['math', 'math-display'] },
+          // 【极其关键】必须把 node.value (公式文本) 塞进文本子节点里
+          hChildren: [{ type: 'text', value: node.value }],
         };
+        
+        // 3. 打扫战场，删掉针对 code 节点的多余属性
         delete node.lang;
         delete node.meta;
       }
@@ -95,87 +106,6 @@ function localKatexPlugin() {
         }]
       ] as any,
     }
-  };
-}
-
-// 图片解析
-
-const rehypeImagePandoc: Plugin = () => {
-  return (tree) => {
-    // 在 rehype 中，节点类型是 'element'，我们需要判断 tagName 是否为 'img'
-    visit(tree, 'element', (node: any) => {
-      if (node.tagName !== 'img') return;
-
-      // 获取 img 标签的 alt 属性
-      const altText = node.properties?.alt;
-
-      // 如果没有 alt，或者 alt 里完全没有 |，则跳过处理
-      if (!altText || typeof altText !== 'string' || !altText.includes('|')) return;
-
-      // 用 | 分割整个 alt 字符串
-      const parts = altText.split('|');
-
-      // 存储真实的 alt 文本片段
-      const realAltParts = [];
-      let style = '';
-
-      // 遍历分割出来的所有部分
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i].trim();
-        const lowerPart = part.toLowerCase();
-
-        // 第一部分永远是 alt 文本（即便是空的）
-        if (i === 0) {
-          realAltParts.push(part);
-          continue;
-        }
-
-        // --- 匹配对齐方式 ---
-        if (lowerPart === 'left') {
-          style += 'float: left; margin-right: 1.5rem; ';
-          continue;
-        }
-        if (lowerPart === 'right') {
-          style += 'float: right; margin-left: 1.5rem; ';
-          continue;
-        }
-        if (lowerPart === 'center') {
-          style += 'display: block; margin-left: auto; margin-right: auto; ';
-          continue;
-        }
-
-        // --- 匹配宽度 (以 w 开头 + 数字 + 可选的单位) ---
-        const widthMatch = lowerPart.match(/^w(\d+(?:\.\d+)?)([a-z%]*)$/);
-        if (widthMatch) {
-          const num = widthMatch[1];     // 提取数字
-          const unit = widthMatch[2];    // 提取单位
-          const finalUnit = unit || '%'; // 默认 %
-          style += `width: ${num}${finalUnit}; `;
-          continue;
-        }
-
-        // --- 匹配高度 (以 h 开头 + 数字 + 可选的单位) ---
-        const heightMatch = lowerPart.match(/^h(\d+(?:\.\d+)?)([a-z%]*)$/);
-        if (heightMatch) {
-          const num = heightMatch[1];
-          const unit = heightMatch[2];
-          const finalUnit = unit || 'px'; // 默认 px
-          style += `height: ${num}${finalUnit}; `;
-          continue;
-        }
-
-        // --- 如果都不是，说明它是原始 alt 描述里带有的 | 符号 ---
-        realAltParts.push(part);
-      }
-
-      // 1. 还原干净的 alt 属性
-      node.properties.alt = realAltParts.join(' | ').trim();
-
-      // 2. 直接将 style 注入到 img 节点的 properties 中
-      if (style) {
-        node.properties.style = (node.properties.style || '') + style;
-      }
-    });
   };
 }
 
@@ -308,7 +238,7 @@ export default defineConfig({
   lang: 'zh',
   logoText: projectConfig.info.site_name,
   icon: `./docs/${projectConfig.theme.favicon}`,
-  logo: `./${projectConfig.theme.logo}`,
+  logo: `/${projectConfig.theme.logo}`,
   llms: true,
   globalStyles: path.join(__dirname, 'styles/custom.css'),
   markdown: {
@@ -322,7 +252,7 @@ export default defineConfig({
       remarkCjkFriendly,
       remarkEmoji
     ] as any,
-    rehypePlugins: [rehypeImagePandoc] as any,
+    rehypePlugins: [] as any,
   },
   builderConfig: {
     html: {
