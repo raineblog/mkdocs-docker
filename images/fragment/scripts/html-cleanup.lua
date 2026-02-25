@@ -178,55 +178,55 @@ function CodeBlock(el)
 end
 
 -- 5. 图片处理 (原样输出为 raw html tag)
-local function img_to_html(el)
-  local html = '<img src="' .. el.src .. '"'
+-- local function img_to_html(el)
+--   local html = '<img src="' .. el.src .. '"'
   
-  if el.classes and #el.classes > 0 then
-    html = html .. ' class="' .. table.concat(el.classes, ' '):gsub('"', '&quot;') .. '"'
-  end
-  if el.identifier and el.identifier ~= "" then
-    html = html .. ' id="' .. el.identifier:gsub('"', '&quot;') .. '"'
-  end
-  for k, v in pairs(el.attributes) do
-    if k ~= "src" and k ~= "alt" and k ~= "title" then
-      html = html .. ' ' .. k .. '="' .. v:gsub('"', '&quot;') .. '"'
-    end
-  end
+--   if el.classes and #el.classes > 0 then
+--     html = html .. ' class="' .. table.concat(el.classes, ' '):gsub('"', '&quot;') .. '"'
+--   end
+--   if el.identifier and el.identifier ~= "" then
+--     html = html .. ' id="' .. el.identifier:gsub('"', '&quot;') .. '"'
+--   end
+--   for k, v in pairs(el.attributes) do
+--     if k ~= "src" and k ~= "alt" and k ~= "title" then
+--       html = html .. ' ' .. k .. '="' .. v:gsub('"', '&quot;') .. '"'
+--     end
+--   end
   
-  if el.title and el.title ~= "" then
-    html = html .. ' title="' .. el.title:gsub('"', '&quot;') .. '"'
-  end
+--   if el.title and el.title ~= "" then
+--     html = html .. ' title="' .. el.title:gsub('"', '&quot;') .. '"'
+--   end
   
-  local alt = pandoc.utils.stringify(el.caption)
-  if alt and alt ~= "" then
-    html = html .. ' alt="' .. alt:gsub('"', '&quot;') .. '"'
-  end
+--   local alt = pandoc.utils.stringify(el.caption)
+--   if alt and alt ~= "" then
+--     html = html .. ' alt="' .. alt:gsub('"', '&quot;') .. '"'
+--   end
   
-  html = html .. '>'
-  return html
-end
+--   html = html .. '>'
+--   return html
+-- end
 
-function Para(el)
-  if #el.content == 1 and el.content[1].t == "Image" then
-    return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
-  end
-end
+-- function Para(el)
+--   if #el.content == 1 and el.content[1].t == "Image" then
+--     return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
+--   end
+-- end
 
-function Plain(el)
-  if #el.content == 1 and el.content[1].t == "Image" then
-    return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
-  end
-end
+-- function Plain(el)
+--   if #el.content == 1 and el.content[1].t == "Image" then
+--     return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
+--   end
+-- end
 
-function Image(el)
-  return pandoc.RawInline("markdown", img_to_html(el))
-end
+-- function Image(el)
+--   return pandoc.RawInline("markdown", img_to_html(el))
+-- end
 
 return {
   {Pandoc = Pandoc},
   {Span = Span},
   {Div = Div},
-  {CodeBlock = CodeBlock},
-  {Para = Para, Plain = Plain},
-  {Image = Image}
+  {CodeBlock = CodeBlock}
+  -- {Para = Para, Plain = Plain},
+  -- {Image = Image}
 }

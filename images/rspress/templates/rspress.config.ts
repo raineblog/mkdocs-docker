@@ -7,32 +7,20 @@ import readingTime from 'rspress-plugin-reading-time';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-import { visit } from 'unist-util-visit';
-import type { Plugin } from 'unified';
-
-const remarkCodeBlockToMath: Plugin = () => {
-  return (tree) => {
-    visit(tree, 'code', (node: any) => {
-      if (node.lang === 'math') {
-        node.data = {
-          hName: 'div',
-          hProperties: { className: ['math', 'math-display'] },
-        };
-        delete node.lang;
-        delete node.meta;
-      }
-    });
-  };
-};
+// @ts-ignore
+import remarkAttr from 'remark-attr';
+import remarkGfm from 'remark-gfm';
+import remarkEmoji from 'remark-emoji';
 
 function localKatexPlugin() {
   return {
     name: 'local-katex-plugin',
     markdown: {
-      remarkPlugins: [remarkMath, remarkCodeBlockToMath],
+      remarkPlugins: [remarkMath],
       rehypePlugins: [
-        [rehypeKatex as any, { 
-          trust: true, 
+        [rehypeKatex as any, {
+          trust: true,
+          throwOnError: false,
           macros: {
             "\\RR": "\\mathbb{R}",
             "\\i": "\\mathrm{i}",
@@ -199,8 +187,8 @@ const { nav, sidebar } = parseNavAndSidebar(navConfig);
 
 // 支持的社交链接图标
 const SUPPORTED_SOCIAL_ICONS = [
-  'lark', 'discord', 'facebook', 'github', 'instagram', 'linkedin', 
-  'slack', 'x', 'youtube', 'wechat', 'qq', 'juejin', 'zhihu', 
+  'lark', 'discord', 'facebook', 'github', 'instagram', 'linkedin',
+  'slack', 'x', 'youtube', 'wechat', 'qq', 'juejin', 'zhihu',
   'bilibili', 'weibo', 'gitlab', 'X', 'bluesky', 'npm'
 ];
 
@@ -221,6 +209,8 @@ export default defineConfig({
       defaultLanguage: 'text',
       fallbackLanguage: 'text'
     },
+    remarkPlugins: [remarkAttr, remarkGfm, remarkEmoji],
+    rehypePlugins: [],
   },
   builderConfig: {
     html: {

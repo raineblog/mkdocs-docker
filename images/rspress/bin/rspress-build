@@ -2,10 +2,9 @@
 set -e
 
 cp /app/package.json .
-npm install
 
 cp -r /app/styles .
-# cp -r /app/node_modules .
+cp -r /app/node_modules .
 
 cp /app/rspress.config.ts .
 cp /app/tsconfig.json .
