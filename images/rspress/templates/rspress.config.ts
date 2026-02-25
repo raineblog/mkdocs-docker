@@ -1,8 +1,10 @@
 import path from 'path';
 import fs from 'fs';
+
 import { defineConfig } from '@rspress/core';
 import { pluginRss } from '@rspress/plugin-rss';
 import { pluginSitemap } from '@rspress/plugin-sitemap';
+
 import readingTime from 'rspress-plugin-reading-time';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -15,7 +17,7 @@ function localKatexPlugin() {
   return {
     name: 'local-katex-plugin',
     markdown: {
-      remarkPlugins: [remarkMath],
+      remarkPlugins: [remarkMath] as any,
       rehypePlugins: [
         [rehypeKatex as any, {
           trust: true,
@@ -208,8 +210,8 @@ export default defineConfig({
       defaultLanguage: 'text',
       fallbackLanguage: 'text'
     },
-    remarkPlugins: [remarkAttributes, remarkGfm, remarkEmoji],
-    rehypePlugins: [],
+    remarkPlugins: [remarkAttributes, remarkGfm, remarkEmoji] as any,
+    rehypePlugins: [] as any,
   },
   builderConfig: {
     html: {
@@ -306,4 +308,4 @@ export default defineConfig({
       siteUrl: siteUrl,
     }),
   ],
-} as any);
+});
