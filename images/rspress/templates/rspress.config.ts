@@ -11,7 +11,7 @@ import { visit } from 'unist-util-visit';
 import type { Plugin } from 'unified';
 
 const remarkCodeBlockToMath: Plugin = () => {
-  return (tree: any) => {
+  return (tree) => {
     visit(tree, 'code', (node: any) => {
       if (node.lang === 'math') {
         node.data = {
@@ -29,9 +29,6 @@ function localKatexPlugin() {
   return {
     name: 'local-katex-plugin',
     markdown: {
-      shiki: {
-        langs: ['math', 'highlight'],
-      },
       remarkPlugins: [remarkMath, remarkCodeBlockToMath],
       rehypePlugins: [
         [rehypeKatex as any, { 
@@ -219,7 +216,11 @@ export default defineConfig({
   llms: true,
   globalStyles: path.join(__dirname, 'styles/custom.css'),
   markdown: {
-    showLineNumbers: true
+    showLineNumbers: true,
+    shiki: {
+      defaultLanguage: 'text',
+      fallbackLanguage: 'text'
+    },
   },
   builderConfig: {
     html: {
