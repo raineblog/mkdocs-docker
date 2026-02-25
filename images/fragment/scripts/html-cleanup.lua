@@ -225,7 +225,7 @@ end
 -- 5. 图片处理 (原样输出为 raw html tag)
 
 local function img_to_html(el)
-  local alt_full = '!['
+  local alt_full = ''
   
   local alt = pandoc.utils.stringify(el.caption)
   if alt and alt ~= "" then
