@@ -7,7 +7,7 @@ import readingTime from 'rspress-plugin-reading-time';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 //import { visit } from 'unist-util-visit';
-//import type { Plugin } from 'unified';
+// import type { Plugin } from 'unified';
 
 /*const remarkCodeBlockToMath: Plugin = () => {
   return (tree: any) => {
@@ -29,7 +29,7 @@ function localKatexPlugin() {
     name: 'local-katex-plugin',
     markdown: {
       shiki: {
-        langs: ['math'],
+        langs: ['math', 'highlight'],
       },
       remarkPlugins: [remarkMath/*, remarkCodeBlockToMath*/],
       rehypePlugins: [
@@ -218,9 +218,7 @@ export default defineConfig({
   llms: true,
   globalStyles: path.join(__dirname, 'styles/custom.css'),
   markdown: {
-    shiki: {
-      langs: ['highlight'],
-    },
+    showLineNumbers: true
   },
   builderConfig: {
     html: {
