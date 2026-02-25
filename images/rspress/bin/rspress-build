@@ -4,7 +4,7 @@ set -e
 cp -r /app/styles .
 cp -r /app/node_modules .
 
-cp /app/gulpfile.js .
+cp /app/gulpfile.cjs .
 cp /app/package.json .
 cp /app/rspress.config.ts .
 cp /app/tsconfig.json .
