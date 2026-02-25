@@ -5,14 +5,17 @@ import { defineConfig } from '@rspress/core';
 import { pluginRss } from '@rspress/plugin-rss';
 import { pluginSitemap } from '@rspress/plugin-sitemap';
 
-import readingTime from 'rspress-plugin-reading-time';
+import remarkGfm from 'remark-gfm';
+import remarkCjkFriendly from "remark-cjk-friendly";
+
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
 // @ts-ignore
 import remarkImageAttributes from 'remark-image-attributes'
-import remarkGfm from 'remark-gfm';
+
 import remarkEmoji from 'remark-emoji';
+import readingTime from 'rspress-plugin-reading-time';
 
 function localKatexPlugin() {
   return {
@@ -211,7 +214,7 @@ export default defineConfig({
       defaultLanguage: 'text',
       fallbackLanguage: 'text'
     },
-    remarkPlugins: [remarkImageAttributes, remarkGfm, remarkEmoji] as any,
+    remarkPlugins: [remarkImageAttributes, remarkGfm, remarkCjkFriendly, remarkEmoji] as any,
     rehypePlugins: [] as any,
   },
   builderConfig: {

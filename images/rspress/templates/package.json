@@ -11,6 +11,7 @@
   "dependencies": {
     "@rspress/core": "^2.0.2",
     "rehype-katex": "^7.0.1",
+    "remark-cjk-friendly": "^2.0.1",
     "remark-emoji": "^5.0.2",
     "remark-gfm": "^4.0.1",
     "remark-image-attributes": "^0.2.1",
