@@ -12,8 +12,8 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
 import 'katex/dist/contrib/mhchem.min.js';
-import 'katex/dist/contrib/copy-tex.min.js';
-import 'katex/dist/contrib/mathtex-script-type.min.js';
+// import 'katex/dist/contrib/copy-tex.min.js';
+// import 'katex/dist/contrib/mathtex-script-type.mjs';
 
 import 'katex/dist/katex.min.css';
 
