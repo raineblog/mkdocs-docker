@@ -7,8 +7,7 @@ import readingTime from 'rspress-plugin-reading-time';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-// @ts-ignore
-import remarkAttr from 'remark-attr';
+import remarkAttributes from 'remark-attributes'
 import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
 
@@ -200,7 +199,7 @@ export default defineConfig({
   lang: 'zh',
   logoText: projectConfig.info.site_name,
   icon: `./docs/${projectConfig.theme.favicon}`,
-  logo: `./docs/${projectConfig.theme.logo}`,
+  logo: `./${projectConfig.theme.logo}`,
   llms: true,
   globalStyles: path.join(__dirname, 'styles/custom.css'),
   markdown: {
@@ -209,7 +208,7 @@ export default defineConfig({
       defaultLanguage: 'text',
       fallbackLanguage: 'text'
     },
-    remarkPlugins: [remarkAttr, remarkGfm, remarkEmoji],
+    remarkPlugins: [remarkAttributes, remarkGfm, remarkEmoji],
     rehypePlugins: [],
   },
   builderConfig: {
@@ -307,4 +306,4 @@ export default defineConfig({
       siteUrl: siteUrl,
     }),
   ],
-});
+} as any);
