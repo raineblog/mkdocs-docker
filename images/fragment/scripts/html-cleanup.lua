@@ -72,8 +72,10 @@ end
 function Span(el)
   if el.classes and el.classes:includes("arithmatex") then
     local text = pandoc.utils.stringify(el.content)
-    -- 更加激进地清理公式前后的各种包装符号
-    text = text:gsub("^%s*[\\%[%(%$%]]+", ""):gsub("[\\%]%)%$%s]+$", "")
+    -- 更加精准地清理公式前后的各种包装符号，避免误删内部内容
+    text = text:gsub("^%s*%$%$?%s*", ""):gsub("%s*%$%$?%s*$", "")
+    text = text:gsub("^%s*\\%[%s*", ""):gsub("%s*\\]%s*$", "")
+    text = text:gsub("^%s*\\%(%s*", ""):gsub("%s*\\%)%s*$", "")
     text = unescape_math(text)
     -- 确保是单 $ 包裹
     return pandoc.RawInline("markdown", "$" .. text .. "$")
@@ -180,9 +182,39 @@ function CodeBlock(el)
   return el
 end
 
+-- 5. 图片处理 (原样输出为 raw html tag)
+function Image(el)
+  local html = '<img src="' .. el.src .. '"'
+  
+  if el.classes and #el.classes > 0 then
+    html = html .. ' class="' .. table.concat(el.classes, ' '):gsub('"', '&quot;') .. '"'
+  end
+  if el.identifier and el.identifier ~= "" then
+    html = html .. ' id="' .. el.identifier:gsub('"', '&quot;') .. '"'
+  end
+  for k, v in pairs(el.attributes) do
+    if k ~= "src" and k ~= "alt" and k ~= "title" then
+      html = html .. ' ' .. k .. '="' .. v:gsub('"', '&quot;') .. '"'
+    end
+  end
+  
+  if el.title and el.title ~= "" then
+    html = html .. ' title="' .. el.title:gsub('"', '&quot;') .. '"'
+  end
+  
+  local alt = pandoc.utils.stringify(el.caption)
+  if alt and alt ~= "" then
+    html = html .. ' alt="' .. alt:gsub('"', '&quot;') .. '"'
+  end
+  
+  html = html .. '>'
+  return pandoc.RawInline("html", html)
+end
+
 return {
   {Pandoc = Pandoc},
   {Span = Span},
   {Div = Div},
-  {CodeBlock = CodeBlock}
+  {CodeBlock = CodeBlock},
+  {Image = Image}
 }

@@ -4,6 +4,8 @@ import { defineConfig } from '@rspress/core';
 import { pluginRss } from '@rspress/plugin-rss';
 import { pluginSitemap } from '@rspress/plugin-sitemap';
 import readingTime from 'rspress-plugin-reading-time';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 // 读取配置文件
 const readConfig = (name: string) => {
@@ -137,6 +139,74 @@ export default defineConfig({
   logo: `./docs/${projectConfig.theme.logo}`,
   llms: true,
   globalStyles: path.join(__dirname, 'styles/custom.css'),
+  builderConfig: {
+    html: {
+      tags: [
+        {
+          tag: 'link',
+          attrs: {
+            rel: 'stylesheet',
+            href: 'https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex-swap.min.css',
+          },
+          append: false,
+        }
+      ]
+    }
+  },
+  markdown: {
+    remarkPlugins: [
+      remarkMath
+    ],
+    rehypePlugins: [
+      [rehypeKatex, { 
+        trust: true, 
+        macros: {
+          "\\RR": "\\mathbb{R}",
+          "\\i": "\\mathrm{i}",
+          "\\d": "\\mathrm{d}",
+          "\\C": "\\mathbb{C}",
+          "\\R": "\\mathbb{R}",
+          "\\Q": "\\mathbb{Q}",
+          "\\Z": "\\mathbb{Z}",
+          "\\N": "\\mathbb{N}",
+          "\\P": "\\mathbb{P}",
+          "\\degree": "^\\circ",
+          "\\rank": "\\operatorname{rank}",
+          "\\op": "\\operatorname",
+          "\\paren": "\\left({#1}\\right)",
+          "\\bracket": "\\left[{#1}\\right]",
+          "\\brace": "\\left\\{{#1}\\right\\}",
+          "\\ceil": "\\left\\lceil{#1}\\right\\rceil",
+          "\\floor": "\\left\\lfloor{#1}\\right\\rfloor",
+          "\\vert": "\\left\\lvert{#1}\\right\\rvert",
+          "\\vec": "\\bm",
+          "\\vecc": "\\overrightarrow",
+          "\\poly": "\\ce{-\\!\\!\\![ #1 ]_n\\!\\!\\!\\!\\!-}",
+          "\\el": "#1\\mathrm{#2}^{#3}",
+          "\\pH": "p\\ce{H}",
+          "\\pOH": "p\\ce{OH}",
+          "\\con": "\\left[\\ce{#1}\\right]",
+          "’": "'",
+          "，": ",",
+          "。": ".",
+          "；": ";",
+          "：": ":",
+          "！": "!",
+          "？": "?",
+          "【": "[",
+          "】": "]",
+          "（": "(",
+          "）": ")",
+          "、": ",",
+          "—": "-",
+          "…": "\\dots",
+          "·": "\\cdot",
+          "->": "\\to",
+          "<-": "\\gets"
+        }
+      }]
+    ]
+  },
   themeConfig: {
     nav: nav,
     sidebar: sidebar,
