@@ -234,13 +234,13 @@ local function img_to_html(el)
     html = html .. '[alt text]'
   end
 
-  html = html .. '(' .. el.src
-  
+  html = html .. '(' .. el.src .. '#class="custom-img"'
+
   for k, v in pairs(el.attributes) do
     if k ~= "src" and k ~= "alt" and k ~= "width" then
-      html = html .. '#' .. k .. '="' .. v:gsub('"', '&quot;') .. '"'
+      html = html .. ';' .. k .. '="' .. v:gsub('"', '&quot;') .. '"'
     elseif k == "width" then:
-      html = html .. '#float='.. v:gsub('"', '&quot;') .. '"'
+      html = html .. ';float='.. v:gsub('"', '&quot;') .. '"'
     end
   end
 
