@@ -246,15 +246,15 @@ function Plain(el)
   end
 end
 
-function Image(el)
-  return pandoc.RawInline("markdown", img_to_html(el))
-end
+-- function Image(el)
+--   return pandoc.RawInline("markdown", img_to_html(el))
+-- end
 
 return {
   {Pandoc = Pandoc},
   {Span = Span},
   {Div = Div},
-  {CodeBlock = CodeBlock}
-  {Para = Para, Plain = Plain},
-  {Image = Image}
+  {CodeBlock = CodeBlock},
+  {Para = Para, Plain = Plain}
+  -- {Image = Image}
 }
