@@ -11,6 +11,13 @@ import remarkCjkFriendly from "remark-cjk-friendly";
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
+import 'katex/dist/contrib/mhchem.min.js';
+import 'katex/dist/contrib/copy-tex.min.js';
+import 'katex/dist/contrib/mathtex-script-type.min.js';
+
+import 'katex/dist/katex.min.css';
+
+
 // @ts-ignore
 import remarkImageAttributes from 'remark-image-attributes'
 
@@ -47,8 +54,10 @@ const remarkCodeBlockToMath: Plugin = () => {
 };
 
 function localKatexPlugin() {
+  const katexCss = require.resolve('katex/dist/katex.min.css');
   return {
     name: 'local-katex-plugin',
+    globalStyles: katexCss,
     markdown: {
       remarkPlugins: [
         remarkMath,
@@ -254,20 +263,20 @@ export default defineConfig({
     ] as any,
     rehypePlugins: [] as any,
   },
-  builderConfig: {
-    html: {
-      tags: [
-        {
-          tag: 'link',
-          attrs: {
-            rel: 'stylesheet',
-            href: 'https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex-swap.min.css',
-          },
-          append: false,
-        }
-      ]
-    }
-  },
+  // builderConfig: {
+  //   html: {
+  //     tags: [
+  //       {
+  //         tag: 'link',
+  //         attrs: {
+  //           rel: 'stylesheet',
+  //           href: 'https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex-swap.min.css',
+  //         },
+  //         append: false,
+  //       }
+  //     ]
+  //   }
+  // },
   themeConfig: {
     nav: nav,
     sidebar: sidebar,
