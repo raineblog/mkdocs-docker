@@ -297,6 +297,6 @@ return {
   {Span = Span},
   {Div = Div},
   {CodeBlock = CodeBlock},
-  {Para = Para, Plain = Plain}
+  {Para = Para, Plain = Plain},
   {Image = Image}
 }
