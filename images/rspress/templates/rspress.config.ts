@@ -17,11 +17,32 @@ import remarkImageAttributes from 'remark-image-attributes'
 import remarkEmoji from 'remark-emoji';
 import readingTime from 'rspress-plugin-reading-time';
 
+import type { Plugin } from 'unified';
+import { visit } from 'unist-util-visit';
+
+const remarkCodeBlockToMath: Plugin = () => {
+  return (tree) => {
+    visit(tree, 'code', (node: any) => {
+      if (node.lang === 'math') {
+        node.data = {
+          hName: 'div',
+          hProperties: { className: ['math', 'math-display'] },
+        };
+        delete node.lang;
+        delete node.meta;
+      }
+    });
+  };
+};
+
 function localKatexPlugin() {
   return {
     name: 'local-katex-plugin',
     markdown: {
-      remarkPlugins: [remarkMath] as any,
+      remarkPlugins: [
+        remarkMath,
+        remarkCodeBlockToMath
+      ] as any,
       rehypePlugins: [
         [rehypeKatex as any, {
           trust: true,
@@ -79,23 +100,26 @@ function localKatexPlugin() {
 
 // 图片解析
 
-import { visit } from 'unist-util-visit';
-import type { Plugin } from 'unified';
-
-const remarkCodeBlockToMath: Plugin = () => {
+const rehypeImagePandoc: Plugin = () => {
   return (tree) => {
-    visit(tree, 'image', (node: any) => {
-      // 1. 如果没有 alt，或者 alt 里完全没有 |，则跳过处理
-      if (!node.alt || !node.alt.includes('|')) return;
+    // 在 rehype 中，节点类型是 'element'，我们需要判断 tagName 是否为 'img'
+    visit(tree, 'element', (node: any) => {
+      if (node.tagName !== 'img') return;
 
-      // 2. 用 | 分割整个 alt 字符串
-      const parts = node.alt.split('|');
-      
+      // 获取 img 标签的 alt 属性
+      const altText = node.properties?.alt;
+
+      // 如果没有 alt，或者 alt 里完全没有 |，则跳过处理
+      if (!altText || typeof altText !== 'string' || !altText.includes('|')) return;
+
+      // 用 | 分割整个 alt 字符串
+      const parts = altText.split('|');
+
       // 存储真实的 alt 文本片段
       const realAltParts = [];
       let style = '';
 
-      // 3. 遍历分割出来的所有部分
+      // 遍历分割出来的所有部分
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i].trim();
         const lowerPart = part.toLowerCase();
@@ -110,11 +134,11 @@ const remarkCodeBlockToMath: Plugin = () => {
         if (lowerPart === 'left') {
           style += 'float: left; margin-right: 1.5rem; ';
           continue;
-        } 
+        }
         if (lowerPart === 'right') {
           style += 'float: right; margin-left: 1.5rem; ';
           continue;
-        } 
+        }
         if (lowerPart === 'center') {
           style += 'display: block; margin-left: auto; margin-right: auto; ';
           continue;
@@ -123,10 +147,9 @@ const remarkCodeBlockToMath: Plugin = () => {
         // --- 匹配宽度 (以 w 开头 + 数字 + 可选的单位) ---
         const widthMatch = lowerPart.match(/^w(\d+(?:\.\d+)?)([a-z%]*)$/);
         if (widthMatch) {
-          const num = widthMatch[1];     // 提取数字，例如 "80"
-          const unit = widthMatch[2];    // 提取单位，例如 "%", "px"
-          // 如果只有数字没给单位，宽度默认使用 "%"
-          const finalUnit = unit || '%'; 
+          const num = widthMatch[1];     // 提取数字
+          const unit = widthMatch[2];    // 提取单位
+          const finalUnit = unit || '%'; // 默认 %
           style += `width: ${num}${finalUnit}; `;
           continue;
         }
@@ -136,30 +159,25 @@ const remarkCodeBlockToMath: Plugin = () => {
         if (heightMatch) {
           const num = heightMatch[1];
           const unit = heightMatch[2];
-          // 如果只有数字没给单位，高度默认使用 "px" (因为高度用 % 往往在网页中无效)
-          const finalUnit = unit || 'px'; 
+          const finalUnit = unit || 'px'; // 默认 px
           style += `height: ${num}${finalUnit}; `;
           continue;
         }
 
-        // --- 如果都不是，说明它是原始 alt 描述里本来就带有的 | 符号 ---
-        // 我们把它放回真实 alt 数组中
+        // --- 如果都不是，说明它是原始 alt 描述里带有的 | 符号 ---
         realAltParts.push(part);
       }
 
-      // 4. 还原干净的 alt 属性给节点 (拼接回去)
-      // 如果原 alt 是 "苹果 | 香蕉|w80"，还原后会变回 "苹果 | 香蕉"
-      node.alt = realAltParts.join(' | ').trim();
+      // 1. 还原干净的 alt 属性
+      node.properties.alt = realAltParts.join(' | ').trim();
 
-      // 5. 注入 style 样式到 HTML 标签
+      // 2. 直接将 style 注入到 img 节点的 properties 中
       if (style) {
-        node.data = node.data || {};
-        node.data.hProperties = node.data.hProperties || {};
-        node.data.hProperties.style = (node.data.hProperties.style || '') + style;
+        node.properties.style = (node.properties.style || '') + style;
       }
     });
   };
-};
+}
 
 // 读取配置文件
 const readConfig = (name: string) => {
@@ -299,8 +317,12 @@ export default defineConfig({
       defaultLanguage: 'text',
       fallbackLanguage: 'text'
     },
-    remarkPlugins: [remarkCodeBlockToMath, remarkGfm, remarkCjkFriendly, remarkEmoji] as any,
-    rehypePlugins: [] as any,
+    remarkPlugins: [
+      remarkGfm,
+      remarkCjkFriendly,
+      remarkEmoji
+    ] as any,
+    rehypePlugins: [rehypeImagePandoc] as any,
   },
   builderConfig: {
     html: {
