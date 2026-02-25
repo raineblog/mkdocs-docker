@@ -178,6 +178,34 @@ function CodeBlock(el)
 end
 
 -- 5. 图片处理 (原样输出为 raw html tag)
+-- ::img[描述]{src="./img.png" width="300" align="right"}
+
+local function img_to_html(el)
+  local html = '::img'
+  
+  local alt = pandoc.utils.stringify(el.caption)
+  if alt and alt ~= "" then
+    html = html .. '[' .. alt:gsub('"', '&quot;') .. ']'
+  end
+
+  html = html .. '{src="' .. el.src .. '"'
+
+  if el.classes and #el.classes > 0 then
+    html = html .. ' class="' .. table.concat(el.classes, ' '):gsub('"', '&quot;') .. '"'
+  end
+  if el.identifier and el.identifier ~= "" then
+    html = html .. ' id="' .. el.identifier:gsub('"', '&quot;') .. '"'
+  end
+  for k, v in pairs(el.attributes) do
+    if k ~= "src" and k ~= "alt" then
+      html = html .. ' ' .. k .. '="' .. v:gsub('"', '&quot;') .. '"'
+    end
+  end
+
+  html = html .. '}'
+  return html
+end
+
 -- local function img_to_html(el)
 --   local html = '<img src="' .. el.src .. '"'
   
@@ -206,27 +234,27 @@ end
 --   return html
 -- end
 
--- function Para(el)
---   if #el.content == 1 and el.content[1].t == "Image" then
---     return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
---   end
--- end
+function Para(el)
+  if #el.content == 1 and el.content[1].t == "Image" then
+    return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
+  end
+end
 
--- function Plain(el)
---   if #el.content == 1 and el.content[1].t == "Image" then
---     return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
---   end
--- end
+function Plain(el)
+  if #el.content == 1 and el.content[1].t == "Image" then
+    return pandoc.RawBlock("markdown", img_to_html(el.content[1]))
+  end
+end
 
--- function Image(el)
---   return pandoc.RawInline("markdown", img_to_html(el))
--- end
+function Image(el)
+  return pandoc.RawInline("markdown", img_to_html(el))
+end
 
 return {
   {Pandoc = Pandoc},
   {Span = Span},
   {Div = Div},
   {CodeBlock = CodeBlock}
-  -- {Para = Para, Plain = Plain},
-  -- {Image = Image}
+  {Para = Para, Plain = Plain},
+  {Image = Image}
 }

@@ -9,7 +9,7 @@ import readingTime from 'rspress-plugin-reading-time';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-import remarkAttributes from 'remark-attributes'
+import remarkDirective from 'remark-directive'
 import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
 
@@ -210,7 +210,7 @@ export default defineConfig({
       defaultLanguage: 'text',
       fallbackLanguage: 'text'
     },
-    remarkPlugins: [remarkAttributes, remarkGfm, remarkEmoji] as any,
+    remarkPlugins: [remarkDirective, remarkGfm, remarkEmoji] as any,
     rehypePlugins: [] as any,
   },
   builderConfig: {
