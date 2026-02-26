@@ -1,8 +1,10 @@
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
+
+import 'katex/contrib/mhchem';
+
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import 'katex/dist/contrib/mhchem';
 
 /**
  * 该插件将 ```math 代码块转换为 remark-math 的 math 节点，

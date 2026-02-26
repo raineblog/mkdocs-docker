@@ -185,9 +185,9 @@ function Div(el)
 
   -- 处理多余的容器（如 .grid 或 .v-pre 等非语义化 Div）
   -- 如果 Div 只有渲染意义而用户不希望在 Markdown 中保留 ::: {.grid}
-  if el.classes and (el.classes:includes("grid") or el.classes:includes("v-pre")) then
-    return el.content
-  end
+  -- if el.classes and (el.classes:includes("grid") or el.classes:includes("v-pre")) then
+  --   return el.content
+  -- end
 
   return el
 end
