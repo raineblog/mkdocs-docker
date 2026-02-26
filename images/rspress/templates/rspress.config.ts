@@ -105,7 +105,7 @@ export default defineConfig({
             href: 'https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex-swap.min.css',
           },
           append: false,
-        }
+        },
         {
           tag: 'link',
           attrs: {
