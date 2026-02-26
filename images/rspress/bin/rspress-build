@@ -2,6 +2,7 @@
 set -e
 
 cp -r /app/styles .
+cp -r /app/utils .
 cp -r /app/node_modules .
 
 cp /app/gulpfile.cjs .
