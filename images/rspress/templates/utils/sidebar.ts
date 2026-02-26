@@ -17,24 +17,32 @@ export const normalizeLink = (link: string) => {
  */
 const getTitleFromFile = (fullPath: string): string => {
   try {
-    if (!fs.existsSync(fullPath)) {
-      // 调试日志：如果找不到文件，打印路径
-      console.warn(`[Sidebar] File not found: ${fullPath}`);
-      return '无标题';
+    let targetPath = fullPath;
+    if (!fs.existsSync(targetPath)) {
+      // 回退逻辑：如果 z.md 不存在，尝试 z/index.md
+      if (targetPath.endsWith('.md')) {
+        const fallbackPath = path.join(targetPath.slice(0, -3), 'index.md');
+        if (fs.existsSync(fallbackPath)) {
+          targetPath = fallbackPath;
+        } else {
+          console.warn(`[Sidebar] File not found: ${fullPath} (and no index.md fallback)`);
+          return '无标题';
+        }
+      } else {
+        console.warn(`[Sidebar] File not found: ${fullPath}`);
+        return '无标题';
+      }
     }
-    const content = fs.readFileSync(fullPath, 'utf-8');
+    const content = fs.readFileSync(targetPath, 'utf-8');
     const lines = content.split(/\r?\n/);
     
-    let inFrontmatter = false;
     let lineIdx = 0;
 
     // 检查是否有 Frontmatter 
     if (lines[0] && lines[0].trim() === '---') {
-      inFrontmatter = true;
       lineIdx = 1;
       while (lineIdx < lines.length) {
         if (lines[lineIdx].trim() === '---') {
-          inFrontmatter = false;
           lineIdx++;
           break;
         }
@@ -86,6 +94,11 @@ export function parseNavAndSidebar(config: any[], docsDir: string) {
   };
 
   config.forEach((item) => {
+    // 自动删掉最高级名称为 Blog 的那个
+    if (item.title === 'Blog') {
+      return;
+    }
+
     const navItem: any = {
       text: item.title,
     };
@@ -97,17 +110,39 @@ export function parseNavAndSidebar(config: any[], docsDir: string) {
       }
 
       // 处理侧边栏：Rspress 2.0 推荐的结构
-      const sidebarItems = item.children.map((child: any) => {
+      const sidebarItems: any[] = [];
+
+      // 自动把简介的文章也加到侧边栏里面
+      if (firstLink) {
+          const parts = firstLink.split('/').filter(Boolean);
+          if (parts.length > 0) {
+              const sectionDir = parts[0];
+              const indexPath = path.join(docsDir, sectionDir, 'index.md');
+              if (fs.existsSync(indexPath)) {
+                  sidebarItems.push({
+                      text: getTitleFromFile(indexPath),
+                      link: `/${sectionDir}/`,
+                  });
+              }
+          }
+      }
+
+      item.children.forEach((child: any) => {
         if (typeof child === 'string') {
+          // 如果是 index.md 且已经在顶部添加过了，则跳过
+          if (child.endsWith('index.md') && sidebarItems.length > 0 && sidebarItems[0].link.endsWith('/')) {
+              return;
+          }
           const fullPath = path.resolve(docsDir, child);
-          return {
+          sidebarItems.push({
             text: getTitleFromFile(fullPath),
             link: normalizeLink(child),
-          };
+          });
         } else {
           // 处理嵌套映射 {"分类名": ["paths..."]}
           const sectionTitle = Object.keys(child)[0];
-          return {
+          // 如果嵌套分类名是 "Blog"，则跳过该名称层级（这部分可以根据实际需求调整，这里先按要求处理最高级）
+          sidebarItems.push({
             text: sectionTitle,
             collapsible: true,
             collapsed: false,
@@ -118,7 +153,7 @@ export function parseNavAndSidebar(config: any[], docsDir: string) {
                 link: normalizeLink(sub),
               };
             }),
-          };
+          });
         }
       });
 
