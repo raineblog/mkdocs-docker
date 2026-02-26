@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 
 export const normalizeLink = (link: string) => {
   let normalized = link.replace(/\.md$/, '');
@@ -10,7 +11,31 @@ export const normalizeLink = (link: string) => {
   return result === '' ? '/' : result;
 };
 
-export function parseNavAndSidebar(config: any[]) {
+/**
+ * 从 Markdown 文件中读取第一个非空行作为标题
+ */
+const getTitleFromFile = (fullPath: string): string => {
+  try {
+    if (!fs.existsSync(fullPath)) return '无标题';
+    const content = fs.readFileSync(fullPath, 'utf-8');
+    const lines = content.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed) {
+        // 如果是 H1，去除 # 和可能的标识符
+        if (trimmed.startsWith('#')) {
+          return trimmed.replace(/^#+\s*/, '').replace(/\{#.*\}\s*$/, '').trim();
+        }
+        return trimmed;
+      }
+    }
+  } catch (e) {
+    console.error(`Failed to read title from ${fullPath}:`, e);
+  }
+  return '无标题';
+};
+
+export function parseNavAndSidebar(config: any[], docsDir: string) {
   const nav: any[] = [];
   const sidebar: Record<string, any[]> = {};
 
@@ -43,8 +68,9 @@ export function parseNavAndSidebar(config: any[]) {
       // 处理侧边栏：Rspress 2.0 推荐的结构
       const sidebarItems = item.children.map((child: any) => {
         if (typeof child === 'string') {
+          const fullPath = path.join(docsDir, child);
           return {
-            text: path.basename(child, '.md').replace(/^\d+\./, '').trim(), // 移除数字前缀
+            text: getTitleFromFile(fullPath),
             link: normalizeLink(child),
           };
         } else {
@@ -55,13 +81,9 @@ export function parseNavAndSidebar(config: any[]) {
             collapsible: true,
             collapsed: false,
             items: child[sectionTitle].map((sub: string) => {
-              let text = path.basename(sub, '.md').replace(/^\d+\./, '').trim();
-              if (text.toLowerCase() === 'index') {
-                const parts = sub.split('/');
-                text = parts[parts.length - 2] || 'Home';
-              }
+              const fullPath = path.join(docsDir, sub);
               return {
-                text: text,
+                text: getTitleFromFile(fullPath),
                 link: normalizeLink(sub),
               };
             }),

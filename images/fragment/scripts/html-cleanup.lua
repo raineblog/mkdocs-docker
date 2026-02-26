@@ -298,11 +298,18 @@ function Image(el)
   return pandoc.RawInline("markdown", img_to_html(el))
 end
 
+-- 6. 标题清理：移除 H1 的自动标识符 (例如 # Title {#_1})
+function Header(el)
+  el.identifier = ""
+  return el
+end
+
 return {
   {Pandoc = Pandoc},
   {Span = Span},
   {Div = Div},
   {CodeBlock = CodeBlock},
+  {Header = Header},
   {Para = Para, Plain = Plain},
   {Image = Image}
 }

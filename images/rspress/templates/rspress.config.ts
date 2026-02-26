@@ -43,7 +43,7 @@ try {
   throw new Error(`Invalid site_url: "${siteUrl}". It must be a valid absolute URL (e.g., https://example.com/ or https://example.com/docs).`);
 }
 
-const { nav, sidebar } = parseNavAndSidebar(navConfig);
+const { nav, sidebar } = parseNavAndSidebar(navConfig, path.join(__dirname, 'docs'));
 
 export default defineConfig({
   root: path.join(__dirname, 'docs'),
@@ -55,6 +55,9 @@ export default defineConfig({
   icon: `./docs/${projectConfig.theme.favicon}`,
   logo: `/${projectConfig.theme.logo}`,
   llms: true,
+  route: {
+    cleanUrls: true,
+  },
   globalStyles: path.join(__dirname, 'styles/custom.css'),
   markdown: {
     showLineNumbers: true,
@@ -86,6 +89,20 @@ export default defineConfig({
     editLink: {
       docRepoBaseUrl: `${projectConfig.info.repo_url}/blob/main/docs/`,
     },
+  },
+  builderConfig: {
+    html: {
+      tags: [
+        {
+          tag: 'link',
+          attrs: {
+            rel: 'stylesheet',
+            href: 'https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex-swap.min.css',
+          },
+          append: false,
+        }
+      ]
+    }
   },
   plugins: [
     readingTime({
