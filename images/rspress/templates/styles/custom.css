@@ -11,9 +11,9 @@ img {
     margin: 1.5rem 0;
 }
 
-.grid.cards > div, 
-.grid.cards > section,
-.grid.cards > article {
+.grid.cards>div,
+.grid.cards>section,
+.grid.cards>article {
     padding: 1rem;
     border: 1px solid var(--rp-c-divider);
     border-radius: 8px;
@@ -22,7 +22,7 @@ img {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.grid.cards > div:hover {
+.grid.cards>div:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
@@ -32,4 +32,37 @@ img {
     .grid {
         grid-template-columns: 1fr;
     }
+}
+
+:root {
+    --fontkit-text-font: "Aleo", "FZNewShuSong",
+        "Zen Old Mincho", "Chiron Sung HK", "Noto Serif SC", serif;
+    --fontkit-code-font: "Fira Code",
+        "Cascadia Code", "Consolas", "Inconsolata",
+        "Menlo", "Monaco", "SF Mono", "Ubuntu Mono",
+        "DejaVu Sans Mono", "Courier New", monospace;
+}
+
+* {
+    font-variant-ligatures: contextual;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* h1, */
+h2,
+h3 {
+    text-align: center;
+}
+
+no-wrap,
+.no-wrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: keep-all;
 }

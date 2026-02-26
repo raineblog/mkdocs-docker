@@ -45,7 +45,9 @@ try {
   throw new Error(`Invalid site_url: "${siteUrl}". It must be a valid absolute URL (e.g., https://example.com/ or https://example.com/docs).`);
 }
 
-const { nav, sidebar } = parseNavAndSidebar(navConfig, path.join(__dirname, 'docs'));
+const docsDir = path.resolve(__dirname, 'docs');
+console.log(`[Rspress Config] Docs directory: ${docsDir}`);
+const { nav, sidebar } = parseNavAndSidebar(navConfig, docsDir);
 
 export default defineConfig({
   root: path.join(__dirname, 'docs'),
@@ -103,6 +105,14 @@ export default defineConfig({
             href: 'https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex-swap.min.css',
           },
           append: false,
+        }
+        {
+          tag: 'link',
+          attrs: {
+            rel: 'stylesheet',
+            href: 'https://cdn.jsdelivr.net/npm/@raineblog/mkdocs-fontkit@latest/dist/fonts.min.css',
+          },
+          append: true,
         }
       ]
     }
