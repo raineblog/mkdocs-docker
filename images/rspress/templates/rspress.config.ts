@@ -16,6 +16,8 @@ import { remarkKatexPlugins, rehypeKatexPlugins } from './utils/katex';
 import { parseNavAndSidebar } from './utils/sidebar';
 import { mapSocialLinks } from './utils/social';
 
+import remarkDirective from 'remark-directive'
+
 // 读取配置文件
 const readConfig = (name: string) => {
   const filePath = path.join(__dirname, 'config', `${name}.json`);
@@ -69,7 +71,8 @@ export default defineConfig({
       ...remarkKatexPlugins,
       remarkGfm,
       remarkCjkFriendly,
-      remarkEmoji
+      remarkEmoji,
+      remarkDirective
     ] as any,
     rehypePlugins: [
       ...rehypeKatexPlugins
