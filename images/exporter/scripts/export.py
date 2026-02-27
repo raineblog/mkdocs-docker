@@ -36,7 +36,7 @@ def get_site_nav(nav):
     return [{item['title']: item['children']} for item in nav]
 
 def clean_url(baseurl, filepath):
-    return baseurl.rstrip('/') + '/' + filepath.replace('.md', '/index.html').replace('index/index.html', 'index.html') + "?export=true"
+    return baseurl.rstrip('/') + '/' + filepath.replace('.md', '/index.html').replace('index/index.html', 'index.html')
 
 def compile_latex(tex_filename, output_pdf_filename=None):
     if not os.path.exists(tex_filename):
