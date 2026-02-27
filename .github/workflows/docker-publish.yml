@@ -7,6 +7,10 @@ on:
     branches: [ "main" ]
     tags: [ 'v*' ]
 
+concurrency:
+  group: "build"
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
 

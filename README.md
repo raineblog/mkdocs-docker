@@ -1,82 +1,82 @@
-# MkDocs Docker Toolchain
+# MkDocs Docker Toolchain 🚀
 
 [![Docker Image Build](https://github.com/raineblog/mkdocs-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/raineblog/mkdocs-docker/actions/workflows/docker-publish.yml)
 [![Container Registry](https://img.shields.io/badge/Container-GHCR-blue?logo=github)](https://github.com/raineblog/mkdocs-docker/pkgs/container/mkdocs-docker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Uv](https://img.shields.io/badge/managed%20by-uv-261230?style=flat&logo=python&logoColor=white)](https://github.com/astral-sh/uv)
 
-这是一个专为现代文档工作流设计的**集成化容器构建环境**。本项目提供了一系列预配置的镜像，旨在简化文档的编写、构建与发布流程，特别针对 **GitHub Actions** 进行了极致优化。
+这是一个专门为现代文档工作流设计的**全栈式容器化工具链**。本项目通过一系列高度优化的镜像，覆盖了从文档编写、实时预览、静态构建到多格式导出及 SEO 优化的全生命周期。
 
 > [!IMPORTANT]
-> **项目定位**：本项目是一个个人维护的工具链。我欢迎错误报告 (Bug Reports) 和文档修正，但我目前没有精力处理新的功能请求 (Feature Requests)。
+> **项目定位**：本项目是一个个人维护的专业工具集。我欢迎 Bug 反馈和文档改进建议，但出于精力考虑，**不接受新的功能请求 (Feature Requests)**。如果您有特殊需求，建议 fork 本项目自行定制。
 
 ---
 
-## 🌟 核心特性
+## 🏗 工具链概览
 
-- 🚀 **极速构建**：基于 Alpine Linux，镜像体积小（~50MB），冷启动与拉取速度极快。
-- 🧩 **动态配置 (Config-as-Data)**：无需手动维护复杂的 `mkdocs.yml`，系统会根据 `info.json` 自动生成。
-- 🔋 **开箱即用**：集成了常用的 MkDocs 插件（如亮箱效果、HTML 压缩、数学公式支持等）。
-- 🛠 **CI/CD 优化**：内置 `git`、`nodejs`、`markdownlint` 等工具，完美适配主流流水线。
-- 📦 **多镜像支持**：除了核心的 `mkdocs` 镜像，还包含 `rspress`、`exporter` 和 `seo` 等专用镜像。
+本项目包含 5 个核心镜像，各司其职，共同构成完整的文档构建生态：
+
+| 镜像名称 | 职责描述 | 核心技术栈 |
+| :--- | :--- | :--- |
+| **`mkdocs`** | 核心构建与预览环境，支持动态配置生成 | Python 3.12, Node.js (PostHTML) |
+| **`exporter`** | **[性能优化]** 将文档导出为 PDF 等格式 | **uv**, WeasyPrint, TeX Live |
+| **`rspress`** | 基于 Rspress 的极速静态站点生成 | Node.js, Rspress |
+| **`fragment`** | 专门用于生成“片段化”或特定格式的 MkDocs 文档 | Python, Pandoc |
+| **`seo`** | 自动化 SEO 优化与搜索引擎推送工具 | Python (Requests) |
 
 ---
 
-## 🗂 目录树预览
+## ✨ 核心亮点
 
-| 目录/文件 | 描述 |
-| :--- | :--- |
-| `images/mkdocs/` | 核心 MkDocs 镜像定义，包含构建与预览脚本 |
-| `images/rspress/` | Rspress 相关镜像定义 |
-| `images/exporter/` | 专门用于将文档导出为其他格式（如 PDF）的镜像 |
-| `images/seo/` | 网站 SEO 优化辅助工具 |
-| `shared/` | 跨镜像共享的资源或脚本 |
+- ⚡ **性能极致优化**：部分镜像（如 `exporter`）已全面引入 `uv` 管理依赖，构建与运行速度提升显著。
+- 🧩 **配置即数据 (Config-as-Data)**：告别手动编写数千行的 `mkdocs.yml`。通过 `info.json` + 预定义模板，自动生成生产级的配置文件。
+- 🎨 **高度定制化插件**：内置了 `mkdocs-katex-ssr`、`mkdocs-glightbox` 以及作者定制的 `mkdocs-material` 分支，确保文档既专业又美观。
+- 🔗 **CI/CD 原生支持**：深度适配 GitHub Actions，提供开箱即用的自动化部署体验。
 
 ---
 
 ## 🚀 快速开始
 
-### 1. 拉取镜像
+### 核心镜像：MkDocs
 
+#### 1. 实时预览 (Hot Reload)
 ```bash
-docker pull ghcr.io/raineblog/mkdocs-docker:latest
+docker run --rm -it -p 8000:8000 \
+  -v $(pwd):/app/workspace -w /app/workspace \
+  ghcr.io/raineblog/mkdocs-docker:latest mkdocs-serve
 ```
 
-### 2. 本地构建文档
-
-在包含 `docs/` 和 `info.json` 的项目根目录下运行：
-
+#### 2. 生成环境构建
 ```bash
 docker run --rm -v $(pwd):/app/workspace -w /app/workspace \
   ghcr.io/raineblog/mkdocs-docker:latest mkdocs-build
 ```
 
-### 3. 本地实时预览
+### 性能之选：Exporter (使用 uv)
 
+导出 PDF 的极速方案：
 ```bash
-docker run --rm -it -p 8000:8000 -v $(pwd):/app/workspace -w /app/workspace \
-  ghcr.io/raineblog/mkdocs-docker:latest mkdocs-serve
+docker run --rm -v $(pwd):/app/workspace -w /app/workspace \
+  ghcr.io/raineblog/mkdocs-docker/exporter:latest mkdocs-export
 ```
 
 ---
 
-## ⚙️ 核心配置：info.json
+## ⚙️ 核心逻辑：info.json
 
-该项目采用“配置即数据”的理念。你只需要提供一个简单的 `info.json`，构建环境会自动合并模板生成最终的 `mkdocs.yml`。
-
-### 示例 `info.json`
+该工具链的核心在于通过 `info.json` 驱动。它定义了项目的元数据、导航结构及扩展配置。
 
 ```json
 {
   "project": {
-    "site_name": "我的文档项目",
-    "site_description": "基于 MkDocs Docker 的示例项目",
-    "repo_url": "https://github.com/your-username/your-repo"
+    "site_name": "文档名称",
+    "site_description": "文档描述",
+    "repo_url": "https://github.com/user/repo"
   },
   "nav": [
     {
-      "title": "指南",
-      "children": ["guide/index.md", "guide/usage.md"]
+      "title": "开始",
+      "children": ["index.md", "usage.md"]
     }
   ]
 }
@@ -84,42 +84,30 @@ docker run --rm -it -p 8000:8000 -v $(pwd):/app/workspace -w /app/workspace \
 
 ---
 
-## 🛠 可用指令
+## 🛠 维护与贡献
 
-在 `mkdocs` 镜像中，你可以直接调用以下封装好的 CLI 命令：
+本项目由 [@raineblog](https://github.com/raineblog) 持久维护以满足自身工作流。
 
-| 命令 | 描述 |
-| :--- | :--- |
-| `mkdocs-build` | 完整流水线：Lint 校验 -> 配置生成 -> 生产环境构建 |
-| `mkdocs-serve` | 启动开发服务器，支持热重载（端口 8000） |
-| `mkdocs-lint` | 启动 `markdownlint` 进行文档规范检查并尝试自动修复 |
-
----
-
-## 🤝 贡献说明
-
-本项目由 [@raineblog](https://github.com/raineblog) 维护。虽然它是一个个人工具，但我非常高兴收到社区的反馈。
-
-- **🐛 缺陷反馈**：如果你发现了代码或文档中的 Bug，请提交 Issue。
-- **📝 文档修正**：欢迎针对错别字或表述不清的地方提交 PR。
-- **✨ 功能建议**：**通常不被接受**。建议 fork 本项目或使用官方镜像以满足个性化需求。
+- **反馈问题**：请通过 [GitHub Issues](https://github.com/raineblog/mkdocs-docker/issues) 提交。
+- **参与贡献**：仅接受 Bug Fix 或 文档润色。
+- **重构记录**：项目近期完成了从单体架构向多镜像组合的彻底重构，并开始引入 `uv` 等高性能工具。
 
 ---
 
 ## 📄 许可证
 
-本项目采用 [MIT License](LICENSE) 开源。
+基于 [MIT License](LICENSE) 开源。
 
 ---
 
 <div align="center">
 
-**[镜像库](https://github.com/raineblog/mkdocs-docker/pkgs/container/mkdocs-docker)** · **[提交 Bug](https://github.com/raineblog/mkdocs-docker/issues)** · **[查看源码](https://github.com/raineblog/mkdocs-docker)**
+**[GitHub Container Registry](https://github.com/raineblog/mkdocs-docker/pkgs/container/mkdocs-docker)** · **[报告 Bug](https://github.com/raineblog/mkdocs-docker/issues)**
 
 </div>
 
 ---
 
 <sub>
-📝 **文档说明**：本文件由人工智能 **Antigravity (model: Claude 3.5 Sonnet)** 根据项目结构自动生成，并已经过人工确认与验收。
+📝 **文档说明**：本文件由人工智能 **Antigravity (model: Claude 3.5 Sonnet)** 深度分析重构后的项目结构后自动生成，并已经过人工确认与验收。
 </sub>
