@@ -1,346 +1,125 @@
-# MkDocs Exporter Docker
+# MkDocs Docker Toolchain
 
 [![Docker Image Build](https://github.com/raineblog/mkdocs-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/raineblog/mkdocs-docker/actions/workflows/docker-publish.yml)
 [![Container Registry](https://img.shields.io/badge/Container-GHCR-blue?logo=github)](https://github.com/raineblog/mkdocs-docker/pkgs/container/mkdocs-docker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Alpine Linux](https://img.shields.io/badge/Alpine-Linux-0D597F?logo=alpinelinux&logoColor=white)](https://alpinelinux.org/)
 
-A **streamlined, containerized build environment** for modern documentation workflows. Built on **Python 3.12 Alpine**, this image provides a batteries-included toolchain specifically optimized for **GitHub Actions** and CI/CD pipelines.
+这是一个专为现代文档工作流设计的**集成化容器构建环境**。本项目提供了一系列预配置的镜像，旨在简化文档的编写、构建与发布流程，特别针对 **GitHub Actions** 进行了极致优化。
 
-> **Note**: This project uses a "Configuration-as-Data" approach — automatically generating `mkdocs.yml` at runtime by merging internal templates with your project metadata.
-
----
-
-## Table of Contents
-
-- [Features](#features)
-- [Quick Start](#quick-start)
-- [Architecture](#architecture)
-- [Usage](#usage)
-  - [GitHub Actions (Recommended)](#github-actions-recommended)
-  - [Local Development](#local-development)
-  - [Makefile Integration](#makefile-integration)
-- [Configuration](#configuration)
-  - [Directory Structure](#directory-structure)
-  - [info.json Format](#infojson-format)
-- [Available Commands](#available-commands)
-- [Technical Details](#technical-details)
-- [Contributing](#contributing)
-- [License](#license)
+> [!IMPORTANT]
+> **项目定位**：本项目是一个个人维护的工具链。我欢迎错误报告 (Bug Reports) 和文档修正，但我目前没有精力处理新的功能请求 (Feature Requests)。
 
 ---
 
-## Features
+## 🌟 核心特性
 
-| Feature | Description |
-|---------|-------------|
-| 🚀 **Lightweight** | Built on Alpine Linux (~50MB base), ensuring rapid image pulls and minimal CI resource usage |
-| 🧩 **Dynamic Configuration** | Auto-generates `mkdocs.yml` from `info.json`, templates, and local overrides |
-| 🔋 **Batteries Included** | Pre-configured with essential MkDocs plugins and extensions |
-| 🛠 **CI/CD Optimized** | Includes `bash`, `git`, `nodejs`, and other tools for seamless GitHub Actions integration |
-| 📝 **Markdown Linting** | Built-in `markdownlint-cli2` for automatic style enforcement |
-| ⚡ **Multiple Serve Modes** | Standard `mkdocs serve` and high-performance `zensical serve` |
-
-### Pre-installed Plugins & Extensions
-
-**MkDocs Plugins:**
-- `mkdocs-glightbox` — Image lightbox/zooming
-- `mkdocs-minify-plugin` — HTML minification for production
-
-**Markdown Extensions:**
-- `pymdown-extensions` — Advanced syntax (arithmatex, highlight, snippets, etc.)
-- Full `mkdocs-material` feature support (navigation, search, code copy, etc.)
+- 🚀 **极速构建**：基于 Alpine Linux，镜像体积小（~50MB），冷启动与拉取速度极快。
+- 🧩 **动态配置 (Config-as-Data)**：无需手动维护复杂的 `mkdocs.yml`，系统会根据 `info.json` 自动生成。
+- 🔋 **开箱即用**：集成了常用的 MkDocs 插件（如亮箱效果、HTML 压缩、数学公式支持等）。
+- 🛠 **CI/CD 优化**：内置 `git`、`nodejs`、`markdownlint` 等工具，完美适配主流流水线。
+- 📦 **多镜像支持**：除了核心的 `mkdocs` 镜像，还包含 `rspress`、`exporter` 和 `seo` 等专用镜像。
 
 ---
 
-## Quick Start
+## 🗂 目录树预览
+
+| 目录/文件 | 描述 |
+| :--- | :--- |
+| `images/mkdocs/` | 核心 MkDocs 镜像定义，包含构建与预览脚本 |
+| `images/rspress/` | Rspress 相关镜像定义 |
+| `images/exporter/` | 专门用于将文档导出为其他格式（如 PDF）的镜像 |
+| `images/seo/` | 网站 SEO 优化辅助工具 |
+| `shared/` | 跨镜像共享的资源或脚本 |
+
+---
+
+## 🚀 快速开始
+
+### 1. 拉取镜像
 
 ```bash
-# Pull the image
 docker pull ghcr.io/raineblog/mkdocs-docker:latest
+```
 
-# Build documentation
+### 2. 本地构建文档
+
+在包含 `docs/` 和 `info.json` 的项目根目录下运行：
+
+```bash
 docker run --rm -v $(pwd):/app/workspace -w /app/workspace \
   ghcr.io/raineblog/mkdocs-docker:latest mkdocs-build
+```
 
-# Serve with live-reload
+### 3. 本地实时预览
+
+```bash
 docker run --rm -it -p 8000:8000 -v $(pwd):/app/workspace -w /app/workspace \
   ghcr.io/raineblog/mkdocs-docker:latest mkdocs-serve
 ```
 
 ---
 
-## Architecture
+## ⚙️ 核心配置：info.json
 
-This builder uses a **"Configuration-as-Data"** approach. Instead of manually maintaining a complex `mkdocs.yml`, the environment generates it at runtime by merging three sources:
+该项目采用“配置即数据”的理念。你只需要提供一个简单的 `info.json`，构建环境会自动合并模板生成最终的 `mkdocs.yml`。
 
----
-
-## Usage
-
-### GitHub Actions (Recommended)
-
-Use this image as a job container in your workflow:
-
-```yaml
-name: Build and Deploy Documentation
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/raineblog/mkdocs-docker:latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build Documentation
-        run: mkdocs-build
-
-      - name: Deploy to GitHub Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./site
-```
-
-### Local Development
-
-**Build documentation:**
-
-```bash
-docker run --rm \
-  -v $(pwd):/app/workspace \
-  -w /app/workspace \
-  ghcr.io/raineblog/mkdocs-docker:latest \
-  mkdocs-build
-```
-
-**Serve with live-reload (Linux/macOS):**
-
-```bash
-docker run --rm -it \
-  -v $(pwd):/app/workspace \
-  -w /app/workspace \
-  -p 8000:8000 \
-  ghcr.io/raineblog/mkdocs-docker:latest \
-  mkdocs-serve
-```
-
-**Serve with live-reload (Windows PowerShell):**
-
-```powershell
-docker run --rm -it --init `
-  -v ${pwd}:/app/workspace `
-  -w /app/workspace `
-  -p 8000:8000 `
-  ghcr.io/raineblog/mkdocs-docker:latest `
-  mkdocs-serve
-```
-
-### Makefile Integration
-
-```makefile
-.PHONY: serve build lint pull
-
-IMAGE := ghcr.io/raineblog/mkdocs-docker:latest
-
-serve:
-	docker run --rm -it --init -p 8000:8000 \
-		-v $(CURDIR):/app/workspace -w /app/workspace \
-		$(IMAGE) mkdocs-serve
-
-build:
-	docker run --rm \
-		-v $(CURDIR):/app/workspace -w /app/workspace \
-		$(IMAGE) mkdocs-build
-
-lint:
-	docker run --rm \
-		-v $(CURDIR):/app/workspace -w /app/workspace \
-		$(IMAGE) mkdocs-lint
-
-pull:
-	docker pull $(IMAGE)
-```
-
----
-
-## Configuration
-
-### Directory Structure
-
-Your project must follow this structure:
-
-```text
-.
-├── info.json                 # Required: Project metadata & navigation
-├── docs/                     # Required: Markdown content
-│   ├── index.md              # Required: Homepage
-│   ├── intro/                # Required: Introduction section
-│   │   ├── format.md
-│   │   ├── usage.md
-│   │   └── discussion.md
-│   ├── madoka.md             # Required: Part of intro
-│   └── assets/               # Optional
-│       └── extra.yml         # Optional: MkDocs config overrides
-├── includes/                 # Optional: Snippets for inclusion
-│   └── abbreviations.md      # Optional: Abbreviation definitions
-└── .markdownlint.json        # Optional: Custom linting rules
-```
-
-> [!IMPORTANT]
-> This builder is **opinionated** and automatically prepends several "Introduction" pages to your navigation. Ensure these required files exist in your `docs/` folder to avoid build errors.
-
-### info.json Format
-
-The `info.json` file is the heart of your documentation metadata:
+### 示例 `info.json`
 
 ```json
 {
   "project": {
-    "site_name": "My Documentation",
-    "site_description": "A wonderful project description",
-    "repo_url": "https://github.com/user/repo"
+    "site_name": "我的文档项目",
+    "site_description": "基于 MkDocs Docker 的示例项目",
+    "repo_url": "https://github.com/your-username/your-repo"
   },
   "nav": [
     {
-      "title": "Getting Started",
-      "children": [
-        "guide/install.md",
-        "guide/config.md"
-      ]
-    },
-    {
-      "title": "Reference",
-      "children": [
-        "reference/api.md",
-        "reference/cli.md"
-      ]
+      "title": "指南",
+      "children": ["guide/index.md", "guide/usage.md"]
     }
-  ],
-  "extra": {
-    "version": "1.0.0",
-    "social": [
-      { "icon": "fontawesome/brands/github", "link": "https://github.com/user" }
-    ]
-  }
+  ]
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `project` | Object | Core MkDocs settings (site_name, site_description, repo_url, etc.) |
-| `nav` | Array | Navigation structure with title and children |
-| `extra` | Object | Additional MkDocs extra configuration |
+---
+
+## 🛠 可用指令
+
+在 `mkdocs` 镜像中，你可以直接调用以下封装好的 CLI 命令：
+
+| 命令 | 描述 |
+| :--- | :--- |
+| `mkdocs-build` | 完整流水线：Lint 校验 -> 配置生成 -> 生产环境构建 |
+| `mkdocs-serve` | 启动开发服务器，支持热重载（端口 8000） |
+| `mkdocs-lint` | 启动 `markdownlint` 进行文档规范检查并尝试自动修复 |
 
 ---
 
-## Available Commands
+## 🤝 贡献说明
 
-| Command | Description |
-|---------|-------------|
-| `mkdocs-build` | Full build pipeline: lint → generate config → build → sync artifacts |
-| `mkdocs-serve` | Start development server with live-reload on port 8000 |
-| `mkdocs-lint` | Run Markdown linting with auto-fix |
-| `zensical-serve` | Alternative high-performance server (fewer features, faster startup) |
+本项目由 [@raineblog](https://github.com/raineblog) 维护。虽然它是一个个人工具，但我非常高兴收到社区的反馈。
 
-### Build Pipeline Details
-
-The `mkdocs-build` command executes these steps:
-
-1. **Lint** — Run `markdownlint-cli2` with auto-fix
-2. **Generate** — Create `mkdocs.yml` from templates and `info.json`
-3. **Build** — Execute `mkdocs build --strict --clean`
-4. **Sync** — Merge any static assets from `public/` into `site/`
+- **🐛 缺陷反馈**：如果你发现了代码或文档中的 Bug，请提交 Issue。
+- **📝 文档修正**：欢迎针对错别字或表述不清的地方提交 PR。
+- **✨ 功能建议**：**通常不被接受**。建议 fork 本项目或使用官方镜像以满足个性化需求。
 
 ---
 
-## Technical Details
+## 📄 许可证
 
-### Base Image
-
-- **Python 3.12 Alpine** — Minimal footprint, fast startup
-- Multi-stage build to include `markdownlint-cli2` from Node.js
-
-### Installed System Packages
-
-| Package | Purpose |
-|---------|---------|
-| `bash` | Shell scripts execution |
-| `git` | Version control, mkdocs-git plugins |
-| `nodejs` | Markdown linting runtime |
-| `ca-certificates` | HTTPS support |
-
-### Python Dependencies
-
-```text
-pyyaml              # YAML parsing
-mkdocs              # Static site generator
-mkdocs-glightbox    # Image lightbox
-mkdocs-minify-plugin # HTML minification
-pymdown-extensions  # Markdown extensions
-zensical            # High-performance server
-```
-
----
-
-## Contributing
-
-This project is a **personal toolchain** maintained by [@raineblog](https://github.com/raineblog).
-
-| Type | Status |
-|------|--------|
-| 🐛 Bug Reports | ✅ Welcome |
-| 📝 Corrections | ✅ Welcome (typos, documentation fixes) |
-| 🔒 Security Patches | ✅ Welcome |
-| ✨ Feature Requests | ❌ Not accepting |
-| 🔀 Pull Requests (new features) | ❌ Not accepting |
-
-> **Why no feature requests?**
-> This tool is designed to be highly specialized for a specific workflow. If you need more flexibility or additional features, I recommend using the official [squidfunk/mkdocs-material](https://github.com/squidfunk/mkdocs-material) Docker image.
-
-### Reporting Issues
-
-If you encounter a bug, please [open an issue](https://github.com/raineblog/mkdocs-docker/issues/new) with:
-
-- Docker version and host OS
-- Command that triggered the error
-- Full error output
-- Minimal reproduction steps (if possible)
-
----
-
-## License
-
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
-
-```text
-MIT License
-
-Copyright (c) 2026 RainPPR
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software...
-```
+本项目采用 [MIT License](LICENSE) 开源。
 
 ---
 
 <div align="center">
 
-**[Container Registry](https://github.com/raineblog/mkdocs-docker/pkgs/container/mkdocs-docker)** · **[Report Bug](https://github.com/raineblog/mkdocs-docker/issues)** · **[View Source](https://github.com/raineblog/mkdocs-docker)**
+**[镜像库](https://github.com/raineblog/mkdocs-docker/pkgs/container/mkdocs-docker)** · **[提交 Bug](https://github.com/raineblog/mkdocs-docker/issues)** · **[查看源码](https://github.com/raineblog/mkdocs-docker)**
 
 </div>
 
 ---
 
 <sub>
-📝 <strong>Documentation Notice</strong>: This README was generated by <strong>Antigravity (Claude Opus 4.5)</strong>, an AI coding assistant developed by Google DeepMind, and has been reviewed and approved by a human maintainer.
+📝 **文档说明**：本文件由人工智能 **Antigravity (model: Claude 3.5 Sonnet)** 根据项目结构自动生成，并已经过人工确认与验收。
 </sub>

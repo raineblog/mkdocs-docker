@@ -1,7 +1,12 @@
 # syntax=docker/dockerfile:1
 FROM python:alpine
 
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_NO_DEV=1 \
+    UV_LINK_MODE=copy
+
 COPY --chmod=755 bin/ /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN apk add --no-cache \
     bash tini tar zstd \
@@ -16,12 +21,13 @@ RUN git config --system --add safe.directory /__w/*
 
 WORKDIR /app
 
+RUN uv venv /opt/venv
 ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV PATH="/opt/venv/bin:$PATH"
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -r requirements.txt
 
 COPY scripts/ /app/scripts/
 
