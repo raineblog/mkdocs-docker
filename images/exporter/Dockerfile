@@ -11,7 +11,7 @@ RUN apk add --no-cache \
     bash tini tar zstd \
     git git-fast-import \
     ca-certificates curl wget \
-    weasyprint \
+    weasyprint nodejs npm \
     so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 \
     font-liberation font-liberation-sans-narrow ttf-linux-libertine \
     fontconfig texlive-full \
