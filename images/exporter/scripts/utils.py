@@ -13,8 +13,12 @@ def load_json(file_path):
         data = json.load(file)
     return data
 
-def get_nav():
+def get_raw_nav():
     nav_config = load_json('config/nav.json')
+    return nav_config
+
+def get_nav():
+    nav_config = get_raw_nav()
     nav = []
     for item in nav_config:
         nav.append({item['title']: item['children']})

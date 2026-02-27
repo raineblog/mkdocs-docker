@@ -139,14 +139,22 @@ def process_top_level(info, sub_nav, baseurl):
     shutil.rmtree('cache')
 
 if __name__ == "__main__":
-    mkut.write_site_template('mkdocs.yml', False, 'template.yml')
-    nav = mkut.get_nav()
+    nav = mkut.get_raw_nav()
 
+    task_list = [
+        (item["export"], item["children"])
+        for item in nav
+        if "export" in item
+    ]
+
+    for export, children in task_list:
+        print(f"[{export['filename']}] {export['title']} {len(children)}")
+
+    mkut.write_site_template("mkdocs.yml", False, "template.yml")
     subprocess.run("mkdocs build --clean", shell=True, check=True)
+    os.makedirs("build", exist_ok=True)
 
-    os.makedirs('build', exist_ok=True)
-    for item in nav:
-        if 'export' in item:
-            process_top_level(item['export'], item['children'], './site')
-    
+    for export, children in task_list:
+        process_top_level(export, children, "./site")
+
     print("Build Success!")

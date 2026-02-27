@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:alpine
+FROM ghcr.io/rainppr/weasyprint-texlive:latest
 
 # 1. 配置 UV 环境变量 (移除冲突的 UV_SYSTEM_PYTHON=1)
 ENV UV_COMPILE_BYTECODE=1 \
@@ -7,16 +7,19 @@ ENV UV_COMPILE_BYTECODE=1 \
 
 # 2. 安装底层系统依赖 (耗时最长、变动最少，置于最前以最大化层缓存)
 # 合并了后续的 git config，减少构建层数，压缩最终体积
-RUN apk add --no-cache \
-    bash tini tar zstd \
-    git git-fast-import \
-    ca-certificates curl wget \
-    weasyprint nodejs npm \
-    so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 \
-    font-liberation font-liberation-sans-narrow ttf-linux-libertine \
-    fontconfig texlive-full \
-    && fc-cache -fv \
-    && git config --system --add safe.directory /__w/*
+# RUN apk add --no-cache \
+#     bash tini tar zstd \
+#     git git-fast-import \
+#     ca-certificates curl wget \
+#     weasyprint nodejs npm \
+#     so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 \
+#     font-liberation font-liberation-sans-narrow ttf-linux-libertine \
+#     fontconfig texlive-full \
+#     && fc-cache -fv \
+#     && git config --system --add safe.directory /__w/*
+
+RUN apk add --no-cache nodejs npm && \
+    git config --system --add safe.directory /__w/*
 
 # 3. 引入构建工具 (uv:latest 标签更新频繁，需置于底层系统依赖之后)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
