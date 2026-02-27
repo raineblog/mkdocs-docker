@@ -27,7 +27,10 @@ WORKDIR /app
 # 5. 安装 Python 依赖 
 # - 使用 BuildKit bind 挂载，不产生额外的 COPY 镜像层
 # - 结合 uv 缓存挂载，提升重复构建速度
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=bind,source=.python-version,target=.python-version \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked
 ENV PATH="/app/.venv/bin:$PATH"
 
