@@ -11,3 +11,6 @@ images:
   - name: rspress
     context: ./images/rspress
     image: raineblog/mkdocs-rspress-docker
+  - name: exporter
+    context: ./images/exporter
+    image: raineblog/mkdocs-exporter

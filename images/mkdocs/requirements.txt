@@ -29,4 +29,3 @@ mkdocs==1.6.1
 
 pymdown-extensions
 git+https://github.com/raineblog/mkdocs-material.git
-mkdocs-materialx

@@ -1,0 +1,162 @@
+
+import subprocess
+import yaml
+import sys
+import os
+import shutil
+from pathlib import Path
+
+from mlib_download import MlibDownloader
+
+downloader = MlibDownloader(default_base_url="./site/")
+
+import json
+
+script_dir = Path(__file__).parent.resolve()
+
+def parse_yaml(yaml_path):
+    with open(yaml_path, 'r', encoding='utf-8') as file:
+        text = file.read()
+    return yaml.load(text, Loader=yaml.FullLoader)
+
+def extract_title(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            if line.startswith('# '):
+                return line[2:].strip()
+    return "无标题"
+
+def load_json(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    return data
+
+def write_json(file_path, data):
+    with open(file_path, 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+def get_site_nav(nav):
+    return [{item['title']: item['children']} for item in nav]
+
+def clean_url(baseurl, filepath):
+    return baseurl.rstrip('/') + '/' + filepath.replace('.md', '/index.html').replace('index/index.html', 'index.html') + "?export=true"
+
+def compile_latex(tex_filename, output_pdf_filename=None):
+    if not os.path.exists(tex_filename):
+        print(f"Error: Input file '{tex_filename}' not found!")
+        sys.exit(1)
+    
+    base_dir = os.path.dirname(tex_filename)
+    file_stem = os.path.splitext(os.path.basename(tex_filename))[0]
+    default_pdf_path = os.path.join(base_dir if base_dir else '.', f"{file_stem}.pdf")
+
+    cmd = [
+        "latexmk",
+        "-cd",
+        "-lualatex",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-halt-on-error",
+        "-g",
+        "-gg",
+        tex_filename
+    ]
+
+    print(f"[*] Compiling: {tex_filename} ...")
+    print(f"[*] Command: {' '.join(cmd)}")
+
+    try:
+        # subprocess.run(cmd, check=True, stdout=None, stderr=None)
+        subprocess.run(cmd)
+        print(f"[*] Compilation successful: {default_pdf_path}")
+        
+    except subprocess.CalledProcessError as e:
+        print("\n==============================")
+        print("❌ LaTeX Compilation Failed!")
+        print(f"Exit code: {e.returncode}")
+        print("Please check the log output above for details.")
+        print("==============================")
+        subprocess.run([
+            "cat",
+            "cache/main.log",
+            "-n",
+            "-s"
+        ])
+        sys.exit(e.returncode)
+
+    if output_pdf_filename:
+        if os.path.abspath(default_pdf_path) != os.path.abspath(output_pdf_filename):
+            print(f"[*] Renaming output to: {output_pdf_filename}")
+            output_dir = os.path.dirname(output_pdf_filename)
+            if output_dir and not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            try:
+                shutil.move(default_pdf_path, output_pdf_filename)
+                print(f"[*] File ready at: {output_pdf_filename}")
+            except OSError as e:
+                print(f"❌ Error renaming file: {e}")
+                sys.exit(1)
+
+def process_top_level(info, sub_nav, baseurl):
+    first_title = info['title']
+    first_out = os.path.join('cache', first_title)
+    os.makedirs(first_out, exist_ok=True)
+
+    sections = []
+    for item in sub_nav:
+        for second_title, third_list in item.items():
+            second_out = os.path.join(first_out, second_title)
+            os.makedirs(second_out, exist_ok=True)
+            section = { "title": second_title, "sections": [] }
+            for third_file in third_list:
+                third_title = extract_title(os.path.join('docs', third_file.replace('/', os.sep)))
+                pdf_path = os.path.join(first_out, second_title, third_title + ".pdf")
+                html_url = clean_url(baseurl, third_file)
+                downloader.add_task([html_url, pdf_path])
+                section["sections"].append({ "title": third_title, "path": pdf_path })
+            sections.append(section)
+
+    downloader.start_tasks()
+
+    relative_sections = []
+    for section in sections:
+        rel_sec = { "title": section["title"], "sections": [] }
+        for sub in section["sections"]:
+            rel_sec["sections"].append({
+                "title": sub["title"],
+                "path": sub["path"].replace('cache/', '', 1).replace('\\', '/')
+            })
+        relative_sections.append(rel_sec)
+
+    write_json('cache/toc.json', {
+        "title": info["title"],
+        "subtitle": info["subtitle"],
+        "authors": info["authors"],
+        "info": info["info"],
+        "sections": relative_sections
+    })
+
+    shutil.copy(os.path.join(script_dir, "template.tex"), 'cache/main.tex')
+    compile_latex('cache/main.tex', os.path.join('build', info['filename']))
+
+    shutil.rmtree('cache')
+
+def generate_config():
+    info = load_json('info.json')
+    template_defaults = parse_yaml(script_dir / 'template.yml')
+    nav = { 'nav': get_site_nav(info['nav']) }
+    template = info['project'] | template_defaults | nav
+    with open('mkdocs.yml', 'w', encoding='utf-8') as file:
+        yaml.dump(template, file, allow_unicode=True, indent=4, sort_keys=False)
+    return info
+
+if __name__ == "__main__":
+    info = generate_config()
+    subprocess.run("mkdocs build --clean", shell=True, check=True)
+
+    os.makedirs('build', exist_ok=True)
+    for item in info['nav']:
+        if 'export' in item:
+            process_top_level(item['export'], item['children'], './site')
+    
+    print("Build Success!")

@@ -1,0 +1,15 @@
+# selenium
+# aiohttp
+weasyprint
+
+pyyaml
+toml
+requests
+
+mkdocs==1.6.1
+pymdown-extensions
+mkdocs-katex-ssr
+mkdocs-table-reader-plugin
+mkdocs-minify-html-plugin
+
+git+https://github.com/raineblog/mkdocs-material.git
