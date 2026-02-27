@@ -36,6 +36,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # 6. 拷贝应用与脚本 (变动最为频繁的代码与脚本，置于末尾)
 COPY scripts/ /app/scripts/
+COPY templates/ /app/templates/
 COPY --chmod=755 bin/ /usr/local/bin/
 
 ENTRYPOINT ["/sbin/tini", "--"]
