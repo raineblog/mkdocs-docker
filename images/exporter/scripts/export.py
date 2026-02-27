@@ -138,17 +138,10 @@ def process_top_level(info, sub_nav, baseurl):
 
     shutil.rmtree('cache')
 
-def generate_config():
-    info = load_json('info.json')
-    template_defaults = parse_yaml(script_dir / 'template.yml')
-    nav = { 'nav': get_site_nav(info['nav']) }
-    template = info['project'] | template_defaults | nav
-    with open('mkdocs.yml', 'w', encoding='utf-8') as file:
-        yaml.dump(template, file, allow_unicode=True, indent=4, sort_keys=False)
-    return info
-
 if __name__ == "__main__":
     mkut.write_site_template('mkdocs.yml', False, 'template.yml')
+    nav = mkut.get_nav()
+
     subprocess.run("mkdocs build --clean", shell=True, check=True)
 
     os.makedirs('build', exist_ok=True)
