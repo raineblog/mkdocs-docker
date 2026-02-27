@@ -5,14 +5,11 @@ import sys
 import os
 import shutil
 from pathlib import Path
-
+import json
+import utils as mkut
 from mlib_download import MlibDownloader
 
 downloader = MlibDownloader(default_base_url="./site/")
-
-import json
-
-script_dir = Path(__file__).parent.resolve()
 
 def parse_yaml(yaml_path):
     with open(yaml_path, 'r', encoding='utf-8') as file:
@@ -136,7 +133,7 @@ def process_top_level(info, sub_nav, baseurl):
         "sections": relative_sections
     })
 
-    shutil.copy(os.path.join(script_dir, "template.tex"), 'cache/main.tex')
+    shutil.copy("/app/templates/template.tex", 'cache/main.tex')
     compile_latex('cache/main.tex', os.path.join('build', info['filename']))
 
     shutil.rmtree('cache')
@@ -151,11 +148,11 @@ def generate_config():
     return info
 
 if __name__ == "__main__":
-    info = generate_config()
+    mkut.write_site_template('mkdocs.yml', False, 'template.yml')
     subprocess.run("mkdocs build --clean", shell=True, check=True)
 
     os.makedirs('build', exist_ok=True)
-    for item in info['nav']:
+    for item in nav:
         if 'export' in item:
             process_top_level(item['export'], item['children'], './site')
     
