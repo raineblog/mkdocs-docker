@@ -7,8 +7,8 @@ import pathlib
 from collections.abc import MutableMapping
 from typing import Any, Dict, List, Optional, Tuple
 
-import weasyprint
-from weasyprint import CSS, FontConfiguration, HTML
+from weasyprint import HTML, CSS
+from weasyprint.text.fonts import FontConfiguration
 from weasyprint.urls import URLFetcher, URLFetcherResponse
 
 

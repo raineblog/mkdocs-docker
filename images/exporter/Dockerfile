@@ -3,7 +3,6 @@ FROM python:alpine
 
 # 1. 配置 UV 环境变量 (移除冲突的 UV_SYSTEM_PYTHON=1)
 ENV UV_COMPILE_BYTECODE=1 \
-    UV_NO_DEV=1 \
     UV_LINK_MODE=copy
 
 # 2. 安装底层系统依赖 (耗时最长、变动最少，置于最前以最大化层缓存)
