@@ -22,19 +22,14 @@ RUN apk add --no-cache \
 # 3. 引入构建工具 (uv:latest 标签更新频繁，需置于底层系统依赖之后)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# 4. 设置虚拟环境 (合并 ENV 减少镜像层)
-ENV VIRTUAL_ENV=/opt/venv \
-    PATH="/opt/venv/bin:$PATH"
-RUN uv venv /opt/venv
-
 WORKDIR /app
 
 # 5. 安装 Python 依赖 
 # - 使用 BuildKit bind 挂载，不产生额外的 COPY 镜像层
 # - 结合 uv 缓存挂载，提升重复构建速度
-RUN --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    --mount=type=cache,target=/root/.cache/uv \
-    uv pip install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked
+ENV PATH="/app/.venv/bin:$PATH"
 
 # 6. 拷贝应用与脚本 (变动最为频繁的代码与脚本，置于末尾)
 COPY scripts/ /app/scripts/
