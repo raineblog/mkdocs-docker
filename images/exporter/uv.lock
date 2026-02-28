@@ -362,15 +362,15 @@ wheels = [
 
 [[package]]
 name = "mkdocs-katex-ssr"
-version = "1.0.8"
+version = "1.0.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "mkdocs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/86/f7/eb9c1de82ec8cb62a83d4837fba2672d5c38bc32c287a54b9f8554409ce2/mkdocs_katex_ssr-1.0.8.tar.gz", hash = "sha256:d1584c2194aa818bf31508adf190e6364bfe0273bfd163a1741f2fc8a541d6e1", size = 11166, upload-time = "2026-02-07T12:06:40.822Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/d6/26c119fb48cceb4f6cd5ebdcf33f4d821d729c814f993d7f39c7c1d3c169/mkdocs_katex_ssr-1.0.9.tar.gz", hash = "sha256:59a2f15a5bbeaf23f8c90d78644756ce8a800ea0abfbe1cde3017e53c5d17d70", size = 12972, upload-time = "2026-02-28T10:52:06.691Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/c3/66700b54d9cae9907242c8519fd8dd85a5e1cc1243ffef84705ddde840db/mkdocs_katex_ssr-1.0.8-py3-none-any.whl", hash = "sha256:6fdcc264bd416f3772ffbf9847020590fc40f12beae29be025254a29d2ba8422", size = 9874, upload-time = "2026-02-07T12:06:39.347Z" },
+    { url = "https://files.pythonhosted.org/packages/03/c8/a1509fe048037965a3c03857b56e4fbde8ef6c52d8c793acbc3ac76350f2/mkdocs_katex_ssr-1.0.9-py3-none-any.whl", hash = "sha256:2bf8aba61d4ddaa1e5c81310fd6f3a9e0f972fa6e710fdb969ec93cd71948942", size = 11272, upload-time = "2026-02-28T10:52:05.328Z" },
 ]
 
 [[package]]

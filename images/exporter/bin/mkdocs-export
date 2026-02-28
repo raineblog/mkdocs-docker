@@ -1,4 +1,8 @@
 #!/bin/bash
 set -e
-npm install katex
+bun install katex
+exec uv run /app/scripts/generate.py
+mkdocs build --clean
+# os.makedirs("build", exist_ok=True)
+mkdir -p build
 exec uv run /app/scripts/export.py "$@"
