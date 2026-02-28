@@ -163,7 +163,7 @@ if __name__ == "__main__":
         print(f"[{export['filename']}] {export['title']} {len(children)}")
 
     # mkut.write_site_template("mkdocs.yml", False, "template.yml")
-    subprocess.run("mkdocs build --clean", shell=True, check=True)
+    # subprocess.run("mkdocs build --clean", shell=True, check=True)
     os.makedirs("build", exist_ok=True)
 
     for export, children in task_list:

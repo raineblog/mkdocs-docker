@@ -62,23 +62,41 @@ class CachedURLFetcher(URLFetcher):
     def fetch(
         self, url: str, headers: Optional[Dict[str, str]] = None
     ) -> URLFetcherResponse:
+        
+        def _ensure_string_and_copy(resp: URLFetcherResponse) -> URLFetcherResponse:
+            if resp and "file_obj" in resp and "string" not in resp:
+                try:
+                    resp["string"] = resp["file_obj"].read()
+                except Exception:
+                    pass
+                finally:
+                    try:
+                        resp["file_obj"].close()
+                    except Exception:
+                        pass
+                if "file_obj" in resp:
+                    del resp["file_obj"]
+                    
+            # WeasyPrint might mutate the dict, return a copy
+            return dict(resp) if resp else resp
+
         # 极速路径（无需锁）
         if url in self.cache:
-            return self.cache[url]
+            return _ensure_string_and_copy(self.cache[url])
 
         if not self.is_multithread:
             response: URLFetcherResponse = super().fetch(url, headers=headers)
             self.cache[url] = response
-            return response
+            return _ensure_string_and_copy(response)
 
         # 多线程下的双重检查锁定 (Double-checked locking)
         with self.lock:
             if url in self.cache:
-                return self.cache[url]
+                return _ensure_string_and_copy(self.cache[url])
             # 如果缓存真没有，才发起真实网络请求
             response: URLFetcherResponse = super().fetch(url, headers=headers)
             self.cache[url] = response
-            return response
+            return _ensure_string_and_copy(response)
 
 
 class MlibDownloader:

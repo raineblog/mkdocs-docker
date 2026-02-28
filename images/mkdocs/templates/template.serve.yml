@@ -33,7 +33,6 @@ plugins:
         ssr_contribs:
             - mhchem
         katex_options:
-            trust: true
             macros:
                 # 下面是一些符号的兼容性定义
                 "\\RR": "\\mathbb{R}"
