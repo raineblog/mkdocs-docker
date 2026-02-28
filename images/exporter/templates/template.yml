@@ -10,7 +10,7 @@ theme:
 plugins:
 - table-reader
 -   katex-ssr: # 自己做的插件
-        disable: true # 禁用 ssr，仅植入 js 代码
+        verbose: true
         katex_dist: "https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/"
         add_katex_css: true
         katex_css_filename: "katex.min.css"
