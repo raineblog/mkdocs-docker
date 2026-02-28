@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 bun install katex
-exec uv run /app/scripts/generate.py
+uv run /app/scripts/generate.py
 mkdocs build --clean
 # os.makedirs("build", exist_ok=True)
 mkdir -p build
