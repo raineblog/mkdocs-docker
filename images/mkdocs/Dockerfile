@@ -1,20 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:alpine
-
-ENV UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    PYTHON_GIL=1
-    
-RUN apk add --no-cache \
-    bash tini tar zstd \
-    git git-fast-import \
-    ca-certificates curl wget \
-    nodejs npm zlib-dev \
-    cairo freetype-dev jpeg-dev openssh pngquant && \
-    npm install -g npm bun && \
-    git config --system --add safe.directory /__w/*
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+FROM ghcr.io/rainppr/gh-action-docker:latest
 
 WORKDIR /app
 

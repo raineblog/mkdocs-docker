@@ -4,6 +4,7 @@
 
 import os
 import gc
+import tempfile
 import pathlib
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -100,12 +101,13 @@ class MlibDownloader:
 
         self.is_multithread = self.max_threads > 1
 
+        self._image_cache_dir = tempfile.TemporaryDirectory()
+        self._image_cache = self._image_cache_dir.name
+
         # 根据是否单线程，选择最佳缓存结构 (单线程避开锁开销)
         if self.is_multithread:
-            self._image_cache = ThreadSafeCache()
             self._url_cache = ThreadSafeCache()
         else:
-            self._image_cache: Dict[str, Any] = {}
             self._url_cache: Dict[str, URLFetcherResponse] = {}
 
         self._fetcher = CachedURLFetcher(self._url_cache, self.is_multithread)
@@ -217,7 +219,7 @@ class MlibDownloader:
                 target=str(pdf_path),
                 stylesheets=[self._PAGE_CSS],
                 font_config=font_config,
-                cache=self._image_cache,  # 完全共享缓存池
+                image_cache=self._image_cache,  # 完全共享缓存池
                 optimize_images=not is_high_end,  # 高端主机不优化图片，省 CPU 时间
                 uncompressed_pdf=is_high_end,  # 高端主机不压缩 PDF，省 CPU 时间
                 full_fonts=True,
@@ -240,8 +242,9 @@ class MlibDownloader:
             return
 
         self._safe_print(f"\n▶️ 新批次 {total} 个任务开始执行")
+        stats = self.get_cache_stats()
         self._safe_print(
-            f"   当前共享缓存池：URL={len(self._url_cache)} | 图片={len(self._image_cache)}"
+            f"   当前共享缓存池：URL={stats['url_cache']} | 图片={stats['image_cache']}"
         )
 
         # 【高端主机特殊优化】：如果有超多核心和大内存，关闭GC避免卡顿，加速DOM处理
@@ -301,15 +304,24 @@ class MlibDownloader:
         )
 
     def get_cache_stats(self) -> Dict[str, int]:
+        try:
+            image_cache_len = len(os.listdir(self._image_cache))
+        except Exception:
+            image_cache_len = 0
+            
         return {
             "url_cache": len(self._url_cache),
-            "image_cache": len(self._image_cache),
+            "image_cache": image_cache_len,
             "pending_tasks": len(self._task_list),
         }
 
     def clear_caches(self) -> None:
         self._url_cache.clear()
-        self._image_cache.clear()
+        try:
+            for f in os.listdir(self._image_cache):
+                os.remove(os.path.join(self._image_cache, f))
+        except Exception:
+            pass
         self._safe_print("🧹 所有永久缓存已手动清空")
 
     def __del__(self):
