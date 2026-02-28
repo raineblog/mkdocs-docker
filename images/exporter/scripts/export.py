@@ -155,6 +155,8 @@ def process_top_level(info, sub_nav, baseurl):
 
 
 if __name__ == "__main__":
+    os.makedirs("build", exist_ok=True)
+    print('开始导出')
     nav = mkut.get_raw_nav()
 
     task_list = [(item["export"], item["children"]) for item in nav if "export" in item]

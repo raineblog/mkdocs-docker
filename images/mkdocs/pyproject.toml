@@ -1,0 +1,27 @@
+[project]
+name = "mkdocs-docker"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "cairosvg>=2.8.2",
+    "mkdocs==1.6.1",
+    "mkdocs-advanced-seo>=1.0.3",
+    "mkdocs-document-dates",
+    "mkdocs-glightbox>=0.5.2",
+    "mkdocs-katex-ssr>=1.0.9",
+    "mkdocs-llmstxt>=0.5.0",
+    "mkdocs-material",
+    "mkdocs-minify-html-plugin>=0.3.9",
+    "mkdocs-rss-plugin>=1.17.9",
+    "mkdocs-table-reader-plugin>=3.1.0",
+    "pillow>=12.1.1",
+    "pymdown-extensions>=10.21",
+    "pyyaml>=6.0.3",
+    "toml>=0.10.2",
+]
+
+[tool.uv.sources]
+mkdocs-document-dates = { git = "https://github.com/raineblog/mkdocs-document-dates.git" }
+mkdocs-material = { git = "https://github.com/raineblog/mkdocs-material.git" }

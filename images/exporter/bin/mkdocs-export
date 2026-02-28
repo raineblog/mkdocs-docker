@@ -2,7 +2,5 @@
 set -e
 bun install katex
 uv run /app/scripts/generate.py
-mkdocs build --clean
-# os.makedirs("build", exist_ok=True)
-mkdir -p build
-exec uv run /app/scripts/export.py "$@"
+uv run mkdocs build --clean
+uv run /app/scripts/export.py "$@"

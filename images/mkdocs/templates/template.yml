@@ -58,6 +58,8 @@ plugins:
         katex_css_filename: "katex-swap.min.css"
         ssr_contribs:
             - mhchem
+        client_scripts:
+            - copy-tex
         katex_options:
             trust: true
             macros:

@@ -64,24 +64,24 @@ plugins:
                 "·": "\\cdot"
                 "->": "\\to"
                 "<-": "\\gets"
--   minify_html:
-        # https://docs.rs/minify-html/0.16.4/minify_html/struct.Cfg.html#fields
-        # https://github.com/monosans/mkdocs-minify-html-plugin
-        allow_noncompliant_unquoted_attribute_values: false
-        allow_optimal_entities: false
-        allow_removing_spaces_between_attributes: false
-        keep_closing_tags: true
-        keep_comments: false
-        keep_html_and_head_opening_tags: true
-        keep_input_type_text_attr: true
-        keep_ssi_comments: false
-        minify_css: true
-        minify_doctype: true
-        minify_js: true
-        preserve_brace_template_syntax: true
-        preserve_chevron_percent_template_syntax: true
-        remove_bangs: true
-        remove_processing_instructions: true
+# -   minify_html:
+#         # https://docs.rs/minify-html/0.16.4/minify_html/struct.Cfg.html#fields
+#         # https://github.com/monosans/mkdocs-minify-html-plugin
+#         allow_noncompliant_unquoted_attribute_values: false
+#         allow_optimal_entities: false
+#         allow_removing_spaces_between_attributes: false
+#         keep_closing_tags: true
+#         keep_comments: false
+#         keep_html_and_head_opening_tags: true
+#         keep_input_type_text_attr: true
+#         keep_ssi_comments: false
+#         minify_css: true
+#         minify_doctype: true
+#         minify_js: true
+#         preserve_brace_template_syntax: true
+#         preserve_chevron_percent_template_syntax: true
+#         remove_bangs: true
+#         remove_processing_instructions: true
 markdown_extensions:
 - abbr
 - admonition

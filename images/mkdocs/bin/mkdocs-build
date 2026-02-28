@@ -4,7 +4,7 @@ cp /app/package.json .
 cp /app/gulpfile.js .
 cp -r /app/node_modules .
 
-python /app/scripts/generate.py "$@"
+uv run /app/scripts/generate.py "$@"
+uv run mkdocs build --clean
 
-mkdocs build --clean
 cp -af public/. site/
