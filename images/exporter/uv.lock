@@ -198,7 +198,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "mkdocs", specifier = "==1.6.1" },
-    { name = "mkdocs-katex-ssr", specifier = ">=1.0.8" },
+    { name = "mkdocs-katex-ssr", specifier = ">=1.0.9" },
     { name = "mkdocs-material", git = "https://github.com/raineblog/mkdocs-material.git" },
     { name = "mkdocs-minify-html-plugin", specifier = ">=0.3.9" },
     { name = "mkdocs-table-reader-plugin", specifier = ">=3.1.0" },
@@ -376,7 +376,7 @@ wheels = [
 [[package]]
 name = "mkdocs-material"
 version = "9.7.3"
-source = { git = "https://github.com/raineblog/mkdocs-material.git#e473ec24e51b3d9aaddf7b66806773c0c89427b1" }
+source = { git = "https://github.com/raineblog/mkdocs-material.git#cdb5a8727403f1a69c857ae3870536afab46afc3" }
 dependencies = [
     { name = "babel" },
     { name = "backrefs" },

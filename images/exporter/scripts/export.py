@@ -155,8 +155,6 @@ def process_top_level(info, sub_nav, baseurl):
 
 
 if __name__ == "__main__":
-    os.makedirs("build", exist_ok=True)
-    print('开始导出')
     nav = mkut.get_raw_nav()
 
     task_list = [(item["export"], item["children"]) for item in nav if "export" in item]
@@ -165,8 +163,8 @@ if __name__ == "__main__":
         print(f"[{export['filename']}] {export['title']} {len(children)}")
 
     # mkut.write_site_template("mkdocs.yml", False, "template.yml")
-    # subprocess.run("mkdocs build --clean", shell=True, check=True)
-    # os.makedirs("build", exist_ok=True)
+    subprocess.run("mkdocs build --clean", shell=True, check=True)
+    os.makedirs("build", exist_ok=True)
 
     for export, children in task_list:
         process_top_level(export, children, "./site")
