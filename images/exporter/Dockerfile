@@ -35,8 +35,7 @@ WORKDIR /app
 RUN --mount=type=bind,source=.python-version,target=.python-version \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked
+    uv sync --locked --no-cache
 ENV PATH="/app/.venv/bin:$PATH"
 
 # 6. 拷贝应用与脚本 (变动最为频繁的代码与脚本，置于末尾)
