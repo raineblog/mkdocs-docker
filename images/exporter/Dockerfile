@@ -19,10 +19,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 #     && fc-cache -fv \
 #     && git config --system --add safe.directory /__w/*
 
-RUN apk add --no-cache nodejs npm && \
-    npm install -g npm bun && \
-    bun install -g katex && \
-    git config --system --add safe.directory /__w/*
+RUN git config --system --add safe.directory /__w/*
 
 # 3. 引入构建工具 (uv:latest 标签更新频繁，需置于底层系统依赖之后)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
