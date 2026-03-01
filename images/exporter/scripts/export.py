@@ -119,7 +119,7 @@ def process_top_level(info, sub_nav, baseurl):
                 )
                 pdf_path = os.path.join(first_out, second_title, third_title + ".pdf")
                 html_url = clean_url(baseurl, third_file)
-                downloader.add_task([html_url, pdf_path])
+                downloader.add_task(html_url, pdf_path)
                 section["sections"].append({"title": third_title, "path": pdf_path})
             sections.append(section)
 

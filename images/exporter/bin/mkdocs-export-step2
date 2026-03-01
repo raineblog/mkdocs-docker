@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
-mkdocs-export-step1
-mkdocs-export-step2
 # bun install katex
 # uv run /app/scripts/generate.py
 # uv run mkdocs build --clean
-# uv run /app/scripts/export.py "$@"
+exec uv run /app/scripts/export.py "$@"
+# 需要 site config docs 三个文件夹
