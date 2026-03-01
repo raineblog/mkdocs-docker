@@ -10,15 +10,9 @@ ENV UV_COMPILE_BYTECODE=1 \
 # 添加打包用的 tar 和 zstd，以及 weasyprint 和 nodejs
 RUN apk add --no-cache \
     make bash tini tar zstd \
-    git git-fast-import \
-    ca-certificates curl wget \
+    git ca-certificates curl wget \
     weasyprint nodejs npm \
-    so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 \
-    font-liberation font-liberation-sans-narrow ttf-linux-libertine
-
-RUN apk add --no-cache nodejs npm && \
-    npm install -g npm bun && \
-    bun install -g katex && \
+    so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 && \
     git config --system --add safe.directory /__w/*
 
 # 3. 引入构建工具 (uv:latest 标签更新频繁，需置于底层系统依赖之后)

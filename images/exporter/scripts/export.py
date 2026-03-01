@@ -50,9 +50,6 @@ def clean_url(baseurl, filepath):
     )
 
 
-
-
-
 def process_top_level(info, sub_nav, baseurl):
     first_title = info["title"]
     first_out = os.path.join("cache", first_title)
@@ -100,11 +97,11 @@ def process_top_level(info, sub_nav, baseurl):
     )
 
     shutil.copy("/app/templates/template.tex", "cache/main.tex")
-    
+
     base_name = os.path.splitext(info["filename"])[0]
     tar_path = os.path.join("build", f"{base_name}.tar.zst")
     print(f"[*] Packaging {base_name} tex environment...")
-    
+
     cmd = f"tar -cf - -C cache . | zstd -T0 -3 > {tar_path}"
     subprocess.run(cmd, shell=True, check=True)
 
