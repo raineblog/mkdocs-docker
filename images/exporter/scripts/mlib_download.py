@@ -122,59 +122,20 @@ class DiskCacheFetcher(URLFetcher):
             status=getattr(result, 'status', 200)
         )
 
-class PersistentImageCache:
-    """
-    一个安全的、持久化的图片缓存器。
-    模拟 WeasyPrint 内部的 DiskCache，但去除了带有破坏性的 __del__ 目录销毁逻辑。
-    不仅防止了循环渲染时的 GC 竞态崩溃，还能跨 CI 构建保留你的图片。
-    """
-    def __init__(self, folder: str | pathlib.Path):
-        self._path = pathlib.Path(folder).resolve()
-        self._path.mkdir(parents=True, exist_ok=True)
-        # 用来放轻量级的 WeasyPrint 内部对象
-        self._memory_cache = {}
-
-    def _path_from_key(self, key: str) -> pathlib.Path:
-        # WeasyPrint 的图片 Key 是字符串，转成 md5 当文件名
-        digest = hashlib.md5(key.encode('utf-8')).hexdigest()
-        return self._path / digest
-
-    def __getitem__(self, key: str):
-        if key in self._memory_cache:
-            return self._memory_cache[key]
-        local_path = self._path_from_key(key)
-        if local_path.exists():
-            return local_path.read_bytes()
-        raise KeyError(key)
-
-    def __setitem__(self, key: str, value):
-        # 如果是字节流（Rasterized Image），直接落盘持久化
-        if isinstance(value, bytes):
-            self._path_from_key(key).write_bytes(value)
-        else:
-            # 轻量级的 Python 渲染元数据，存内存即可
-            self._memory_cache[key] = value
-
-    def __contains__(self, key: str):
-        return key in self._memory_cache or self._path_from_key(key).exists()
-
 class MlibDownloader:
     def __init__(self, default_cache_dir: str = "./.cache/weasyprint"):
         logger.info("Initializing MlibDownloader...")  # 移到最上面！
 
-        self._images_cache_dir = pathlib.Path(default_cache_dir).resolve() / 'images'
-        self._remote_cache_dir = pathlib.Path(default_cache_dir).resolve() / 'remote'
+        self._images_cache = {}
 
-        self._images_cache_dir.mkdir(parents=True, exist_ok=True)
+        self._remote_cache_dir = pathlib.Path(default_cache_dir).resolve()
         self._remote_cache_dir.mkdir(parents=True, exist_ok=True)
-
-        self._safe_image_cache = PersistentImageCache(self._images_cache_dir)
         self._optimized_fetcher = DiskCacheFetcher(cache_dir=self._remote_cache_dir)
 
         self._task_queue: List[Tuple[str, str]] = []
         self._font_config = FontConfiguration()
 
-        logger.info("Heating up, it may take a long time...")  # 移到最上面！
+        logger.info("Warming up, this may take several minutes...")  # 移到最上面！
 
         self._base_stylesheets = [
             CSS(
@@ -230,7 +191,7 @@ class MlibDownloader:
                     target=dst_p,
                     stylesheets=self._base_stylesheets,
                     font_config=self._font_config,
-                    cache=self._safe_image_cache,
+                    cache=self._images_cache,
                     full_fonts=False,
                     uncompressed_pdf=True,
                     presentational_hints=True,
