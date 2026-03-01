@@ -8,13 +8,19 @@ import gc
 import time
 import tempfile
 import pathlib
-import threading
-from collections.abc import MutableMapping
-from typing import Any, Dict, List, Optional, Tuple
-
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
 from weasyprint.urls import URLFetcher, URLFetcherResponse
+
+
+def format_size(size_bytes: int) -> str:
+    """格式化字节数为人类可读格式"""
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    elif size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.2f} KB"
+    else:
+        return f"{size_bytes / (1024 * 1024):.2f} MB"
 
 
 class CachedURLFetcher(URLFetcher):
@@ -22,6 +28,14 @@ class CachedURLFetcher(URLFetcher):
     def __init__(self, cache: MutableMapping[str, URLFetcherResponse]):
         super().__init__()
         self.cache = cache
+
+    def get_total_size(self) -> int:
+        """获取当前缓存的总字节数"""
+        total = 0
+        for resp in self.cache.values():
+            if 'string' in resp:
+                total += len(resp['string'])
+        return total
 
     def fetch(self, url: str, headers: Optional[Dict[str, str]] = None) -> URLFetcherResponse:
         # 极速命中路径
@@ -31,10 +45,7 @@ class CachedURLFetcher(URLFetcher):
         # 发起真实获取
         response: URLFetcherResponse = super().fetch(url, headers=headers)
         
-        # 【关键修复】：WeasyPrint 的默认 fetcher 经常返回带有 'file_obj' 的字典。
-        # 如果我们直接缓存这个字典，WeasyPrint 在第一次渲染结束后会关闭该 file_obj。
-        # 导致第二次命中缓存时抛出 "I/O operation on closed file"。
-        # 修复：存入缓存前，必须读取流内容并转为 bytes (string 字段)，然后关闭并删除 file_obj。
+        # 修复 I/O Closed 错误：存入缓存前，必须读取流内容并转为 bytes
         if response and 'file_obj' in response and 'string' not in response:
             try:
                 response['string'] = response['file_obj'].read()
@@ -65,13 +76,11 @@ class MlibDownloader:
         self.default_base_url = default_base_url
         self._task_list: List[Tuple[str, str, Optional[str]]] = []
 
-        # 【WeasyPrint 60.0+ 适配】：使用磁盘临时目录作为图片缓存，防止内存溢出
-        # 在 68.1+ 中，参数名为 cache，类型可以是 dict 或 路径字符串
-        self._image_cache_dir = tempfile.TemporaryDirectory()
-        self._image_cache = self._image_cache_dir.name
-
-        # 实例级永久缓存（多次复用关键）
+        # 【跨文档永久缓存】：使用字典而不是路径，确保持久化命中。
+        # 在 68.1+ 中，cache 参数如果是 dict，则为内存常驻。
+        self._image_cache: Dict[str, Any] = {}
         self._url_cache: Dict[str, URLFetcherResponse] = {}
+        
         self._font_config = FontConfiguration()
         self._fetcher = CachedURLFetcher(self._url_cache)
 
@@ -86,7 +95,7 @@ class MlibDownloader:
         """)
 
         print(f"🚀 MlibDownloader 已初始化 | 默认根目录: {default_base_url or 'auto'}", flush=True)
-        print(f"   采用磁盘二级缓存: {self._image_cache}", flush=True)
+        print("   引擎策略: 单线程极致缓存复用 (Memory-Resident Cache)", flush=True)
 
         # 【极致优化】：提前预缓存字体 CSS
         self._pre_cache_fonts()
@@ -119,21 +128,23 @@ class MlibDownloader:
         self._task_list.append((html_source, pdf_path, base_url))
 
     def start_tasks(self) -> None:
-        """执行当前所有任务（单线程），执行完毕自动清空任务队列"""
+        """执行当前所有任务（单线程），充分利用字典缓存池"""
         total = len(self._task_list)
         if total == 0:
             print("No tasks queued.", flush=True)
             return
 
-        # 获取当前缓存状态
+        batch_start_time = time.time()
+        
+        # 获取初始缓存状态
         stats = self.get_cache_stats()
-        print(f"\n▶️ 新一批 {total} 个任务开始执行（极致缓存复用模式）", flush=True)
-        print(f"   当前缓存：URL={stats['url_cache']} | 图片={stats['image_cache']}", flush=True)
+        print(f"\n▶️ 新一批 {total} 个任务执行中 (已命中资源: {stats['url_cache']} / {stats['url_size_str']})", flush=True)
 
         for i, (html_source, pdf_path_str, base_url) in enumerate(self._task_list, 1):
+            task_start_time = time.time()
             pdf_path = pathlib.Path(pdf_path_str).expanduser().resolve()
-            # 【实时日志】：确保每一行都即时刷新到终端
-            print(f"[{i}/{total}] {html_source} → {pdf_path.name}  (base={base_url or 'auto'})", flush=True)
+            
+            print(f"[{i}/{total}] {html_source} → {pdf_path.name}", flush=True)
 
             try:
                 pdf_path.parent.mkdir(parents=True, exist_ok=True)
@@ -147,7 +158,7 @@ class MlibDownloader:
                 else:
                     effective_base = None
 
-                # 【WeasyPrint 68.1 适配】：media_type 默认为 print
+                # 构造 HTML 对象
                 if src_path.is_file():
                     html = HTML(
                         filename=str(src_path),
@@ -163,11 +174,12 @@ class MlibDownloader:
                         media_type='print'
                     )
 
+                # 执行渲染
                 html.write_pdf(
                     target=str(pdf_path),
                     stylesheets=[self._PAGE_CSS],
                     font_config=self._font_config,
-                    # 【WeasyPrint 68.1 适配】：参数名改回了 cache，且支持硬盘路径字符串
+                    # 【WeasyPrint 68.1 适配】：传入字典实现跨文档永久缓存
                     cache=self._image_cache,
                     optimize_images=False,
                     uncompressed_pdf=True,
@@ -175,63 +187,49 @@ class MlibDownloader:
                     hinting=True,
                     presentational_hints=True,
                 )
-                # 打印成功标记，立刻冲刷
-                print(f"   ✅ 完成: {pdf_path.name}", flush=True)
+                
+                duration = time.time() - task_start_time
+                print(f"   ✅ 完成 | 耗时: {duration:.2f}s | {pdf_path.name}", flush=True)
 
             except Exception as e:
                 print(f"   ❌ ERROR {html_source}: {type(e).__name__}: {e}", flush=True)
 
-        print("🎉 本批任务全部完成！可通过 add_task 继续添加下一次批次。", flush=True)
+        batch_duration = time.time() - batch_start_time
+        print(f"\n🎉 批次处理结束 | 总计耗时: {batch_duration:.2f}s", flush=True)
         self._print_cache_stats()
-        self._task_list.clear()   # 只清任务队列，缓存保留
+        self._task_list.clear()
 
     def _print_cache_stats(self) -> None:
         """打印当前缓存统计"""
         stats = self.get_cache_stats()
-        print("📊 当前缓存统计:", flush=True)
-        print(f"   • URL 缓存: {stats['url_cache']} 个资源 (CDN/字体等)", flush=True)
-        print(f"   • 图片缓存: {stats['image_cache']} 个 (磁盘复用)", flush=True)
-        print(f"   • 默认根目录: {self.default_base_url or 'auto'}", flush=True)
+        print("📊 缓存资源分布 (字节级分析):", flush=True)
+        print(f"   • 网络层缓存 (CDN/字体): {stats['url_cache']} 项 | 总计: {stats['url_size_str']}", flush=True)
+        print(f"   • 页面图层缓存 (@media): {stats['image_cache']} 项", flush=True)
+        print(f"   • 缓存策略: 跨文档内存常驻 (Max-Performance Mode)", flush=True)
 
-    def get_cache_stats(self) -> Dict[str, int]:
-        """计算当前缓存数量"""
-        try:
-            # 统计磁盘临时目录里的图片文件数
-            img_len = len(os.listdir(self._image_cache))
-        except Exception:
-            img_len = 0
-            
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """计算详细缓存指标"""
+        url_size = self._fetcher.get_total_size()
         return {
             "url_cache": len(self._url_cache),
-            "image_cache": img_len,
+            "url_size_raw": url_size,
+            "url_size_str": format_size(url_size),
+            "image_cache": len(self._image_cache),
             "pending_tasks": len(self._task_list),
         }
 
     def clear_caches(self) -> None:
         """手动清空所有缓存"""
         self._url_cache.clear()
-        # 清空磁盘目录
-        try:
-            for f in os.listdir(self._image_cache):
-                os.remove(os.path.join(self._image_cache, f))
-        except Exception:
-            pass
-        print("🧹 所有永久缓存已手动清空", flush=True)
+        self._image_cache.clear()
+        print("🧹 所有永久缓存已从内存清除", flush=True)
 
     def __del__(self):
-        """销毁时清理临时目录"""
+        """销毁时输出统计数据"""
         if hasattr(self, '_url_cache'):
-            # 这里不用 print，因为程序退出时打印可能出问题，
-            # 但如果一定要打印，确保 flush
             try:
-                print("\n🗑️  MlibDownloader 任务销毁...", flush=True)
-            except Exception:
-                pass
-        
-        # 强制清理临时目录
-        if hasattr(self, '_image_cache_dir'):
-            try:
-                self._image_cache_dir.cleanup()
+                print("\n🗑️  MlibDownloader 实例生命周期结束", flush=True)
+                self._print_cache_stats()
             except Exception:
                 pass
 
