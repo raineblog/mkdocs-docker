@@ -3,6 +3,8 @@ theme:
     language: zh
     palette:
         scheme: default
+    features:
+    - navigation.prune
     icon:
         repo: fontawesome/brands/git-alt
         edit: material/pencil

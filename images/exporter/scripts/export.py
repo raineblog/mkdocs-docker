@@ -5,7 +5,7 @@ import os
 import shutil
 from pathlib import Path
 import json
-import utils as mkut
+import generate as mkut
 from mlib_download import MlibDownloader
 
 downloader = MlibDownloader(default_base_url="./site/")
