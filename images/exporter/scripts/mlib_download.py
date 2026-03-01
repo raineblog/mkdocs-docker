@@ -12,7 +12,7 @@ from weasyprint.text.fonts import FontConfiguration
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s[%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
+    datefmt="%Y-%m-%d %H:%M:%S ",
     stream=sys.stdout,  # CI 环境推荐统一输出到 stdout
 )
 
@@ -37,9 +37,7 @@ class MlibDownloader:
 
         self._base_stylesheets = [
             CSS(string="@page { size: A4; margin: 1cm 0.75cm; }"),
-            CSS(
-                url="https://cdn.jsdelivr.net/npm/@raineblog/mkdocs-fontkit@latest/dist/fonts.min.css"
-            ),
+            CSS(url="https://cdn.jsdelivr.net/npm/@raineblog/mkdocs-fontkit@latest/dist/fonts.min.css"),
         ]
 
         logger.info(f"Initialized MlibDownloader (Base URL: {self.site_root})")
@@ -61,16 +59,20 @@ class MlibDownloader:
             src_p = pathlib.Path(src).resolve()
             dst_p = pathlib.Path(dst).resolve()
 
+            base_p = src_p.parent
+
             # CI 友好的进度条：使用 [1/10] 格式做前缀，线性追加日志
             progress_prefix = f"[{i}/{total_tasks}]"
-            logger.info(
-                f"{progress_prefix} Converting {src_p.name} -> {dst_p.name} ..."
-            )
+            logger.info(f"{progress_prefix} Converting {src_p.name} -> {dst_p.name} ...")
 
             try:
                 dst_p.parent.mkdir(parents=True, exist_ok=True)
 
-                html = HTML(filename=src_p, base_url=self.site_root, media_type="print")
+                html = HTML(
+                    filename=src_p,
+                    base_url=base_p,
+                    media_type="print"
+                )
 
                 html.write_pdf(
                     target=dst_p,
