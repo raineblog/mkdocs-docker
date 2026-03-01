@@ -1,4 +1,4 @@
 #!/bin/bash
-bun run gulp --input-dir site --output-dir dist
+bunx --bun gulp --input-dir site --output-dir dist
 rm -rf site
 mv dist site

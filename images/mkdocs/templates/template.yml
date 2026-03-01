@@ -58,6 +58,7 @@ plugins:
         katex_css_filename: "katex-swap.min.css"
         ssr_contribs:
             - mhchem
+            - render-a11y-string
         client_scripts:
             - copy-tex
         katex_options:
