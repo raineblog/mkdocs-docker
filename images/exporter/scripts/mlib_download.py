@@ -6,8 +6,9 @@
 # import os
 # import gc
 import time
-# import tempfile
 import pathlib
+import io
+from typing import Any, Dict, List, Optional, Tuple, MutableMapping
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
 from weasyprint.urls import URLFetcher, URLFetcherResponse
@@ -31,21 +32,11 @@ class CachedURLFetcher(URLFetcher):
         self.cache = cache
 
     def get_total_size(self) -> int:
-        """获取当前缓存的总字节数 (兼容多种响应对象类型)"""
+        """获取当前缓存的总字节数 (统计缓存字典中存储的 bytes 长度)"""
         total = 0
-        for resp in self.cache.values():
-            try:
-                # 优先作为字典处理
-                if isinstance(resp, dict):
-                    s = resp.get("string")
-                else:
-                    # 尝试作为对象属性处理
-                    s = getattr(resp, "string", None)
-
-                if s and isinstance(s, (bytes, str)):
-                    total += len(s)
-            except Exception:
-                pass
+        for data in self.cache.values():
+            if isinstance(data, dict) and "content" in data:
+                total += len(data["content"])
         return total
 
     def fetch(
@@ -53,8 +44,16 @@ class CachedURLFetcher(URLFetcher):
     ) -> URLFetcherResponse:
         # 极速命中路径
         if url in self.cache:
-            resp = self.cache[url]
-            return resp.copy() if isinstance(resp, dict) else resp
+            c = self.cache[url]
+            # 【核心修复】：为每次请求提供全新的 BytesIO 包装
+            # 这样 WeasyPrint 关掉的是本次任务的临时流，不会影响缓存池中的原始字节
+            return URLFetcherResponse(
+                url=c.get("url", url),
+                body=io.BytesIO(c["content"]),
+                mime_type=c.get("mime_type"),
+                encoding=c.get("encoding"),
+                redirected_url=c.get("redirected_url")
+            )
 
         # 发起真实获取
         try:
@@ -65,48 +64,52 @@ class CachedURLFetcher(URLFetcher):
                 print(f"\n   ⚠️ 资源加载失败 [{url}]: {e}", flush=True)
             raise e
 
-        # 统一转为字典并处理 file_obj 泄露/关闭问题
+        # 统一提取内容并存储为 bytes，彻底解构原始对象
         if response is not None:
-            # 如果是本地资源且 fetcher 返回空或异常（WeasyPrint 某些版本 fallback 行为）
-            # 我们在这里做一个安全的探测
-            has_file_obj = False
-            has_string = False
+            try:
+                # 获取原始流
+                if isinstance(response, dict):
+                    f = response.get("file_obj")
+                    content = response.get("string")
+                    mime_type = response.get("mime_type")
+                    encoding = response.get("encoding")
+                    redirected_url = response.get("redirected_url")
+                else:
+                    f = getattr(response, "file_obj", None)
+                    content = getattr(response, "string", None)
+                    mime_type = getattr(response, "mime_type", None)
+                    encoding = getattr(response, "encoding", None)
+                    redirected_url = getattr(response, "redirected_url", None)
 
-            if isinstance(response, dict):
-                has_file_obj = "file_obj" in response
-                has_string = "string" in response
-            else:
-                has_file_obj = hasattr(response, "file_obj")
-                has_string = hasattr(response, "string")
-
-            if has_file_obj and not has_string:
-                try:
-                    # 读取全部内容到内存，彻底解决 I/O closed 错误
-                    f = (
-                        response["file_obj"]
-                        if isinstance(response, dict)
-                        else response.file_obj
-                    )
+                # 如果有流但没内容，先排干流
+                if f and content is None:
                     content = f.read()
-
-                    if isinstance(response, dict):
-                        response["string"] = content
-                        del response["file_obj"]
-                    else:
-                        response = dict(response)
-                        response["string"] = content
-                        if "file_obj" in response:
-                            del response["file_obj"]
-
                     try:
                         f.close()
                     except Exception:
                         pass
-                except Exception:
-                    pass
+                
+                if content is not None:
+                    # 缓存纯数据和元数据
+                    self.cache[url] = {
+                        "content": content,
+                        "mime_type": mime_type,
+                        "encoding": encoding,
+                        "redirected_url": redirected_url,
+                        "url": url
+                    }
+                    # 返回给本次渲染用的新流
+                    return URLFetcherResponse(
+                        url=url,
+                        body=io.BytesIO(content),
+                        mime_type=mime_type,
+                        encoding=encoding,
+                        redirected_url=redirected_url
+                    )
+            except Exception:
+                pass
 
-        self.cache[url] = response
-        return response.copy() if isinstance(response, dict) else response
+        return response
 
 
 class MlibDownloader:
