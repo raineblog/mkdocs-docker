@@ -60,8 +60,9 @@ class CachedURLFetcher(URLFetcher):
         try:
             response: URLFetcherResponse = super().fetch(url, headers=headers)
         except Exception as e:
+            # 记录资产加载失败，方便调试
             if not url.startswith(("http://", "https://")):
-                print(f"\n   ⚠️ 资源加载异常 [{url}]: {e}", flush=True)
+                print(f"\n   ⚠️ 资源加载失败 [{url}]: {e}", flush=True)
             raise e
 
         # 统一转为字典并处理 file_obj 泄露/关闭问题
@@ -213,13 +214,16 @@ class MlibDownloader:
                 src_path = pathlib.Path(html_source).expanduser()
 
                 # 【关键修复】：base_url 必须是绝对路径的文件协议 URI (file:///)
-                # 这能确保 WeasyPrint 正确处理 ../../../ 这种相对寻址
+                # 且必须以 / 结尾，否则 WeasyPrint 会在解析 ../ 时多跳一级（即丢弃当前目录名）
                 if src_path.is_file():
                     effective_base = src_path.parent.resolve().as_uri()
                 elif base_url:
                     effective_base = pathlib.Path(base_url).resolve().as_uri()
                 else:
                     effective_base = None
+
+                if effective_base and not effective_base.endswith("/"):
+                    effective_base += "/"
 
                 html_kwargs = {
                     "base_url": effective_base,
