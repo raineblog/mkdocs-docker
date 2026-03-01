@@ -71,7 +71,7 @@ class DiskCacheFetcher(URLFetcher):
         if url in self.url_to_path:
             local_path = self.url_to_path[url]
             if local_path.exists():
-                logger.debug(f"[Cache Hit] {url} -> {local_path.name}")
+                logger.debug(f"Cache Hit {url} -> {local_path.name}")
                 mime_type = self.url_to_mime.get(url, 'application/octet-stream')
                 
                 return URLFetcherResponse(
@@ -84,7 +84,7 @@ class DiskCacheFetcher(URLFetcher):
                 del self.url_to_mime[url]
 
         # --- 2. 未命中，发起真实网络请求 ---
-        logger.debug(f"[Downloading] {url} ...")
+        logger.debug(f"Downloading {url} ...")
         
         # result 本身就是一个 URLFetcherResponse 实例（它模拟了文件流）
         result = super().fetch(url, headers)
@@ -129,12 +129,15 @@ class MlibDownloader:
         self._images_cache_dir = pathlib.Path(default_cache_dir).resolve() / 'images'
         self._remote_cache_dir = pathlib.Path(default_cache_dir).resolve() / 'remote'
 
+        self._images_cache_dir.mkdir(parents=True, exist_ok=True)
+        self._remote_cache_dir.mkdir(parents=True, exist_ok=True)
+
         self._optimized_fetcher = DiskCacheFetcher(cache_dir=self._remote_cache_dir)
 
         self._task_queue: List[Tuple[str, str]] = []
         self._font_config = FontConfiguration()
 
-        logger.info("Heating up up up...")  # 移到最上面！
+        logger.info("Heating up, it may take a long time...")  # 移到最上面！
 
         self._base_stylesheets = [
             CSS(
@@ -145,6 +148,11 @@ class MlibDownloader:
                 url_fetcher=self._optimized_fetcher,
                 font_config=self._font_config
             ),
+            CSS(
+                url="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css",
+                url_fetcher=self._optimized_fetcher,
+                font_config=self._font_config
+            )
         ]
 
         logger.info("Initialization completed.")
@@ -160,7 +168,7 @@ class MlibDownloader:
             logger.warning("No tasks in the queue. Exiting.")
             return
 
-        logger.info(f"[Starting PDF conversion batch: {total_tasks} files...]")
+        logger.info(f"Starting PDF conversion batch: {total_tasks} files...")
 
         for i, (src, dst) in enumerate(self._task_queue, 1):
             src_p = pathlib.Path(src).resolve()
@@ -169,8 +177,7 @@ class MlibDownloader:
             base_p = src_p.parent
 
             # CI 友好的进度条：使用 [1/10] 格式做前缀，线性追加日志
-            progress_prefix = f"[{i}/{total_tasks}]"
-            logger.info(f"{progress_prefix} Converting {src_p.name} -> {dst_p.name} ...")
+            logger.info(f"{i}/{total_tasks} Converting {src_p.name} -> {dst_p.name} ...")
 
             try:
                 dst_p.parent.mkdir(parents=True, exist_ok=True)
@@ -196,13 +203,13 @@ class MlibDownloader:
             except Exception as e:
                 # 记录详细的异常堆栈 (exc_info=True)
                 logger.error(
-                    f"[{progress_prefix}] Failed to convert {src_p.name}: {str(e)}",
+                    f"Failed to convert {src_p.name}: {str(e)}",
                     exc_info=True,
                 )
                 # 运维关键：捕获记录后向上抛出，使脚本以退出码非 0 结束，阻断 CI 流程
                 raise
 
-        logger.info("[All tasks completed successfully.]")
+        logger.info("All tasks completed successfully.")
         self._task_queue.clear()
 
 
