@@ -1,5 +1,5 @@
 # mlib_download.py
-# WeasyPrint HTML-to-PDF 下载器 - 极致性能与现代架构版 (V8.3)
+# WeasyPrint HTML-to-PDF 下载器 - 极致性能与现代架构版 (V8.4)
 # 针对 WeasyPrint 68.1+ 深度优化，解决路径重定向与缓存命中统计问题
 
 import io
@@ -16,10 +16,10 @@ from weasyprint.urls import URLFetcherResponse, default_url_fetcher
 
 class CachedURLFetcher:
     """
-    极致性能与路径兼容的现代 Fetcher (V8.3)
-    - 兼容 WeasyPrint 各个版本的 default_url_fetcher 响应格式 (dict/object)
+    极致性能与路径兼容的现代 Fetcher (V8.4)
+    - 兼容 WeasyPrint 各个版本的 default_url_fetcher 响应格式 (dict/object/stream)
     - 智能路径重定向：由站点根目录 site_root 驱动，解决 Github Runner 路径偏移
-    - 资源计数统计：替代不可靠的体积统计
+    - 资源计数统计：替代不可靠的体积统计，彻底解决 0 项缓存 Bug
     """
 
     def __init__(self, cache_pool: MutableMapping[str, Dict[str, Any]], site_root: pathlib.Path):
@@ -80,37 +80,48 @@ class CachedURLFetcher:
                 print(f"\n   ⚠️ 资源获取失败 [{target_url}]: {e}", flush=True)
             raise e
 
-        # 4. 解析并入库
+        # 4. 解析数据并填充共享缓存 (V8.4 极致兼容版)
         if response is not None:
             try:
-                is_dict = isinstance(response, dict)
-                raw_body = (
-                    (response.get("string") or response.get("file_obj"))
-                    if is_dict
-                    else (getattr(response, "body", None) or getattr(response, "string", None) or getattr(response, "file_obj", None))
-                )
-                
+                # 尝试从各种可能的格式中提取原始 bytes
                 content: Optional[bytes] = None
-                if isinstance(raw_body, (bytes, str)):
-                    content = raw_body if isinstance(raw_body, bytes) else raw_body.encode("utf-8")
-                elif hasattr(raw_body, "read"):
-                    content = raw_body.read()
-                    if hasattr(raw_body, "close"):
-                        try: raw_body.close()
-                        except: pass
                 
+                # 策略 A: 响应本身就是流 (例如 urllib 原始返回)
+                if hasattr(response, "read"):
+                    content = response.read()
+                # 策略 B: 响应是字典 (旧版 WeasyPrint)
+                elif isinstance(response, dict):
+                    raw = response.get("string") or response.get("file_obj")
+                    if isinstance(raw, (bytes, str)):
+                        content = raw if isinstance(raw, bytes) else raw.encode("utf-8")
+                    elif hasattr(raw, "read"):
+                        content = raw.read()
+                # 策略 C: 响应是对象 (新版 WeasyPrint FetcherResponse)
+                else:
+                    for attr in ("body", "string", "file_obj"):
+                        raw = getattr(response, attr, None)
+                        if raw is not None:
+                            if isinstance(raw, (bytes, str)):
+                                content = raw if isinstance(raw, bytes) else raw.encode("utf-8")
+                            elif hasattr(raw, "read"):
+                                content = raw.read()
+                            break
+
                 if content is not None:
+                    # 统一规格入库 (确保 content 是 bytes)
                     meta = {
-                        "content": content,
-                        "url": response.get("url", target_url) if is_dict else getattr(response, "url", target_url),
-                        "mime_type": response.get("mime_type") if is_dict else getattr(response, "mime_type", None),
-                        "encoding": response.get("encoding") if is_dict else getattr(response, "encoding", None),
-                        "redirected_url": response.get("redirected_url") if is_dict else getattr(response, "redirected_url", None)
+                        "content": content if isinstance(content, bytes) else content.encode("utf-8"),
+                        "url": response.get("url", target_url) if isinstance(response, dict) else getattr(response, "url", target_url),
+                        "mime_type": response.get("mime_type") if isinstance(response, dict) else getattr(response, "mime_type", None),
+                        "encoding": response.get("encoding") if isinstance(response, dict) else getattr(response, "encoding", None),
+                        "redirected_url": response.get("redirected_url") if isinstance(response, dict) else getattr(response, "redirected_url", None)
                     }
                     self.cache_pool[target_url] = meta
+                    
+                    # 返回新的独占流给 WeasyPrint
                     return URLFetcherResponse(
                         url=meta["url"],
-                        body=io.BytesIO(content),
+                        body=io.BytesIO(meta["content"]),
                         mime_type=meta["mime_type"],
                         encoding=meta["encoding"],
                         redirected_url=meta["redirected_url"]
@@ -122,7 +133,7 @@ class CachedURLFetcher:
 
 
 class MlibDownloader:
-    """PDF 下载器核心调度类 (V8.3 - 效率优化版)"""
+    """PDF 下载器核心调度类 (V8.4 - 效率优化版)"""
 
     def __init__(self, default_base_url: str = "./site"):
         self.site_root = pathlib.Path(default_base_url).resolve()
@@ -141,7 +152,7 @@ class MlibDownloader:
             CSS(string="@page { size: A4; margin: 1cm 0.75cm; }")
         ]
 
-        print(f"🚀 MlibDownloader V8.3 初始化 | 站点根目录: {self.site_root}", flush=True)
+        print(f"🚀 MlibDownloader V8.4 初始化 | 站点根目录: {self.site_root}", flush=True)
         
         # 预热核心字体
         self._warm_up("https://cdn.jsdelivr.net/npm/@raineblog/mkdocs-fontkit@latest/dist/fonts.min.css")
@@ -163,7 +174,7 @@ class MlibDownloader:
 
         batch_start = time.time()
         total = len(self._task_queue)
-        print(f"\n▶️ 开始顺序渲染 {total} 个 PDF | 初始缓存: {len(self._url_cache_pool)} 项", flush=True)
+        print(f"\n▶️ 开始渲染 {total} 个 PDF | 初始缓存: {len(self._url_cache_pool)} 项", flush=True)
 
         for i, (src, dst, _) in enumerate(self._task_queue, 1):
             task_start = time.time()
@@ -210,4 +221,4 @@ class MlibDownloader:
 
 
 if __name__ == "__main__":
-    print("=== MlibDownloader V8.3 Engine ===")
+    print("=== MlibDownloader V8.4 Engine ===")
