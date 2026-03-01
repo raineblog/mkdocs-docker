@@ -1,7 +1,0 @@
-#!/bin/bash
-set -e
-# bun install katex
-# uv run /app/scripts/generate.py
-# uv run mkdocs build --clean
-exec uv run /app/scripts/export.py "$@"
-# 需要 site config docs 三个文件夹

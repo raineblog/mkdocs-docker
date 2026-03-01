@@ -50,56 +50,7 @@ def clean_url(baseurl, filepath):
     )
 
 
-def compile_latex(tex_filename, output_pdf_filename=None):
-    if not os.path.exists(tex_filename):
-        print(f"Error: Input file '{tex_filename}' not found!")
-        sys.exit(1)
 
-    base_dir = os.path.dirname(tex_filename)
-    file_stem = os.path.splitext(os.path.basename(tex_filename))[0]
-    default_pdf_path = os.path.join(base_dir if base_dir else ".", f"{file_stem}.pdf")
-
-    cmd = [
-        "latexmk",
-        "-cd",
-        "-lualatex",
-        "-interaction=nonstopmode",
-        "-file-line-error",
-        "-halt-on-error",
-        "-g",
-        "-gg",
-        tex_filename,
-    ]
-
-    print(f"[*] Compiling: {tex_filename} ...")
-    print(f"[*] Command: {' '.join(cmd)}")
-
-    try:
-        # subprocess.run(cmd, check=True, stdout=None, stderr=None)
-        subprocess.run(cmd)
-        print(f"[*] Compilation successful: {default_pdf_path}")
-
-    except subprocess.CalledProcessError as e:
-        print("\n==============================")
-        print("❌ LaTeX Compilation Failed!")
-        print(f"Exit code: {e.returncode}")
-        print("Please check the log output above for details.")
-        print("==============================")
-        subprocess.run(["cat", "cache/main.log", "-n", "-s"])
-        sys.exit(e.returncode)
-
-    if output_pdf_filename:
-        if os.path.abspath(default_pdf_path) != os.path.abspath(output_pdf_filename):
-            print(f"[*] Renaming output to: {output_pdf_filename}")
-            output_dir = os.path.dirname(output_pdf_filename)
-            if output_dir and not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            try:
-                shutil.move(default_pdf_path, output_pdf_filename)
-                print(f"[*] File ready at: {output_pdf_filename}")
-            except OSError as e:
-                print(f"❌ Error renaming file: {e}")
-                sys.exit(1)
 
 
 def process_top_level(info, sub_nav, baseurl):
@@ -149,7 +100,13 @@ def process_top_level(info, sub_nav, baseurl):
     )
 
     shutil.copy("/app/templates/template.tex", "cache/main.tex")
-    compile_latex("cache/main.tex", os.path.join("build", info["filename"]))
+    
+    base_name = os.path.splitext(info["filename"])[0]
+    tar_path = os.path.join("build", f"{base_name}.tar.zst")
+    print(f"[*] Packaging {base_name} tex environment...")
+    
+    cmd = f"tar -cf - -C cache . | zstd -T0 -3 > {tar_path}"
+    subprocess.run(cmd, shell=True, check=True)
 
     shutil.rmtree("cache")
 

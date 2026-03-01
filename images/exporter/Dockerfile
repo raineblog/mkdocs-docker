@@ -1,23 +1,20 @@
 # syntax=docker/dockerfile:1
-FROM ghcr.io/rainppr/weasyprint-texlive:latest
+FROM python:alpine
 
 # 1. 配置 UV 环境变量 (移除冲突的 UV_SYSTEM_PYTHON=1)
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     PYTHON_GIL=1
 
-# 2. 安装底层系统依赖 (耗时最长、变动最少，置于最前以最大化层缓存)
-# 合并了后续的 git config，减少构建层数，压缩最终体积
-# RUN apk add --no-cache \
-#     bash tini tar zstd \
-#     git git-fast-import \
-#     ca-certificates curl wget \
-#     weasyprint nodejs npm \
-#     so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 \
-#     font-liberation font-liberation-sans-narrow ttf-linux-libertine \
-#     fontconfig texlive-full \
-#     && fc-cache -fv \
-#     && git config --system --add safe.directory /__w/*
+# 2. 安装底层系统依赖
+# 添加打包用的 tar 和 zstd，以及 weasyprint 和 nodejs
+RUN apk add --no-cache \
+    make bash tini tar zstd \
+    git git-fast-import \
+    ca-certificates curl wget \
+    weasyprint nodejs npm \
+    so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 \
+    font-liberation font-liberation-sans-narrow ttf-linux-libertine
 
 RUN apk add --no-cache nodejs npm && \
     npm install -g npm bun && \

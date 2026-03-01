@@ -6,6 +6,8 @@ import io
 import re
 import time
 import pathlib
+import urllib.parse
+import urllib.request
 from typing import Any, Dict, List, Optional, Tuple, MutableMapping
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
@@ -48,6 +50,29 @@ class CachedURLFetcher(URLFetcher):
                 encoding=c.get("encoding"),
                 redirected_url=c.get("redirected_url")
             )
+
+        # 1.5. 路径补全修正 (针对由于 HTML 中的绝对路径导致解析到根目录的情况)
+        if url.startswith("file://") and "/site/" not in url:
+            # 尝试在当前工作目录的 site 下寻找
+            # urllib.parse 可能将 href="/assets/..." 解析成了 file:///assets/...
+            # 还原为类似 file:///app/site/assets/...
+            parsed = urllib.parse.urlparse(url)
+            local_path = urllib.request.url2pathname(parsed.path)
+            # 剥离多余的前缀（如 /__w/assets 或 /assets）并映射到 ./site
+            # 这里做个简单的 heuristic: 如果原先找不着，强制映射到 ./site/...
+            import os
+            
+            path_parts = pathlib.Path(local_path).parts
+            for i in range(len(path_parts)):
+                # Strip leading root separators (e.g. '/' or 'C:\')
+                if path_parts[i] in ['/', '\\'] or path_parts[i].endswith(':\\'):
+                    continue
+                rel_path = os.path.join(*path_parts[i:])
+                potential_path = os.path.abspath(os.path.join("site", rel_path))
+                if os.path.exists(potential_path):
+                    url = pathlib.Path(potential_path).as_uri()
+                    break
+
 
         # 2. 发起真实获取
         try:

@@ -14,3 +14,6 @@ images:
   - name: exporter
     context: ./images/exporter
     image: raineblog/mkdocs-exporter
+  - name: exporter-texlive
+    context: ./images/exporter-texlive
+    image: raineblog/mkdocs-exporter-texlive

@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+if [ -z "$1" ]; then
+    echo "Usage: build-pdf <path-to-tar.zst>"
+    exit 1
+fi
+
+TAR_ZST_PATH="$1"
+if [ ! -f "$TAR_ZST_PATH" ]; then
+    echo "Error: File $TAR_ZST_PATH not found!"
+    exit 1
+fi
+
+# 提取基本文件名，例如 user-guide.tar.zst -> user-guide
+BASENAME=$(basename "$TAR_ZST_PATH" .tar.zst)
+CACHE_DIR="/tmp/cache-$BASENAME"
+
+OUTPUT_PDF_PATH="build/${BASENAME}.pdf"
+mkdir -p "build"
+mkdir -p "$CACHE_DIR"
+
+echo "[*] Extracting $TAR_ZST_PATH to $CACHE_DIR..."
+zstd -d -c "$TAR_ZST_PATH" | tar -xf - -C "$CACHE_DIR"
+
+cd "$CACHE_DIR"
+
+echo "[*] Compiling LaTeX..."
+if ! latexmk -cd -lualatex -interaction=nonstopmode -file-line-error -halt-on-error -g -gg main.tex; then
+    echo "=============================="
+    echo "❌ LaTeX Compilation Failed!"
+    echo "=============================="
+    # 尽可能打印日志以便 GitHub Actions 查看
+    if [ -f main.log ]; then
+        cat main.log -n -s
+    fi
+    exit 1
+fi
+
+cd - > /dev/null
+
+echo "[*] Compilation successful: ${CACHE_DIR}/main.pdf"
+cp "${CACHE_DIR}/main.pdf" "$OUTPUT_PDF_PATH"
+echo "[*] Moving output to $OUTPUT_PDF_PATH"
+
+rm -rf "$CACHE_DIR"
+
+echo "[*] Build Complete -> $OUTPUT_PDF_PATH"
