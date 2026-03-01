@@ -101,8 +101,13 @@ class CachedURLFetcher:
         # 4. 入库并返回独占流
         if response is not None:
             try:
-                # 支持多种返回格式 (body / string / file_obj)
-                raw_body = getattr(response, "body", None) or getattr(response, "string", None) or getattr(response, "file_obj", None)
+                is_dict = isinstance(response, dict)
+                # 提取 Body
+                raw_body = (
+                    (response.get("string") or response.get("file_obj"))
+                    if is_dict
+                    else (getattr(response, "body", None) or getattr(response, "string", None) or getattr(response, "file_obj", None))
+                )
                 
                 content: Optional[bytes] = None
                 if isinstance(raw_body, (bytes, str)):
@@ -116,10 +121,10 @@ class CachedURLFetcher:
                 if content is not None:
                     meta = {
                         "content": content,
-                        "url": getattr(response, "url", target_url),
-                        "mime_type": getattr(response, "mime_type", None),
-                        "encoding": getattr(response, "encoding", None),
-                        "redirected_url": getattr(response, "redirected_url", None)
+                        "url": response.get("url", target_url) if is_dict else getattr(response, "url", target_url),
+                        "mime_type": response.get("mime_type") if is_dict else getattr(response, "mime_type", None),
+                        "encoding": response.get("encoding") if is_dict else getattr(response, "encoding", None),
+                        "redirected_url": response.get("redirected_url") if is_dict else getattr(response, "redirected_url", None)
                     }
                     self.cache_pool[target_url] = meta
                     return URLFetcherResponse(
@@ -174,7 +179,7 @@ class MlibDownloader:
 
         batch_start = time.time()
         total = len(self._task_queue)
-        print(f"\n▶️ 开始并行渲染 {total} 个 PDF | 初始缓存: {format_size(self._fetcher.get_total_size())}", flush=True)
+        print(f"\n▶️ 开始渲染 {total} 个 PDF | 初始缓存: {format_size(self._fetcher.get_total_size())}", flush=True)
 
         for i, (src, dst, _) in enumerate(self._task_queue, 1):
             start_t = time.time()
