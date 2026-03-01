@@ -65,17 +65,15 @@ class DiskCacheFetcher(URLFetcher):
     # [修改核心 3] 方法签名增加 headers=None 以兼容新版父类
     def fetch(self, url, headers=None):
         if not (url.startswith('http://') or url.startswith('https://')):
-            #[修改核心 4] 不再使用 default_url_fetcher，而是调用父类方法
             return super().fetch(url, headers)
             
         # --- 1. 尝试命中缓存 ---
         if url in self.url_to_path:
             local_path = self.url_to_path[url]
             if local_path.exists():
-                logger.debug(f"✅ [Cache Hit] {url} -> {local_path.name}")
+                logger.debug(f"✅[Cache Hit] {url} -> {local_path.name}")
                 mime_type = self.url_to_mime.get(url, 'application/octet-stream')
                 
-                # [修改核心 5] 返回时必须构造 URLFetcherResponse 对象
                 return URLFetcherResponse(
                     url=url,
                     body=local_path.read_bytes(),
@@ -87,24 +85,17 @@ class DiskCacheFetcher(URLFetcher):
 
         # --- 2. 未命中，发起真实网络请求 ---
         logger.debug(f"🌐[Downloading] {url} ...")
-        # 这里返回的 result 是一个 URLFetcherResponse 实例
+        
+        # result 本身就是一个 URLFetcherResponse 实例（它模拟了文件流）
         result = super().fetch(url, headers)
         
-        # [修改核心 6] 读取并处理 body 流
-        if hasattr(result.body, 'read'):
-            resource_bytes = result.body.read()
-            # 【重要】读取流后必须把 bytes 写回，否则 WeasyPrint 后续拿到的会是空流
-            result.body = resource_bytes
-        elif isinstance(result.body, str):
-            resource_bytes = result.body.encode('utf-8')
-        else:
-            resource_bytes = result.body
-
-        # 获取 MIME type
-        mime_type = 'application/octet-stream'
-        if result.headers and 'Content-Type' in result.headers:
-            # result.headers 是类字典对象，值可能长这样 "text/css; charset=utf-8"
-            mime_type = str(result.headers['Content-Type']).split(';')[0].strip()
+        # [核心修复] 直接调用 read() 提取全部字节
+        resource_bytes = result.read()
+        
+        # 提取 content_type 以便写入索引文件 (若不存在则 fallback)
+        mime_type = getattr(result, 'content_type', 'application/octet-stream')
+        if not mime_type:
+            mime_type = 'application/octet-stream'
 
         # --- 3. 落盘并更新字典 ---
         url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()
@@ -121,7 +112,15 @@ class DiskCacheFetcher(URLFetcher):
         self.url_to_mime[url] = mime_type
         self._save_index()
         
-        return result
+        # --- 4. 重新组装并返回 ---
+        # ⚠️ 由于我们上面执行了 result.read()，原始流已被抽干。
+        # 这里必须把 bytes 重新塞入一个新的响应对象中交还给 WeasyPrint！
+        return URLFetcherResponse(
+            url=getattr(result, 'url', url),
+            body=resource_bytes,
+            headers=getattr(result, 'headers', None),
+            status=getattr(result, 'status', 200)
+        )
 
 class MlibDownloader:
     def __init__(self, default_cache_dir: str = "./.cache/weasyprint"):
