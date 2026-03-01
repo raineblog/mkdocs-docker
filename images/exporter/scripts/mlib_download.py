@@ -71,7 +71,7 @@ class DiskCacheFetcher(URLFetcher):
         if url in self.url_to_path:
             local_path = self.url_to_path[url]
             if local_path.exists():
-                logger.debug(f"✅[Cache Hit] {url} -> {local_path.name}")
+                logger.debug(f"[Cache Hit] {url} -> {local_path.name}")
                 mime_type = self.url_to_mime.get(url, 'application/octet-stream')
                 
                 return URLFetcherResponse(
@@ -84,7 +84,7 @@ class DiskCacheFetcher(URLFetcher):
                 del self.url_to_mime[url]
 
         # --- 2. 未命中，发起真实网络请求 ---
-        logger.debug(f"🌐[Downloading] {url} ...")
+        logger.debug(f"[Downloading] {url} ...")
         
         # result 本身就是一个 URLFetcherResponse 实例（它模拟了文件流）
         result = super().fetch(url, headers)
