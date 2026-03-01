@@ -12,7 +12,12 @@ RUN apk add --no-cache \
     make bash tini tar zstd \
     git ca-certificates curl wget \
     weasyprint nodejs npm \
-    so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 && \
+    so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 \
+    font-noto-cjk font-noto font-noto-extra font-noto-emoji \
+    font-wqy-zenhei font-noto-cjk-extra \
+    font-ipa font-ipaex font-dejavu font-unifont \
+    font-liberation font-linux-libertine font-liberation-sans-narrow ttf-linux-libertine \
+    && fc-cache -fv && \
     git config --system --add safe.directory /__w/*
 
 # 3. 引入构建工具 (uv:latest 标签更新频繁，需置于底层系统依赖之后)
