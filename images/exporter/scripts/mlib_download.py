@@ -1,6 +1,6 @@
 # mlib_download.py
-# WeasyPrint HTML-to-PDF 下载器 - 极致性能与现代架构版 (V7)
-# 针对 WeasyPrint 68.1+ 深度优化，解决 I/O 冲突、路径寻址与缓存漏记问题
+# WeasyPrint HTML-to-PDF 下载器 - 极致性能与现代架构版 (V8.1)
+# 针对 WeasyPrint 68.1+ 深度优化，解决 I/O 冲突、路径寻址与缓存漏记故障
 
 import io
 import re
@@ -11,7 +11,7 @@ import urllib.request
 from typing import Any, Dict, List, Optional, Tuple, MutableMapping
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
-from weasyprint.urls import URLFetcher, URLFetcherResponse, default_url_fetcher
+from weasyprint.urls import URLFetcherResponse, default_url_fetcher
 
 
 def format_size(size_bytes: int) -> str:
@@ -24,18 +24,15 @@ def format_size(size_bytes: int) -> str:
         return f"{size_bytes / (1024 * 1024):.2f} MB"
 
 
-class CachedURLFetcher(URLFetcher):
+class CachedURLFetcher:
     """
-    极致性能与路径兼容的现代 Fetcher (V8)
-    - 支持 WeasyPrint 68.1+ 规范
-    - 智能路径重定向：将绝对路径、Github Runner 路径自动映射到 site 目录
-    - 共享内存缓存：多任务间共享资源，避免重复 fetch
+    极致性能与路径兼容的现代 Fetcher (V8.1)
+    - 兼容 WeasyPrint 各个版本的 default_url_fetcher 签名 (修复 headers 传参报错)
+    - 智能路径重定向：由网站根目录 site_root 驱动
+    - 共享内存缓存：确保多任务间资源复用，彻底解决“缓存=0 B”问题
     """
 
-    def __init__(
-        self, cache_pool: MutableMapping[str, Dict[str, Any]], site_root: pathlib.Path
-    ):
-        super().__init__()
+    def __init__(self, cache_pool: MutableMapping[str, Dict[str, Any]], site_root: pathlib.Path):
         self.cache_pool = cache_pool
         self.site_root = site_root.resolve()
 
@@ -43,7 +40,7 @@ class CachedURLFetcher(URLFetcher):
         return sum(len(item["content"]) for item in self.cache_pool.values() if "content" in item)
 
     def _resolve_local_url(self, url: str) -> str:
-        """核心：将 WeasyPrint 解析出的各类 file:// URL 重新映射到 site 目录"""
+        """解析本地 file:// URL 并尝试重定向到 site 目录"""
         if not url.startswith("file://"):
             return url
 
@@ -54,31 +51,28 @@ class CachedURLFetcher(URLFetcher):
         except Exception:
             return url
 
-        # 1. 如果已经在 site_root 内，且文件存在，直接返回
+        # 1. 已经在 site_root 内且存在，直接返回
         if str(raw_path).startswith(str(self.site_root)) and raw_path.exists():
             return url
 
-        # 2. 启发式路径搜索：处理绝对路径 /assets/... 或容器外部映射路径 /__w/...
-        # 逐层剥离前缀，直到在 site_root 下找到匹配文件
+        # 2. 启发式：剥离前缀匹配 site_root
+        # 针对 GitHub Runner /__w/ 路径或绝对路径 /assets 重定向到 ./site/
         parts = raw_path.parts
         for i in range(len(parts)):
-            # 跳过根路径标识 ('/', '\\', 'C:\\' 等)
             if parts[i] in ("/", "\\") or parts[i].endswith(":\\"):
                 continue
-            
-            sub_path = pathlib.Path(*parts[i:])
-            potential = self.site_root / sub_path
+            potential = self.site_root / pathlib.Path(*parts[i:])
             if potential.exists():
                 return potential.as_uri()
 
         return url
 
     def __call__(self, url: str, headers: Optional[Dict[str, str]] = None) -> URLFetcherResponse:
-        """WeasyPrint 要求的调用接口"""
-        # 1. 路径预修正
+        """WeasyPrint 核心调用入口"""
+        # 1. 内部重定向 (处理绝对路径偏移)
         target_url = self._resolve_local_url(url)
 
-        # 2. 缓存命中检查
+        # 2. 命中全局共享缓存
         if target_url in self.cache_pool:
             c = self.cache_pool[target_url]
             return URLFetcherResponse(
@@ -89,18 +83,25 @@ class CachedURLFetcher(URLFetcher):
                 redirected_url=c.get("redirected_url")
             )
 
-        # 3. 真实拉取 (使用 WeasyPrint 内置的 default_url_fetcher)
+        # 3. 物理拉取 (自动适配 headers 签名)
+        response = None
         try:
-            response = default_url_fetcher(target_url, headers=headers)
+            try:
+                # 尝试完整签名调用
+                response = default_url_fetcher(target_url, headers=headers)
+            except TypeError:
+                # 降级：部分 WeasyPrint 版本的默认 fetcher 不接受 headers
+                response = default_url_fetcher(target_url)
         except Exception as e:
-            if not target_url.startswith(("http://", "https://")):
+            # 仅上报本地资源 404，网络资源允许静默失败
+            if target_url.startswith("file://"):
                 print(f"\n   ⚠️ 资源获取失败 [{target_url}]: {e}", flush=True)
             raise e
 
         # 4. 入库并返回独占流
         if response is not None:
             try:
-                # 获取内容流
+                # 支持多种返回格式 (body / string / file_obj)
                 raw_body = getattr(response, "body", None) or getattr(response, "string", None) or getattr(response, "file_obj", None)
                 
                 content: Optional[bytes] = None
@@ -108,8 +109,9 @@ class CachedURLFetcher(URLFetcher):
                     content = raw_body if isinstance(raw_body, bytes) else raw_body.encode("utf-8")
                 elif hasattr(raw_body, "read"):
                     content = raw_body.read()
-                    try: raw_body.close()
-                    except: pass
+                    if hasattr(raw_body, "close"):
+                        try: raw_body.close()
+                        except: pass
                 
                 if content is not None:
                     meta = {
@@ -134,25 +136,24 @@ class CachedURLFetcher(URLFetcher):
 
 
 class MlibDownloader:
-    """PDF 下载器核心类 (V8 - 极致 URL 兼容版)"""
+    """PDF 下载器核心调度类 (V8.1)"""
 
     def __init__(self, default_base_url: str = "./site"):
-        # 根目录标准化
         self.site_root = pathlib.Path(default_base_url).resolve()
         self._task_queue: List[Tuple[str, str, Optional[str]]] = []
         
-        # 缓存池
+        # 全局常驻资源池
         self._url_cache_pool: Dict[str, Dict[str, Any]] = {}
         self._image_rendering_cache: Dict[str, Any] = {}
         
-        # 引擎单例
+        # 引擎配置单例
         self._font_config = FontConfiguration()
         self._fetcher = CachedURLFetcher(self._url_cache_pool, self.site_root)
         self._page_css = CSS(string="@page { size: A4; margin: 1cm 0.75cm; }")
 
-        print(f"🚀 MlibDownloader V8 初始化 | 站点根目录: {self.site_root}", flush=True)
+        print(f"🚀 MlibDownloader V8.1 初始化 | 站点根目录: {self.site_root}", flush=True)
         
-        # 预热核心字体 (JSDelivr CDN)
+        # 预热字体 (CDN)
         font_kit = "https://cdn.jsdelivr.net/npm/@raineblog/mkdocs-fontkit@latest/dist/fonts.min.css"
         self._warm_up_resource(font_kit)
 
@@ -160,20 +161,20 @@ class MlibDownloader:
         try:
             print(f"⏳ 正在预热核心资产: {url}", flush=True)
             self._fetcher(url)
-            print(f"   ✅ 资产预热完成 (累计缓存: {format_size(self._fetcher.get_total_size())})", flush=True)
+            print(f"   ✅ 预热完成 (累计缓存: {format_size(self._fetcher.get_total_size())})", flush=True)
         except Exception as e:
             print(f"   ⚠️ 资产预热跳过: {e}", flush=True)
 
     def add_task(self, html_source: str, pdf_path: str, base_url: Optional[str] = None) -> None:
-        # base_url 在此版本主要作为备选参考，核心路由由 site_root 驱动
         self._task_queue.append((html_source, pdf_path, base_url))
         print(f"➕ 添加任务: {pathlib.Path(pdf_path).name}", flush=True)
 
     def start_tasks(self) -> None:
         if not self._task_queue: return
 
+        batch_start = time.time()
         total = len(self._task_queue)
-        print(f"\n▶️ 开始并行处理 {total} 份任务 | 初始缓存: {format_size(self._fetcher.get_total_size())}", flush=True)
+        print(f"\n▶️ 开始并行渲染 {total} 个 PDF | 初始缓存: {format_size(self._fetcher.get_total_size())}", flush=True)
 
         for i, (src, dst, _) in enumerate(self._task_queue, 1):
             start_t = time.time()
@@ -186,8 +187,7 @@ class MlibDownloader:
             try:
                 src_p = pathlib.Path(src).expanduser().resolve()
                 
-                # 关键：base_url 必须指向 HTML 所在的真实目录
-                # 这样 WeasyPrint 才能通过 eff_base 解析相对路径 (src="../../image.png")
+                # 动态 base_url: 指向该 HTML 实际所在的目录，支持相对路径
                 eff_base = src_p.parent.as_uri() + "/" if src_p.is_file() else src
 
                 html_kwargs = {
@@ -204,7 +204,7 @@ class MlibDownloader:
                     cache=self._image_rendering_cache,
                     full_fonts=False,
                     presentational_hints=True,
-                    optimize_images=False # 关闭图片二次优化以换取速度
+                    optimize_images=False
                 )
 
                 elapsed = time.time() - start_t
@@ -214,14 +214,18 @@ class MlibDownloader:
             except Exception as e:
                 print(f"\r{prefix}❌ 失败 {dst_p.name}: {e}", flush=True)
 
-        print(f"\n🎉 批次处理完成 | 耗时: {time.time() - start_t:.2f}s", flush=True)
+        total_elapsed = time.time() - batch_start
+        print(f"\n🎉 批次生产完成 | 总数: {total} 份 | 总耗时: {total_elapsed:.2f}s | 平均: {total_elapsed/total:.2f}s/pdf", flush=True)
+        self._report_stats()
         self._task_queue.clear()
 
+    def _report_stats(self) -> None:
+        size = self._fetcher.get_total_size()
+        print(f"📊 共享资源池摘要: {len(self._url_cache_pool)} 项已缓存 | 占用内存: {format_size(size)}", flush=True)
+
     def __del__(self):
-        if hasattr(self, "_url_cache_pool") and self._url_cache_pool:
-            print("\n� 周期统计: 缓存条数:", len(self._url_cache_pool), flush=True)
+        pass
 
 
 if __name__ == "__main__":
-    print("=== MlibDownloader V8 Entry ===")
-
+    print("=== MlibDownloader V8.1 Load Test ===")
