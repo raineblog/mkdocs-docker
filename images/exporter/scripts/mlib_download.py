@@ -5,8 +5,9 @@ import json
 import sys
 from typing import Any, Dict, List, Optional, Tuple, MutableMapping
 
-from weasyprint import HTML, CSS, default_url_fetcher
+from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
+from weasyprint.urls import URLFetcher, URLFetcherResponse
 
 # ==========================================
 # 运维友好型日志配置
@@ -25,45 +26,35 @@ logger = logging.getLogger(__name__)
 logging.getLogger("weasyprint").setLevel(logging.ERROR)
 logging.getLogger("fontTools").setLevel(logging.ERROR)
 
-class DiskCacheFetcher:
-    def __init__(self, cache_dir: pathlib.Path):
-        """
-        初始化基于目录的缓存抓取器
-        """
-        self.cache_dir = cache_dir.resolve()
+# [修改核心 2] 继承官方的 URLFetcher
+class DiskCacheFetcher(URLFetcher):
+    def __init__(self, cache_dir: str | pathlib.Path, **kwargs):
+        # 必须初始化父类，WeasyPrint 会在底层借此初始化 SSL 和超时配置
+        super().__init__(**kwargs)
+        
+        self.cache_dir = pathlib.Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         
-        # 核心字典：映射 URL 到 pathlib.Path
         self.url_to_path: dict[str, pathlib.Path] = {}
-        
-        # 辅助字典：记录 URL 对应的 mime_type (WeasyPrint 强依赖 mime_type)
         self.url_to_mime: dict[str, str] = {}
-        
-        # 索引文件路径，用于持久化缓存映射（这样哪怕重启脚本，也能复用上次下载的资源）
         self.index_file = self.cache_dir / "cache_index.json"
         self._load_index()
 
-        logger.info(f"Initialized Remote Cache ({self.cache_dir})")
-
     def _load_index(self):
-        """从本地加载之前的映射记录"""
         if self.index_file.exists():
             try:
                 with open(self.index_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     for url, info in data.items():
-                        # 还原为 pathlib.Path 对象
                         self.url_to_path[url] = pathlib.Path(info['path'])
                         self.url_to_mime[url] = info['mime_type']
             except Exception as e:
-                logger.error(f"[Cache Load Error] {e}", exc_info=True)
-                raise
+                logger.error(f"[Cache Load Error] {e}")
 
     def _save_index(self):
-        """将当前的映射记录保存到本地 JSON"""
         data = {
             url: {
-                'path': str(self.url_to_path[url].resolve()), # 存储绝对路径字符串
+                'path': str(self.url_to_path[url].resolve()),
                 'mime_type': self.url_to_mime[url]
             }
             for url in self.url_to_path
@@ -71,66 +62,65 @@ class DiskCacheFetcher:
         with open(self.index_file, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4)
 
-    def fetch(self, url):
-        """
-        WeasyPrint 将调用的抓取函数
-        """
-        # 1. 如果不是 http/https 请求（比如 data:, file://），直接放行交给默认抓取器
+    # [修改核心 3] 方法签名增加 headers=None 以兼容新版父类
+    def fetch(self, url, headers=None):
         if not (url.startswith('http://') or url.startswith('https://')):
-            return default_url_fetcher(url)
+            #[修改核心 4] 不再使用 default_url_fetcher，而是调用父类方法
+            return super().fetch(url, headers)
             
-        # 2. 检查是否命中本地目录缓存
+        # --- 1. 尝试命中缓存 ---
         if url in self.url_to_path:
             local_path = self.url_to_path[url]
             if local_path.exists():
-                # print(f"✅ [Cache Hit] {url} -> {local_path.name}")
-                logger.debug(f"[Cache Hit] {url} -> {local_path.name}")
-                return {
-                    'string': local_path.read_bytes(),
-                    'mime_type': self.url_to_mime[url]
-                }
+                logger.debug(f"✅ [Cache Hit] {url} -> {local_path.name}")
+                mime_type = self.url_to_mime.get(url, 'application/octet-stream')
+                
+                # [修改核心 5] 返回时必须构造 URLFetcherResponse 对象
+                return URLFetcherResponse(
+                    url=url,
+                    body=local_path.read_bytes(),
+                    headers={'Content-Type': mime_type}
+                )
             else:
-                # 文件丢失，从缓存字典中剔除
                 del self.url_to_path[url]
                 del self.url_to_mime[url]
 
-        # 3. 未命中缓存，发起真实网络请求
-        # print(f"🌐 [Downloading] {url} ...")
-        logger.debug(f"[Downloading] {url} ...")
-        # 使用默认抓取器获取资源（这会帮我们处理重定向、SSL 证书等网络细节）
-        result = default_url_fetcher(url)
+        # --- 2. 未命中，发起真实网络请求 ---
+        logger.debug(f"🌐[Downloading] {url} ...")
+        # 这里返回的 result 是一个 URLFetcherResponse 实例
+        result = super().fetch(url, headers)
         
-        # 获取资源字节和 MIME 类型
-        # WeasyPrint 默认返回 dict，包含 'string' (或 'file_obj') 和 'mime_type'
-        if 'string' in result:
-            resource_bytes = result['string']
-        elif 'file_obj' in result:
-            resource_bytes = result['file_obj'].read()
-            result['string'] = resource_bytes  # 转为 string 方便后续处理
+        # [修改核心 6] 读取并处理 body 流
+        if hasattr(result.body, 'read'):
+            resource_bytes = result.body.read()
+            # 【重要】读取流后必须把 bytes 写回，否则 WeasyPrint 后续拿到的会是空流
+            result.body = resource_bytes
+        elif isinstance(result.body, str):
+            resource_bytes = result.body.encode('utf-8')
         else:
-            return result
-            
-        mime_type = result.get('mime_type', 'application/octet-stream')
+            resource_bytes = result.body
 
-        # 4. 生成安全的文件名并存入目录
-        # 使用 URL 的 MD5 作为文件名，避免非法字符，同时截取后缀名方便调试观察
+        # 获取 MIME type
+        mime_type = 'application/octet-stream'
+        if result.headers and 'Content-Type' in result.headers:
+            # result.headers 是类字典对象，值可能长这样 "text/css; charset=utf-8"
+            mime_type = str(result.headers['Content-Type']).split(';')[0].strip()
+
+        # --- 3. 落盘并更新字典 ---
         url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()
-        original_ext = pathlib.Path(url.split('?')[0]).suffix  # 忽略 URL 参数提取后缀
+        original_ext = pathlib.Path(url.split('?')[0]).suffix
         if not original_ext or len(original_ext) > 8:
             original_ext = ""
             
         local_filename = f"{url_hash}{original_ext}"
         local_path = self.cache_dir / local_filename
         
-        # 将文件落盘
         local_path.write_bytes(resource_bytes)
         
-        # 5. 更新字典并持久化
         self.url_to_path[url] = local_path
         self.url_to_mime[url] = mime_type
         self._save_index()
         
-        # 6. 返回 WeasyPrint 要求的字典格式
         return result
 
 class MlibDownloader:
@@ -138,8 +128,7 @@ class MlibDownloader:
         self._images_cache_dir = pathlib.Path(default_cache_dir).resolve() / 'images'
         self._remote_cache_dir = pathlib.Path(default_cache_dir).resolve() / 'remote'
 
-        self._cache_manager = DiskCacheFetcher(cache_dir=self._remote_cache_dir)
-        self._optimized_fetcher = self._cache_manager.fetch
+        self._optimized_fetcher = DiskCacheFetcher(cache_dir=self._remote_cache_dir)
 
         self._task_queue: List[Tuple[str, str]] = []
         self._font_config = FontConfiguration()
