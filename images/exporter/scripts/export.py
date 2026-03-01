@@ -8,7 +8,7 @@ import json
 import generate as mkut
 from mlib_download import MlibDownloader
 
-downloader = MlibDownloader(default_base_url="./site/")
+downloader = MlibDownloader()
 
 
 def parse_yaml(yaml_path):
