@@ -11,8 +11,8 @@ def generate_matrix():
 
     matrix_list = []
     for file in tar_files:
-        # e.g., build/guide.tar.zst -> build/guide.tar.zst
-        matrix_list.append({"tarfile": file})
+        # 仅传递文件名，不包含 build/ 前缀，方便二级 Job 直接读取根目录资源
+        matrix_list.append({"tarfile": os.path.basename(file)})
 
     print(json.dumps(matrix_list, separators=(",", ":")))
 
