@@ -14,8 +14,8 @@ from weasyprint.urls import URLFetcher, URLFetcherResponse
 # ==========================================
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s[%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S ",
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
     stream=sys.stdout,  # CI 环境推荐统一输出到 stdout
 )
 
@@ -124,6 +124,8 @@ class DiskCacheFetcher(URLFetcher):
 
 class MlibDownloader:
     def __init__(self, default_cache_dir: str = "./.cache/weasyprint"):
+        logger.info("Initializing MlibDownloader...")  # 移到最上面！
+
         self._images_cache_dir = pathlib.Path(default_cache_dir).resolve() / 'images'
         self._remote_cache_dir = pathlib.Path(default_cache_dir).resolve() / 'remote'
 
@@ -131,6 +133,8 @@ class MlibDownloader:
 
         self._task_queue: List[Tuple[str, str]] = []
         self._font_config = FontConfiguration()
+
+        logger.info("Heating up up up...")  # 移到最上面！
 
         self._base_stylesheets = [
             CSS(
@@ -143,7 +147,7 @@ class MlibDownloader:
             ),
         ]
 
-        logger.info("Initialized MlibDownloader")
+        logger.info("Initialization completed.")
 
     def add_task(self, html_source: str, pdf_path: str) -> None:
         self._task_queue.append((html_source, pdf_path))

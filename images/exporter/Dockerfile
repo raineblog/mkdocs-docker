@@ -4,18 +4,18 @@ FROM python:alpine
 # 1. 配置 UV 环境变量 (移除冲突的 UV_SYSTEM_PYTHON=1)
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
-    PYTHON_GIL=1
+    PYTHON_GIL=1 \
+    PYTHONUNBUFFERED=1
 
 # 2. 安装底层系统依赖
 # 添加打包用的 tar 和 zstd，以及 weasyprint 和 nodejs
-RUN apk add --no-cache \
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --no-cache \
     make bash tini tar zstd \
     git ca-certificates curl wget \
     weasyprint nodejs npm \
     so:libgobject-2.0.so.0 so:libpango-1.0.so.0 so:libharfbuzz.so.0 so:libharfbuzz-subset.so.0 so:libfontconfig.so.1 so:libpangoft2-1.0.so.0 \
-    font-noto-cjk font-noto font-noto-extra font-noto-emoji \
-    font-wqy-zenhei font-noto-cjk-extra \
-    font-ipa font-ipaex font-dejavu font-unifont \
+    font-noto-cjk font-noto font-wqy-zenhei font-noto-cjk-extra \
     font-liberation font-linux-libertine font-liberation-sans-narrow ttf-linux-libertine \
     && fc-cache -fv && \
     git config --system --add safe.directory /__w/*
@@ -31,6 +31,7 @@ WORKDIR /app
 RUN --mount=type=bind,source=.python-version,target=.python-version \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-cache
 ENV PATH="/app/.venv/bin:$PATH"
 
