@@ -32,5 +32,6 @@ if __name__ == "__main__":
     info = load_json("config/project.json")["info"]
     template_defaults = get_template("/app/templates/template.yml")
     config = info | template_defaults
+    config['nav'] = []
     with open("mkdocs.yml", "w", encoding="utf-8") as file:
         yaml.dump(config, file, allow_unicode=True, indent=4, sort_keys=False)
