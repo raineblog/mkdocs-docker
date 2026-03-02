@@ -1,0 +1,427 @@
+@page {
+    size: A4;
+    margin: 1cm 0.75cm;
+}
+
+/*** 核心修复：解除高度和溢出限制 ***/
+html,
+body {
+    height: auto !important;
+    overflow: visible !important;
+    width: auto !important;
+    position: static !important;
+}
+
+article,
+section+section {
+    page-break-before: always;
+    min-height: 100vh;
+    /* Defining all page breaks */
+}
+
+article,
+article h1,
+article h2,
+article h3,
+article h4,
+article h5,
+article h6,
+article div.tabbed-content--wrap>.tabbed-content,
+section+section,
+section+section h1,
+section+section h2,
+section+section h3,
+section+section h4,
+section+section h5,
+section+section h6,
+section+section div.tabbed-content--wrap>.tabbed-content {
+    clear: both;
+}
+
+article h1,
+article h2,
+article h3,
+article h4,
+article h5,
+article h6,
+article img,
+section+section h1,
+section+section h2,
+section+section h3,
+section+section h4,
+section+section h5,
+section+section h6,
+section+section img {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+}
+
+article a,
+article blockquote,
+article table,
+article ul,
+article ol,
+section+section a,
+section+section blockquote,
+section+section table,
+section+section ul,
+section+section ol {
+    page-break-before: avoid;
+    page-break-inside: avoid;
+}
+
+article pre,
+article dt+dd,
+section+section pre,
+section+section dt+dd {
+    page-break-before: avoid;
+}
+
+article h1+ul,
+article h2+ul,
+article h3+ul,
+article h4+ul,
+article h5+ul,
+article h6+ul,
+article h1+ol,
+article h2+ol,
+article h3+ol,
+article h4+ol,
+article h5+ol,
+article h6+ol,
+section+section h1+ul,
+section+section h2+ul,
+section+section h3+ul,
+section+section h4+ul,
+section+section h5+ul,
+section+section h6+ul,
+section+section h1+ol,
+section+section h2+ol,
+section+section h3+ol,
+section+section h4+ol,
+section+section h5+ol,
+section+section h6+ol {
+    page-break-inside: auto;
+}
+
+article div.admonition,
+section+section div.admonition {
+    page-break-inside: avoid;
+}
+
+article div.tabbed-content--wrap,
+section+section div.tabbed-content--wrap {
+    page-break-inside: avoid;
+}
+
+article *+div.highlight,
+article *+div.tabbed-set,
+section+section *+div.highlight,
+section+section *+div.tabbed-set {
+    page-break-before: avoid;
+}
+
+section.two-columns {
+    columns: 2;
+    column-gap: 1cm;
+}
+
+/* MkDocs Material 特定的容器修复 */
+.md-container,
+.md-main,
+.md-content,
+.md-content__inner,
+article {
+    display: block !important;
+    /* 禁止 flex/grid 布局干扰分页 */
+    height: auto !important;
+    overflow: visible !important;
+    width: auto !important;
+    position: static !important;
+    margin: 0 !important;
+    /* 移除多余边距 */
+    padding: 0 !important;
+}
+
+.md-typeset kbd {
+    vertical-align: middle;
+    border-color: #b8b8b8;
+    border-style: outset;
+    border-width: 0.05rem 0.075rem 0.1rem 0.075rem;
+    border-radius: 0.25rem;
+    box-shadow: none;
+}
+
+/* 隐藏打印不需要的元素 */
+.md-header,
+.md-tabs,
+.md-footer,
+.md-sidebar,
+.md-nav,
+.md-clipboard,
+.md-icon {
+    display: none !important;
+}
+
+/* 修复长表格或代码块被截断 */
+pre,
+code,
+table {
+    white-space: pre-wrap !important;
+    /* 允许代码换行 */
+    word-wrap: break-word !important;
+    overflow: visible !important;
+}
+
+.md-container {
+    display: block;
+    padding-top: 0;
+}
+
+.md-main {
+    display: block;
+    height: inherit;
+}
+
+.md-main__inner {
+    height: inherit;
+    padding-top: 0;
+}
+
+.md-typeset .codehilitetable .linenos {
+    display: none;
+}
+
+.md-typeset .footnote-ref {
+    display: inline-block;
+}
+
+.md-typeset a.footnote-backref {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.md-typeset .admonition {
+    display: block;
+    border-top: .1rem solid rgba(0, 0, 0, .07);
+    border-right: .1rem solid rgba(0, 0, 0, .07);
+    border-bottom: .1rem solid rgba(0, 0, 0, .07);
+    page-break-inside: avoid;
+}
+
+.md-typeset a::after {
+    color: inherit;
+    content: none;
+}
+
+.md-typeset table:not([class]) th {
+    min-width: 0;
+}
+
+.md-typeset table {
+    border: .1rem solid rgba(0, 0, 0, .07);
+}
+
+
+.md-typeset>ul,
+.md-typeset>ol {
+    margin-left: 0rem !important;
+}
+
+.md-typeset ul li,
+.md-typeset ol li {
+    margin-left: 1.5rem !important;
+}
+
+@media print {
+    .md-typeset :is(.admonition-title, summary):before {
+        top: 0.6rem;
+        left: 0.6rem;
+    }
+
+    .md-typeset .tabbed-set {
+        display: block;
+    }
+
+    .md-typeset .tabbed-set .tabbed-content--wrap {
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+
+    .md-typeset .tabbed-set .tabbed-content--wrap>input {
+        display: none;
+    }
+
+    .md-typeset .tabbed-set .tabbed-content--wrap>label {
+        background-color: rgba(170, 170, 170, 0.2);
+        padding: 0.2rem 2rem;
+        margin: 0;
+        font-weight: 600;
+        color: #666;
+        border-radius: 3px 3px 0 0;
+        border-bottom-color: transparent;
+    }
+
+    .md-typeset .tabbed-set .tabbed-content--wrap>.tabbed-content {
+        display: block;
+        box-shadow: none;
+    }
+
+    .md-typeset .admonition-title+.tabbed-set:last-child,
+    .md-typeset summary+.tabbed-set:last-child {
+        margin-top: 0.5rem;
+    }
+
+    .md-typeset>details summary::after {
+        display: none;
+    }
+
+    .md-typeset>div,
+    .md-typeset>div.admonition,
+    .md-typeset>details,
+    .md-typeset>div.tabbed-set,
+    .md-typeset>blockquote,
+    .md-typeset>mark,
+    .md-typeset>table,
+    .md-typeset>p {
+        margin-left: 0.7rem;
+    }
+
+    .md-typeset>table.highlighttable {
+        margin: 0 0 0 0.7rem;
+    }
+
+    .md-typeset table.highlighttable,
+    .md-typeset table.highlighttable>tbody {
+        width: 100%;
+    }
+
+    .md-typeset table.highlighttable {
+        padding-bottom: 0.5em;
+    }
+
+    .md-typeset table.highlighttable .linenos {
+        padding-bottom: 0;
+    }
+
+    .md-typeset>ul,
+    .md-typeset>ol {
+        margin-left: 1.5rem;
+    }
+
+    .md-typeset h4,
+    .md-typeset h5,
+    .md-typeset h6 {
+        margin-left: 0.25rem;
+    }
+
+    .md-typeset *:not(h3)+h4 {
+        margin-top: 1.5rem;
+    }
+
+    .md-typeset hr {
+        border-bottom: 1px dotted #999;
+    }
+
+    .md-typeset .footnote {
+        line-height: 1.1;
+    }
+
+    .md-typeset table:not([class]) th,
+    .md-typeset table:not([class]) td {
+        padding: 0.5em 1.25rem 0.4em;
+    }
+
+    .md-typeset table:not([class]) td {
+        border-bottom: 1px solid #eee;
+    }
+
+    .md-typeset span.twemoji {
+        vertical-align: middle;
+        height: 1.125rem;
+        display: inline-block;
+    }
+
+    .md-typeset span.twemoji>img {
+        height: 1.125rem;
+        vertical-align: middle;
+        display: inline-block;
+    }
+
+    .task-list-indicator:before {
+        left: -1.5em;
+    }
+
+    blockquote {
+        border-left: 0.2rem solid #a9a9a9;
+        padding-left: 0.6rem;
+    }
+
+
+    .not-printable {
+        display: none !important;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    .md-typeset .grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    a {
+        text-decoration: underline !important;
+    }
+
+    no-wrap,
+    .no-wrap {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: keep-all;
+    }
+
+    .md-typeset .Box-body {
+        overflow: hidden !important;
+    }
+}
+
+
+.md-typeset img,
+.md-typeset .glightbox img {
+    display: block;
+    margin: 0 auto;
+}
+
+.md-typeset div.arithmatex {
+    overflow: hidden !important;
+}
+
+.md-typeset div.arithmatex .katex-display {
+    margin-top: 0.1em !important;
+    margin-bottom: 0.1em !important;
+}
+
+.md-typeset__table {
+    display: block !important;
+}
+
+.md-typeset table:not(.highlighttable) {
+    display: table !important;
+}
+
+.md-typeset table:not([class]) th {
+    min-width: 0rem;
+}
+
+
+h1 {
+    font-family: var(--fontkit-super-title), var(--fontkit-text-font);
+}
+
+h2,
+h3 {
+    text-align: center;
+}

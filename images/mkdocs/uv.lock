@@ -516,7 +516,7 @@ wheels = [
 [[package]]
 name = "mkdocs-material"
 version = "9.7.3"
-source = { git = "https://github.com/raineblog/mkdocs-material.git#3b2d747a505d6e7ea87c83408edfa5871458b503" }
+source = { git = "https://github.com/raineblog/mkdocs-material.git#2892c8e4982fb91481b34447bbb1ffd4cdd934bd" }
 dependencies = [
     { name = "babel" },
     { name = "backrefs" },

@@ -138,11 +138,9 @@ class MlibDownloader:
         logger.info("Warming up, this may take several minutes...")  # 移到最上面！
 
         self._base_stylesheets = [
+            CSS(filename="/app/templates/print_fix.css"),
             CSS(
-                string="@page { size: A4; margin: 1cm 0.75cm; }"
-            ),
-            CSS(
-                url="https://cdn.jsdelivr.net/npm/@raineblog/mkdocs-fontkit@latest/dist/fonts.min.css",
+                url="https://cdn.jsdelivr.net/npm/@raineblog/mkdocs-fontkit@latest/dist/fonts.legacy.min.css",
                 url_fetcher=self._optimized_fetcher,
                 font_config=self._font_config
             ),
