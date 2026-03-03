@@ -41,7 +41,8 @@
 \usepackage{xcolor}
 \usepackage{titlesec} % 标题样式
 \usepackage{fancyhdr} % 页眉页脚
-\setlength{\headheight}{8pt}
+\setlength{\headheight}{10pt}
+\usepackage{bookmark} % 增强型书签
 \usepackage{etoolbox} % 编程逻辑
 \usepackage{metalogox}
 \usepackage{tikz}
@@ -127,6 +128,124 @@
 \begin{luacode*}
     require("lualibs") 
     
+    local page_map_cache = {}
+
+    -- 解码 PDF 字符串 (UTF-16BE 或 PDFDocEncoding)
+    function decode_pdf_string(s)
+        if type(s) ~= "string" then s = tostring(s) end
+        if s:byte(1) == 254 and s:byte(2) == 255 then
+            -- UTF-16BE
+            local out = {}
+            for i = 3, #s, 2 do
+                local b1, b2 = s:byte(i, i+1)
+                if not b2 then break end
+                local code = b1 * 256 + b2
+                if code < 0x80 then
+                    table.insert(out, string.char(code))
+                elseif code < 0x800 then
+                    table.insert(out, string.char(0xc0 + math.floor(code / 64), 0x80 + (code % 64)))
+                else
+                    table.insert(out, string.char(0xe0 + math.floor(code / 4096), 0x80 + (math.floor(code / 64) % 64), 0x80 + (code % 64)))
+                end
+            end
+            return table.concat(out)
+        else
+            -- 简单处理 PDFDocEncoding (大部分情况同 UTF-8)
+            return s
+        end
+    end
+
+    -- 获取页面索引 (1-based)
+    function get_page_index(doc, page_obj)
+        if not page_map_cache[doc] then
+            page_map_cache[doc] = {}
+            local pages = pdfe.pagestotable(doc)
+            for i, p in ipairs(pages) do
+                page_map_cache[doc][p] = i
+            end
+        end
+        return page_map_cache[doc][page_obj]
+    end
+
+    -- 解析 Destination 为页码
+    function resolve_destination(doc, dest)
+        if not dest then return nil end
+        if type(dest) == "string" then
+            local catalog = doc.Catalog
+            local d = nil
+            if catalog.Dests then d = catalog.Dests[dest] end
+            if not d and catalog.Names and catalog.Names.Dests then
+                -- Names 树查找稍微复杂，尝试递归或直接访问
+                -- 这里尝试一种通用的查找
+                local function find_in_tree(node, key)
+                    if not node then return nil end
+                    local names = node.Names
+                    if names then
+                        for i = 1, #names, 2 do
+                            if tostring(names[i]) == key then return names[i+1] end
+                        end
+                    end
+                    local kids = node.Kids
+                    if kids then
+                        for i = 1, #kids do
+                            local res = find_in_tree(kids[i], key)
+                            if res then return res end
+                        end
+                    end
+                    return nil
+                end
+                d = find_in_tree(catalog.Names.Dests, dest)
+            end
+            if d then return resolve_destination(doc, d) end
+            return nil
+        end
+        -- Array 形式: [page_ref, /Fit...]
+        if type(dest) == "table" or type(dest) == "userdata" then
+            local page_obj = dest[1]
+            return get_page_index(doc, page_obj)
+        end
+        return nil
+    end
+    
+    -- 清理调试日志
+    function extract_pdf_bookmarks(file_path, base_level, link_prefix)
+        local doc = pdfe.open(file_path)
+        if not doc then return end
+        
+        local catalog = doc.Catalog
+        local outlines = catalog.Outlines
+        if not outlines or not outlines.First then 
+            pdfe.close(doc)
+            return 
+        end
+
+        local function traverse(outline, level)
+            local current = outline.First
+            while current do
+                local dest = current.Dest
+                if not dest and current.A and current.A.S == "GoTo" then
+                    dest = current.A.D
+                end
+                
+                local page = resolve_destination(doc, dest)
+                if page then
+                    local title = decode_pdf_string(current.Title)
+                    local open = (current.Count or 0) >= 0 and "true" or "false"
+                    tex.print(string.format("\\bookmark[level=%d, dest={%s.%d}, open=%s]{%s}", 
+                        level + base_level, link_prefix, page, open, title))
+                end
+                
+                if current.First then
+                    traverse(current, level + 1)
+                end
+                current = current.Next
+            end
+        end
+
+        traverse(outlines, 0)
+        pdfe.close(doc)
+    end
+    
     function process_book_structure()
         -- 1. 读取文件
         local f = io.open("toc.json", "rb")
@@ -184,22 +303,21 @@
         
         for i, chapter in ipairs(_G.book_content) do
             tex.print("\\chapter{" .. (chapter.title or "Chapter") .. "}")
-            -- 兼容 sections 字段名
             local sections = chapter.sections or chapter.content
             if sections then
                 for j, section in ipairs(sections) do
-                    -- 兼容 path 字段名
                     local file_path = section.path or section.file
-                    local sec_title = section.title or "Section"
-                    
-                    -- 检查文件路径是否为空
                     if file_path and file_path ~= "" then
-                        -- 这里如果不转义路径中的特殊字符可能会有问题，但在 Windows 路径通常斜杠处理要注意
-                        -- 最好在 Python 端把路径都转为正斜杠 /
+                        local link_prefix = "pdfidx_" .. i .. "_" .. j
+                        -- 插入 PDF，带 link 锚点
                         local options = "pages=-, width=\\paperwidth, height=\\paperheight, " ..
                                         "pagecommand={\\thispagestyle{fancy}}, " .. 
-                                        "addtotoc={1, section, 1, {" .. sec_title .. "}, sec:" .. i .. "-" .. j .. "}"
+                                        "link=true, linkname=" .. link_prefix
                         tex.print("\\includepdf[" .. options .. "]{" .. file_path .. "}")
+                        
+                        -- 提取并插入该 PDF 的书签
+                        -- base_level 为 1 表示映射为 \section
+                        extract_pdf_bookmarks(file_path, 1, link_prefix)
                     end
                 end
             end

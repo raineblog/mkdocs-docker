@@ -113,10 +113,10 @@ async function processTasks(tasks, port, maxConcurrent) {
                     omitBackground: true,
                     outline: true,
                     margin: {
-                        top: '1cm',
-                        bottom: '1cm',
-                        left: '0.75cm',
-                        right: '0.75cm'
+                        top: '2.54cm',
+                        bottom: '2.54cm',
+                        left: '1.91cm',
+                        right: '1.91cm'
                     }
                 });
 
