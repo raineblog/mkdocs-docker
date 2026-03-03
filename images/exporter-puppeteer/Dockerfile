@@ -2,7 +2,7 @@
 FROM node:lts
 
 # Install Chromium dependencies and zstd, also Chinese fonts
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-noto-cjk fonts-noto-cjk-extra fonts-noto-core fonts-noto-extra \
     fonts-liberation fonts-linuxlibertine \
     fonts-noto-color-emoji \
