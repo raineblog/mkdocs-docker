@@ -21,7 +21,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     set -ex; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        bash tini tar zstd git openssh-client ca-certificates curl wget \
+        bash tini tar zstd unzip git openssh-client ca-certificates curl wget \
         # 图像与渲染依赖 (运行时及其开发依赖) - 遵从用户指示保留
         pngquant zlib1g-dev libcairo2-dev libfreetype6-dev libffi-dev libjpeg-dev libpng-dev libz-dev \
         # LMDB 运行时

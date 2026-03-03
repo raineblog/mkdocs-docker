@@ -26,7 +26,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # 安装基础工具与 Bun
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        bash tini tar zstd git ca-certificates curl wget \
+        bash tini tar zstd unzip git ca-certificates curl wget \
         fonts-noto-cjk fonts-noto-core fonts-wqy-zenhei fonts-liberation fonts-linuxlibertine; \
     curl -fsSL https://bun.com/install | bash; \
     # 安装运行时库 (LMDB, Image rendering)
