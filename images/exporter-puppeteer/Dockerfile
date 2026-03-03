@@ -3,18 +3,17 @@ FROM ghcr.io/puppeteer/puppeteer:latest
 
 USER root
 
-# ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
 # ENV DBUS_SESSION_BUS_ADDRESS=autolaunch:
 # Setting the environment variable to ensure Puppeteer uses its downloaded browser
 
 # Install Chromium dependencies and zstd, also Chinese fonts
-RUN echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
-    apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-noto-cjk fonts-noto-cjk-extra fonts-noto-core fonts-noto-extra \
     fonts-liberation fonts-linuxlibertine \
     fonts-noto-color-emoji \
     libnss3 \
-    google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
+    fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
     libasound2 \
     libatk-bridge2.0-0 \
     libgtk-3-0 \
@@ -37,8 +36,8 @@ RUN echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >
 
 # Note: We install dependencies globally or within the app directory
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package.json package-lock.json* .puppeteerrc.* ./
+RUN npm ci && npx puppeteer browsers install
 
 COPY src/ ./src/
 
