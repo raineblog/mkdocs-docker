@@ -5,7 +5,8 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
 # Setting the environment variable to ensure Puppeteer uses its downloaded browser
 
 # Install Chromium dependencies and zstd, also Chinese fonts
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN sudo apt-get update && \
+    sudo apt-get install -y --no-install-recommends \
     fonts-noto-cjk fonts-noto-cjk-extra fonts-noto-core fonts-noto-extra \
     fonts-liberation fonts-linuxlibertine \
     fonts-noto-color-emoji \
@@ -17,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgbm1 \
     zstd \
     tar \
-    && rm -rf /var/lib/apt/lists/*
+    && sudo rm -rf /var/lib/apt/lists/*
 
 # Note: We install dependencies globally or within the app directory
 WORKDIR /app
