@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1
-FROM ghcr.io/puppeteer/puppeteer:latest
+FROM node:lts
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
+ENV DBUS_SESSION_BUS_ADDRESS=autolaunch:
 # Setting the environment variable to ensure Puppeteer uses its downloaded browser
 
 # Install Chromium dependencies and zstd, also Chinese fonts
-RUN sudo apt-get update && \
-    sudo apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-noto-cjk fonts-noto-cjk-extra fonts-noto-core fonts-noto-extra \
     fonts-liberation fonts-linuxlibertine \
     fonts-noto-color-emoji \
@@ -18,12 +18,13 @@ RUN sudo apt-get update && \
     libgbm1 \
     zstd \
     tar \
-    && sudo rm -rf /var/lib/apt/lists/*
+    dbus dbus-x11 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Note: We install dependencies globally or within the app directory
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci && npx puppeteer browsers install chrome --install-deps
 
 COPY src/ ./src/
 
