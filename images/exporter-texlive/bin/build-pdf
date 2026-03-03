@@ -18,25 +18,8 @@ WORK_DIR=$(dirname "$JSON_PATH")
 OUTPUT_PDF_PATH="build/${BASENAME}.pdf"
 mkdir -p "build"
 
-# 构建目录准备
-CACHE_DIR="/tmp/cache-$BASENAME"
-mkdir -p "$CACHE_DIR"
+echo "[*] Preparing LaTeX environment for ${BASENAME} in $WORK_DIR..."
 
-echo "[*] Preparing LaTeX environment for ${BASENAME} in $CACHE_DIR..."
-
-# 复制内置的 template 到构建环境，并命名为 main.tex
-cp "/app/templates/template.tex" "$CACHE_DIR/main.tex"
-
-# LuaLaTeX 模板(template.tex) 默认读取目录下的 toc.json，所以把当书本 json 传递过去并改名为 toc.json
-cp "$JSON_PATH" "$CACHE_DIR/toc.json"
-
-# 进入临时目录执行编译确保不会污染或者有读写权限问题，同时也方便 Lua 脚本寻址
-cd "$CACHE_DIR"
-
-# 对于包含在 toc.json 中引用的 PDF 路径（本例中形如 pdfs/xxx），需要创建软链或映射，
-# 或者更加简单的是告知 LuaLaTeX 我们原始的 WORK_DIR（也就是 site/build），使得它可以按路径寻找插入。
-# 这里最好的方法是将执行目录设在 WORK_DIR（即 site/build），这样 json 中的相对路径就能直接被找到。
-cd - > /dev/null
 cd "$WORK_DIR"
 
 # 临时放置

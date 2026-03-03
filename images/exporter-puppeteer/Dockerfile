@@ -3,9 +3,9 @@ FROM node:lts
 
 # Install Chromium dependencies and zstd, also Chinese fonts
 RUN apt-get update && apt-get install -y \
-    fonts-noto-cjk \
+    fonts-noto-cjk fonts-noto-cjk-extra fonts-noto-core fonts-noto-extra \
+    fonts-liberation fonts-linuxlibertine \
     fonts-noto-color-emoji \
-    fonts-liberation \
     libnss3 \
     libxss1 \
     libasound2 \
