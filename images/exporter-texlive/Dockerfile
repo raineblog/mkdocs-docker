@@ -29,13 +29,18 @@ COPY --chmod=755 ci-cleanup.sh /usr/local/bin/ci-cleanup
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends \
+    set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends eatmydata; \
+    eatmydata apt-get update && apt-get install -y --no-install-recommends \
     make bash tini tar zstd git ca-certificates curl wget \
     ghostscript biber fontconfig texlive-full \
     fonts-noto-cjk fonts-noto-cjk-extra fonts-noto-core fonts-noto-extra \
     fonts-liberation fonts-linuxlibertine \
-    && fc-cache -fv \
-    && /usr/local/bin/ci-cleanup
+    ca-certificates curl git; \
+    fc-cache -fv; \
+    rm -rf /var/lib/apt/lists/*; \
+    /usr/local/bin/ci-cleanup
 
 COPY --chmod=755 bin/ /usr/local/bin/
 COPY templates/ /app/templates/
