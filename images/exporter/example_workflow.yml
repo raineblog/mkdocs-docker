@@ -1,4 +1,4 @@
-name: PDF Export
+name: Export to PDF
 
 on:
   push:
@@ -19,8 +19,8 @@ permissions:
   id-token: write
 
 jobs:
-  export_prepare:
-    name: "Prepare: Extract and Package Cache"
+  export_build:
+    name: "Prepare: Build MkDocs Site"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/raineblog/mkdocs-exporter:latest
@@ -29,50 +29,73 @@ jobs:
     steps:
       - name: Initialize repository checkout
         uses: actions/checkout@v6
-
-      - name: Execute Compile Step (Package cache to tar.zst)
-        run: |
-          # run step 1 and step 2 logic here normally
-          # bin script will internally invoke "uv run scripts/export.py"
-          # which now produces .tar.zst packages in build/
-          mkdocs-export
-          
+      - name: Cache
+        uses: actions/cache@v5
+        with:
+          path: .cache
+          key: ${{ runner.os }}-mkdocs-export-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ${{ runner.os }}-mkdocs-export-
+      - name: Execute Compile & Generate Details
+        run: mkdocs-export
       - name: Generate Action Matrix
         id: set-matrix
         run: |
-          MATRIX_JSON=$(uv run /app/scripts/out_matrix.py)
-          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
-          
+          # matrix.out is populated during mkdocs-export script exectuion
+          cat matrix.out >> $GITHUB_OUTPUT
+      - name: Upload Raw Site Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-site
+          path: site/
+          retention-days: 1
+
+  export_puppeteer:
+    name: "Puppeteer: Download PDF Assets"
+    needs: export_build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/raineblog/mkdocs-exporter-puppeteer:latest
+    steps:
+      - name: Download Site Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: raw-site
+          path: site/
+      - name: Fetch and Generate PDFs
+        env:
+          CONCURRENCY: 2
+        run: npm start --prefix /app
       - name: Upload Workspace Cache
         uses: actions/upload-artifact@v4
         with:
-          name: tex-cache
-          path: build/*.tar.zst
+          name: tex-prepared
+          path: site/build/
           retention-days: 1
 
   export_compile:
-    name: "Compile: Generate PDF from Cache"
-    needs: export_prepare
+    name: "Compile: Generate Book from PDF Cache"
+    needs: export_puppeteer
     runs-on: ubuntu-latest
-    if: ${{ needs.export_prepare.outputs.matrix != '[]' }}
+    if: ${{ needs.export_build.outputs.matrix != '[]' }}
     continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.export_prepare.outputs.matrix) }}
+        include: ${{ fromJSON(needs.export_build.outputs.matrix) }}
     container:
       image: ghcr.io/raineblog/mkdocs-exporter-texlive:latest
     steps:
       - name: Download Workspace Cache
         uses: actions/download-artifact@v4
         with:
-          name: tex-cache
+          name: tex-prepared
           path: .
           
-      - name: Execute PDF generation process
-        run: build-pdf "${{ matrix.tarfile }}"
+      - name: Execute PDF synthesis process
+        run: build-pdf "${{ matrix.book }}.json"
 
-      - name: Upload PDF Piece
+      - name: Upload Book Product
         uses: actions/upload-artifact@v4
         with:
           name: tex-pdf-${{ strategy.job-index }}

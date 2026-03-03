@@ -10,7 +10,9 @@ RUN --mount=type=cache,target=/var/cache/apk \
     && fc-cache -fv
 
 COPY --chmod=755 bin/ /usr/local/bin/
+COPY templates/ /app/templates/
 
 RUN curl -sSLf https://gist.githubusercontent.com/christiansteier/dd8c5544c69504d29bd938726691255b/raw/5317638ec64c0e8c3d22cd9965237a452bf82895/docker-alpine-cleanup.sh | sh
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/usr/local/bin/build-pdf"]
+

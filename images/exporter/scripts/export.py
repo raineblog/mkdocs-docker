@@ -50,62 +50,42 @@ def clean_url(baseurl, filepath):
     )
 
 
-def process_top_level(info, sub_nav, baseurl):
+def process_top_level(info, sub_nav, baseurl, output_dir="site/build"):
     first_title = info["title"]
-    first_out = os.path.join("cache", first_title)
-    os.makedirs(first_out, exist_ok=True)
 
     sections = []
     for item in sub_nav:
         for second_title, third_list in item.items():
-            second_out = os.path.join(first_out, second_title)
-            os.makedirs(second_out, exist_ok=True)
             section = {"title": second_title, "sections": []}
             for third_file in third_list:
                 third_title = extract_title(
                     os.path.join("docs", third_file.replace("/", os.sep))
                 )
-                pdf_path = os.path.join(first_out, second_title, third_title + ".pdf")
+                pdf_rel_path = os.path.join("pdfs", first_title, second_title, third_title + ".pdf")
+                pdf_full_path = os.path.join(output_dir, pdf_rel_path)
+                
+                os.makedirs(os.path.dirname(pdf_full_path), exist_ok=True)
+                
                 html_url = clean_url(baseurl, third_file)
-                downloader.add_task(html_url, pdf_path)
-                section["sections"].append({"title": third_title, "path": pdf_path})
+                downloader.add_task(html_url, pdf_rel_path)
+                
+                section["sections"].append({"title": third_title, "path": pdf_rel_path.replace("\\", "/")})
             sections.append(section)
 
-    downloader.start_tasks()
-
-    relative_sections = []
-    for section in sections:
-        rel_sec = {"title": section["title"], "sections": []}
-        for sub in section["sections"]:
-            rel_sec["sections"].append(
-                {
-                    "title": sub["title"],
-                    "path": sub["path"].replace("cache/", "", 1).replace("\\", "/"),
-                }
-            )
-        relative_sections.append(rel_sec)
+    base_name = os.path.splitext(info["filename"])[0]
 
     write_json(
-        "cache/toc.json",
+        os.path.join(output_dir, f"{base_name}.json"),
         {
             "title": info["title"],
             "subtitle": info["subtitle"],
             "authors": info["authors"],
             "info": info["info"],
-            "sections": relative_sections,
+            "sections": sections,
         },
     )
 
-    shutil.copy("/app/templates/template.tex", "cache/main.tex")
-
-    base_name = os.path.splitext(info["filename"])[0]
-    tar_path = os.path.join("build", f"{base_name}.tar.zst")
-    print(f"[*] Packaging {base_name} tex environment...")
-
-    cmd = f"tar -cf - -C cache . | zstd -T0 -3 > {tar_path}"
-    subprocess.run(cmd, shell=True, check=True)
-
-    shutil.rmtree("cache")
+    return base_name
 
 
 if __name__ == "__main__":
@@ -116,11 +96,19 @@ if __name__ == "__main__":
     for export, children in task_list:
         print(f"[{export['filename']}] {export['title']} {len(children)}")
 
-    # mkut.write_site_template("mkdocs.yml", False, "template.yml")
-    # subprocess.run("mkdocs build --clean", shell=True, check=True)
-    os.makedirs("build", exist_ok=True)
+    output_dir = "site/build"
+    os.makedirs(output_dir, exist_ok=True)
 
+    matrix_list = []
     for export, children in task_list:
-        process_top_level(export, children, "./site")
+        base_name = process_top_level(export, children, "./site", output_dir)
+        matrix_list.append({"book": base_name})
 
+    downloader.save_tasks(os.path.join(output_dir, "download.json"))
+
+    # GitHub Action Matrix Output
+    with open(os.environ.get("GITHUB_OUTPUT", "matrix.out"), "a", encoding="utf-8") as f:
+        f.write(f"matrix={json.dumps(matrix_list, separators=(',', ':'))}\n")
+    
     print("Build Success!")
+
