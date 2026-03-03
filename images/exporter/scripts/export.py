@@ -8,8 +8,6 @@ import json
 import generate as mkut
 from mlib_download import MlibDownloader
 
-downloader = MlibDownloader()
-
 
 def parse_yaml(yaml_path):
     with open(yaml_path, "r", encoding="utf-8") as file:
@@ -52,6 +50,9 @@ def clean_url(baseurl, filepath):
 
 def process_top_level(info, sub_nav, baseurl, output_dir="site/build"):
     first_title = info["title"]
+    
+    # 为每卷分别开启不同的任务收集
+    downloader = MlibDownloader()
 
     sections = []
     for item in sub_nav:
@@ -84,6 +85,9 @@ def process_top_level(info, sub_nav, baseurl, output_dir="site/build"):
             "sections": sections,
         },
     )
+    
+    # 存储拆分下来的任务列表
+    downloader.save_tasks(os.path.join(output_dir, f"download_{base_name}.json"))
 
     return base_name
 
@@ -104,9 +108,8 @@ if __name__ == "__main__":
         base_name = process_top_level(export, children, "./site", output_dir)
         matrix_list.append({"book": base_name})
 
-    downloader.save_tasks(os.path.join(output_dir, "download.json"))
-
     # GitHub Action Matrix Output
+
     with open(os.environ.get("GITHUB_OUTPUT", "matrix.out"), "a", encoding="utf-8") as f:
         f.write(f"matrix={json.dumps(matrix_list, separators=(',', ':'))}\n")
     

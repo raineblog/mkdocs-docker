@@ -138,9 +138,15 @@ async function processTasks(tasks, port, maxConcurrent) {
 }
 
 async function main() {
+    const bookName = process.argv[2];
+    if (!bookName) {
+        console.error("Usage: node index.js <book-name>");
+        process.exit(1);
+    }
+
     const buildDir = path.join(process.cwd(), 'site', 'build');
     const siteDir = path.join(process.cwd(), 'site');
-    const tasksFile = path.join(buildDir, 'download.json');
+    const tasksFile = path.join(buildDir, `download_${bookName}.json`);
 
     if (!fs.existsSync(tasksFile)) {
         console.error(`Tasks file not found at ${tasksFile}. Exiting.`);

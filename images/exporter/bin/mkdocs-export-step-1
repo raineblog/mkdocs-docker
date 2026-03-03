@@ -1,6 +1,0 @@
-#!/bin/bash
-set -e
-# bun install katex
-uv run /app/scripts/generate.py
-uv run mkdocs build --clean
-# uv run /app/scripts/export.py "$@"

@@ -54,6 +54,12 @@ jobs:
     name: "Puppeteer: Download PDF Assets"
     needs: export_build
     runs-on: ubuntu-latest
+    if: ${{ needs.export_build.outputs.matrix != '[]' }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.export_build.outputs.matrix) }}
     container:
       image: ghcr.io/raineblog/mkdocs-exporter-puppeteer:latest
     steps:
@@ -65,11 +71,11 @@ jobs:
       - name: Fetch and Generate PDFs
         env:
           CONCURRENCY: 2
-        run: npm start --prefix /app
+        run: node /app/src/index.js "${{ matrix.book }}"
       - name: Upload Workspace Cache
         uses: actions/upload-artifact@v4
         with:
-          name: tex-prepared
+          name: tex-prepared-${{ matrix.book }}
           path: site/build/
           retention-days: 1
 
@@ -89,7 +95,7 @@ jobs:
       - name: Download Workspace Cache
         uses: actions/download-artifact@v4
         with:
-          name: tex-prepared
+          name: tex-prepared-${{ matrix.book }}
           path: .
           
       - name: Execute PDF synthesis process
