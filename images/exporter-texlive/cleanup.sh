@@ -1,47 +1,44 @@
 #!/bin/sh
-set -e
+set -eu
 
-# set -euxo pipefail
+# 目标：只清理“构建期垃圾”，不做不可控的“系统大扫除”
+# 建议：在 Dockerfile 里与 apt-get install 放在同一个 RUN 里调用
 
-# APT 清理
-apt-get clean
-apt-get autoclean
-apt-get autoremove --purge -y
+cleanup_apt() {
+  # 1) 清 APT lists（Docker 官方 best practice 常规项）
+  rm -rf /var/lib/apt/lists/*
 
-rm -rf /var/lib/apt/lists/*
-rm -rf /var/cache/apt/archives/*
-rm -rf /var/cache/apt/*
+  # 2) 清 APT 下载的 .deb 包缓存（两种方式二选一即可）
+  apt-get clean
+  # 如果你不想依赖 apt-get clean，也可以用：
+  # rm -rf /var/cache/apt/archives/* /var/cache/apt/archives/partial/*
+}
 
-# 文档、man、info（这些占空间很大）
-rm -rf /usr/share/doc/*
-rm -rf /usr/share/man/*
-rm -rf /usr/share/info/*
-rm -rf /usr/share/lintian/*
+cleanup_docs() {
+  # dpkg path-exclude 只能阻止“未来安装”落盘；
+  # 基础镜像或你在开启过滤前装过的包，仍可能已有 docs/man/info，需要收尾。
+  #
+  # 保留 copyright（Ubuntu Wiki 推荐这么做）
+  if [ -d /usr/share/doc ]; then
+    find /usr/share/doc -mindepth 2 -type f ! -name copyright -delete 2>/dev/null || true
+    find /usr/share/doc -type d -empty -delete 2>/dev/null || true
+  fi
 
+  rm -rf \
+    /usr/share/man \
+    /usr/share/groff \
+    /usr/share/info \
+    /usr/share/lintian \
+    /usr/share/linda \
+    /var/cache/man 2>/dev/null || true
+}
 
-find /usr/share/doc -depth -type f ! -name copyright|xargs rm || true
-find /usr/share/doc -empty|xargs rmdir || true
-rm -rf /usr/share/man /usr/share/groff /usr/share/info /usr/share/lintian /usr/share/linda /var/cache/man
+cleanup_tmp_and_logs() {
+  rm -rf /tmp/* /var/tmp/* 2>/dev/null || true
+  rm -rf /root/.cache/* 2>/dev/null || true
+  rm -rf /var/log/* 2>/dev/null || true
+}
 
-# 临时文件和缓存
-rm -rf /tmp/* /var/tmp/* /root/.cache/* 
-
-# 可选激进清理（根据你的语言栈决定是否开启）
-# find /usr/lib -name '*.a' -delete || true
-# find / -name __pycache__ -type d -exec rm -rf {} + || true
-# rm -rf /root/.npm /root/.yarn /root/.cargo/registry etc.
-
-# APT 元数据缓存（最常见的无用体积来源）
-rm -rf /var/lib/apt/lists/*
-
-# 临时目录
-rm -rf /tmp/* /var/tmp/*
-
-# 文档/手册/信息（如果你没有用 dpkg path-exclude，这里也能删；但要同层才真正瘦身）
-rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/*
-
-# 一些无关紧要的静态数据（可选）
-rm -rf /usr/share/lintian/ /usr/share/linda/ || true
-
-# 日志（通常不大，但 CI 镜像可以清）
-rm -rf /var/log/* || true
+cleanup_apt
+cleanup_docs
+cleanup_tmp_and_logs
