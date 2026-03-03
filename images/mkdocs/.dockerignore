@@ -15,3 +15,27 @@ public/
 # Dockerfile       <-- Usually good to keep or ignored by default
 # README.md        <-- Optional but good to keep
 # etc.
+
+.git
+.idea
+.vscode
+__pycache__
+*.pyc
+node_modules
+dist
+test_data
+Dockerfile
+README.md
+.github
+.venv
+venv
+.env
+
+/usr/share/doc/*
+/usr/share/man/*
+/usr/share/groff/*
+/usr/share/info/*
+/usr/share/lintian/*
+/usr/share/linda/*
+/usr/share/locale/*
+/usr/share/omf/*/*-*.emf

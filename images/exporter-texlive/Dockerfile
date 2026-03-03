@@ -32,7 +32,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends eatmydata; \
-    eatmydata apt-get update && apt-get install -y --no-install-recommends \
+    eatmydata apt-get update && eatmydata apt-get install -y --no-install-recommends \
     make bash tini tar zstd git ca-certificates curl wget \
     ghostscript biber fontconfig texlive-full \
     fonts-noto-cjk fonts-noto-cjk-extra fonts-noto-core fonts-noto-extra \
