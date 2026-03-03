@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # 字体支持
     fonts-noto-cjk fonts-noto-core fonts-wqy-zenhei fonts-liberation fonts-linuxlibertine \
     # LMDB 支持 (runtime)
-    liblmdb0 libffi-dev python-dev build-essential \
+    liblmdb0 libffi-dev python-dev-is-python3 build-essential \
     && fc-cache -fv && \
     git config --system --add safe.directory /__w/* && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
