@@ -10,15 +10,15 @@ function startLocalServer(baseDir, port) {
         const server = http.createServer((req, res) => {
             // URL 解码并去除 query params
             let reqUrl = decodeURI(req.url.split('?')[0]);
-            
+
             // 简单处理默认 index.html
             if (reqUrl.endsWith('/')) {
                 reqUrl += 'index.html';
             }
-            
+
             // 构造安全的绝对文件路径
             const filePath = path.join(baseDir, reqUrl);
-            
+
             // 安全检查，防止路径穿越
             if (!filePath.startsWith(baseDir)) {
                 res.statusCode = 403;
@@ -32,7 +32,7 @@ function startLocalServer(baseDir, port) {
                     res.end(`File not found: ${reqUrl}`);
                     return;
                 }
-                
+
                 // 使用 mime-types 库获取专业的资源 Type，并设置默认回退 fallback
                 const contentType = mime.contentType(path.extname(filePath)) || 'application/octet-stream';
 
@@ -43,7 +43,7 @@ function startLocalServer(baseDir, port) {
         });
 
         server.on('error', (e) => reject(e));
-        
+
         server.listen(port, '127.0.0.1', () => {
             console.log(`[HTTP Server] Serving ${baseDir} on http://127.0.0.1:${port}`);
             resolve(server);
@@ -54,7 +54,7 @@ function startLocalServer(baseDir, port) {
 // 并发排队机制
 async function processTasks(tasks, port, maxConcurrent) {
     console.log(`[Puppeteer] Starting conversion... Total: ${tasks.length}, Concurrency: ${maxConcurrent}`);
-    
+
     // 我们建议使用 browserContext 来做轻量隔离或者使用单纯的 page，这里全局共用
     const browser = await puppeteer.launch({
         args: [
@@ -74,7 +74,7 @@ async function processTasks(tasks, port, maxConcurrent) {
         // 创建独立进程的 page 上下文
         const context = await browser.createBrowserContext();
         const page = await context.newPage();
-        
+
         while (true) {
             let taskIndex;
             // 获取任务锁
@@ -85,23 +85,23 @@ async function processTasks(tasks, port, maxConcurrent) {
             }
 
             const task = tasks[taskIndex];
-            
+
             let reqPath = task.url;
             if (reqPath.startsWith('./site/')) reqPath = reqPath.replace('./site/', '/');
             else if (reqPath.startsWith('site/')) reqPath = reqPath.replace('site/', '/');
             else if (!reqPath.startsWith('/')) reqPath = '/' + reqPath;
-            
+
             const fullUrl = `http://127.0.0.1:${port}${reqPath}`;
             const pdfDest = path.join(process.cwd(), 'site', 'build', task.pdf_path);
-            
-            console.log(`[Worker ${workerId}] [${completed+1}/${tasks.length}] Fetching ${fullUrl} -> ${task.pdf_path}`);
-            
+
+            console.log(`[Worker ${workerId}] [${completed + 1}/${tasks.length}] Fetching ${fullUrl} -> ${task.pdf_path}`);
+
             try {
                 fs.mkdirSync(path.dirname(pdfDest), { recursive: true });
 
                 // 在 goto 前设置，确保不会拦截静态资源或陷入不必要的 js xhr wait
                 await page.goto(fullUrl, { waitUntil: 'load', timeout: 30000 });
-                
+
                 await page.evaluateHandle('document.fonts.ready');
 
                 await page.pdf({
@@ -110,7 +110,14 @@ async function processTasks(tasks, port, maxConcurrent) {
                     format: 'A4',
                     printBackground: true,
                     displayHeaderFooter: false,
-                    margin: { top: '0', bottom: '0', left: '0', right: '0' }
+                    omitBackground: true,
+                    outline: true,
+                    margin: {
+                        top: '1cm',
+                        bottom: '1cm',
+                        left: '0.75cm',
+                        right: '0.75cm'
+                    }
                 });
 
                 completed++;
@@ -130,7 +137,7 @@ async function processTasks(tasks, port, maxConcurrent) {
 
     await Promise.all(workers);
     await browser.close();
-    
+
     console.log(`[Puppeteer] Converted: ${completed}, Failed: ${failed}`);
     if (failed > 0) {
         process.exit(1);
@@ -161,7 +168,7 @@ async function main() {
 
     const PORT = 3000;
     const server = await startLocalServer(siteDir, PORT);
-    
+
     const maxConcurrent = parseInt(process.env.CONCURRENCY) || 4;
 
     try {
