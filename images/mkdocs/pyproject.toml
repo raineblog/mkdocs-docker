@@ -12,7 +12,7 @@ dependencies = [
     "mkdocs-glightbox>=0.5.2",
     "mkdocs-katex-ssr>=1.0.9",
     "mkdocs-llmstxt>=0.5.0",
-    "mkdocs-material",
+    "mkdocs-material[imaging]",
     "mkdocs-minify-html-plugin>=0.3.9",
     "mkdocs-rss-plugin>=1.17.9",
     "mkdocs-table-reader-plugin>=3.1.0",

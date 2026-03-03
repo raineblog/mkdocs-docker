@@ -443,7 +443,7 @@ dependencies = [
     { name = "mkdocs-glightbox" },
     { name = "mkdocs-katex-ssr" },
     { name = "mkdocs-llmstxt" },
-    { name = "mkdocs-material" },
+    { name = "mkdocs-material", extra = ["imaging"] },
     { name = "mkdocs-minify-html-plugin" },
     { name = "mkdocs-rss-plugin" },
     { name = "mkdocs-table-reader-plugin" },
@@ -462,7 +462,7 @@ requires-dist = [
     { name = "mkdocs-glightbox", specifier = ">=0.5.2" },
     { name = "mkdocs-katex-ssr", specifier = ">=1.0.9" },
     { name = "mkdocs-llmstxt", specifier = ">=0.5.0" },
-    { name = "mkdocs-material", git = "https://github.com/raineblog/mkdocs-material.git" },
+    { name = "mkdocs-material", extras = ["imaging"], git = "https://github.com/raineblog/mkdocs-material.git" },
     { name = "mkdocs-minify-html-plugin", specifier = ">=0.3.9" },
     { name = "mkdocs-rss-plugin", specifier = ">=1.17.9" },
     { name = "mkdocs-table-reader-plugin", specifier = ">=3.1.0" },
@@ -552,6 +552,12 @@ dependencies = [
     { name = "pygments" },
     { name = "pymdown-extensions" },
     { name = "requests" },
+]
+
+[package.optional-dependencies]
+imaging = [
+    { name = "cairosvg" },
+    { name = "pillow" },
 ]
 
 [[package]]
