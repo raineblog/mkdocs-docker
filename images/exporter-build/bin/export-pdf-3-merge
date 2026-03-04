@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+if [ -z "$1" ]; then
+    echo "Usage: export-pdf-3-merge <book_name>"
+    exit 1
+fi
+uv run /app/scripts/processor.py "site/build/$1.json" --merge

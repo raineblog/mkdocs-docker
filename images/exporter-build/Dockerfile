@@ -95,4 +95,4 @@ COPY templates/ /app/templates/
 COPY --chmod=755 bin/ /usr/local/bin/
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["export-pdf"]
+CMD ["export-pdf-1-print"]

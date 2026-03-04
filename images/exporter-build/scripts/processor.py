@@ -37,15 +37,17 @@ class PDFProcessor:
                             # 粗放式匹配：字体大且粗的可能是标题
                             if s["size"] > 12:
                                 text = s["text"].strip()
+                                # 存入映射，对 key 进行标准化处理（去除空格、处理罕见字符等）
                                 if text:
-                                    headings_map[text] = (page_num, s["bbox"][1])
+                                    headings_map[text.lower()] = (page_num, s["bbox"][1])
 
         refined_toc = []
         for entry in raw_toc:
             lvl, title, page, dest = entry
-            # 尝试匹配文本高度
-            if title in headings_map:
-                p_idx, y_coord = headings_map[title]
+            # 尝试匹配文本高度，使用小写标准化匹配
+            match_title = title.strip().lower()
+            if match_title in headings_map:
+                p_idx, y_coord = headings_map[match_title]
                 dest = {"kind": fitz.LINK_GOTO, "to": fitz.Point(0, y_coord)}
                 
             refined_toc.append([lvl, title, page + offset, dest])
@@ -81,7 +83,11 @@ class PDFProcessor:
 
             # 插入内容页
             for sub in section["sections"]:
-                content_path = Path("site/build") / sub["path"]
+                # 尝试从 JSON 所在目录查找，或者使用绝对 site/build 路径
+                content_path = self.book_json_path.parent / sub["path"]
+                if not content_path.exists():
+                     content_path = Path("site/build") / sub["path"]
+                     
                 if content_path.exists():
                     doc = fitz.open(content_path)
                     # 提取并偏移章节内的书签
