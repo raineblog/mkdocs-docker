@@ -24,7 +24,7 @@ class PDFProcessor:
         """
         使用 get_text("dict") 提取标题精确位置，并同步到 TOC。
         """
-        raw_toc = doc.get_toc(detailed=True)
+        raw_toc = doc.get_toc()
         # 获取所有文本块，识别可能的标题 (font size > 14)
         headings_map = {}
         for page_num in range(len(doc)):
