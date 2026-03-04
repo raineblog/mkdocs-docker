@@ -134,8 +134,8 @@ async function main() {
         process.exit(1);
     }
 
-    const buildDir = path.join(process.cwd(), 'site', 'build');
     const siteDir = path.join(process.cwd(), 'site');
+    const buildDir = path.join(siteDir, 'build');
     const tasksFile = path.join(buildDir, `download_${bookName}.json`);
 
     if (!fs.existsSync(tasksFile)) {

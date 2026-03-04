@@ -36,8 +36,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux; \
     apt-get update; \
-    # 基础工具
-    apt-get install -y --no-install-recommends \
+    apt-get install -y eatmydata; \
+    eatmydata apt-get install -y \
         python3 python3-pip python3-dev \
         bash tini tar zstd unzip git ca-certificates curl wget \
         liblmdb0 build-essential libffi-dev ghostscript \
@@ -70,10 +70,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 \
         libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget; \
     # 清理
+    apt-get purge -y --auto-remove eatmydata; \
     apt-get clean; \
-    rm -rf /var/lib/apt/lists/*; \
-    fc-cache -fv; \
-    git config --system --add safe.directory '/__w/*'
+    git config --system --add safe.directory '/__w/*'; \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -89,9 +89,10 @@ RUN --mount=type=bind,source=.python-version,target=.python-version \
     uv sync --locked --no-cache
 
 # 6. 拷贝应用代码
-COPY src/ ./src/
-COPY scripts/ ./scripts/
-COPY templates/ ./templates/
+COPY src/ /app/src/
+COPY scripts/ /app/scripts/
+COPY templates/ /app/templates/
+COPY --chmod=755 bin/ /usr/local/bin/
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["npm", "start"]
+CMD ["export-pdf"]

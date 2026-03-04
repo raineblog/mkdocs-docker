@@ -1,9 +1,6 @@
 import fitz
 import json
 import os
-import sys
-import yaml
-import subprocess
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
@@ -16,7 +13,9 @@ class PDFProcessor:
         with open(self.book_json_path, "r", encoding="utf-8") as f:
             self.book_data = json.load(f)
             
-        self.jinja_env = Environment(loader=FileSystemLoader("templates"))
+        # 锚定模板目录到镜像内的绝对路径
+        template_dir = os.environ.get("TEMPLATES_DIR", "/app/templates")
+        self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         self.final_doc = fitz.open()
         self.page_offset = 0
         self.toc_data = []
@@ -33,8 +32,8 @@ class PDFProcessor:
             blocks = page.get_text("dict")["blocks"]
             for b in blocks:
                 if "lines" in b:
-                    for l in b["lines"]:
-                        for s in l["spans"]:
+                    for line in b["lines"]:
+                        for s in line["spans"]:
                             # 粗放式匹配：字体大且粗的可能是标题
                             if s["size"] > 12:
                                 text = s["text"].strip()
