@@ -1,0 +1,28 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{fontspec}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\setmainfont{Noto Serif CJK SC}
+
+\begin{document}
+\thispagestyle{empty}
+\section*{目录}
+\vspace{1cm}
+% 这里只是一个占位符，实际目录逻辑由 Python 处理器控制书签
+% 或者在此渲染更精美的目录
+\begin{enumerate}
+{% for section in toc_outline %}
+    \item {{ section.title }} \dotfill {{ section.page }}
+    {% if section.children %}
+    \begin{itemize}
+        {% for child in section.children %}
+            \item {{ child.title }} \dotfill {{ child.page }}
+        {% endfor %}
+    \end{itemize}
+    {% endif %}
+{% endfor %}
+\end{enumerate}
+\newpage
+\end{document}

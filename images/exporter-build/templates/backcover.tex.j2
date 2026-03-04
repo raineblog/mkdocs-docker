@@ -7,11 +7,12 @@
 \setmainfont{Noto Serif CJK SC}
 
 \begin{document}
-\vspace*{10cm}
-\begin{flushright}
-    {\Huge \bfseries 第 {{ chapter_num }} 章} \par
-    \vspace{1cm}
-    {\LARGE {{ chapter_title }}}
-\end{flushright}
+\thispagestyle{empty}
+\vspace*{15cm}
+\begin{center}
+    {\large 版权所有 \textcopyright\ \the\year\ {{ authors | join(', ') }}} \par
+    \vspace{0.5cm}
+    {\small 采用 MkDocs Exporter 构建}
+\end{center}
 \newpage
 \end{document}

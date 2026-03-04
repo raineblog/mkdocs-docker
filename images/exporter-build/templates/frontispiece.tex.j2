@@ -1,0 +1,31 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{fontspec}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\setmainfont{Noto Serif CJK SC}
+
+\begin{document}
+\thispagestyle{empty}
+\vspace*{3cm}
+\begin{center}
+    {\Huge \bfseries {{ title }}} \par
+    \vspace{1cm}
+    {\Large {{ subtitle }}} \par
+    \vspace{2cm}
+    {\large 作者：{{ authors | join(', ') }}} \par
+    \vfill
+    \begin{minipage}{0.8\textwidth}
+        {\itshape
+        {% for line in info.abstract %}
+            {{ line }} \par \vspace{0.5cm}
+        {% endfor %}
+        }
+    \end{minipage}
+    \vfill
+    {\large {{ info.publishing }}} \par
+    {\large \today}
+\end{center}
+\newpage
+\end{document}
