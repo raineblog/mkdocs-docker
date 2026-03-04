@@ -82,8 +82,11 @@ COPY package.json package-lock.json* .puppeteerrc.* ./
 RUN npm ci && npx puppeteer browsers install
 
 # 5. 安装 Python 项目依赖
-COPY pyproject.toml .python-version ./
-RUN uv sync --locked --no-cache
+RUN --mount=type=bind,source=.python-version,target=.python-version \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-cache
 
 # 6. 拷贝应用代码
 COPY src/ ./src/
