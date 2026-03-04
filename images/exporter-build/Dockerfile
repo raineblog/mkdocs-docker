@@ -40,14 +40,35 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get install -y --no-install-recommends \
         python3 python3-pip python3-dev \
         bash tini tar zstd unzip git ca-certificates curl wget \
-        liblmdb0 build-essential libffi-dev ghostscript; \
-    # Chromium 依赖与中文字体 (整合自 exporter-puppeteer)
-    apt-get install -y --no-install-recommends \
+        liblmdb0 build-essential libffi-dev ghostscript \
         fonts-noto-cjk fonts-noto-cjk-extra fonts-noto-core fonts-noto-extra \
         fonts-liberation fonts-linuxlibertine fonts-noto-color-emoji \
         fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf \
         libnss3 libxss1 libasound2 libatk-bridge2.0-0 libgtk-3-0 libgbm1 libnspr4 \
-        libpango-1.0-0 libpangocairo-1.0-0 lsb-release xdg-utils; \
+        libpango-1.0-0 libpangocairo-1.0-0 lsb-release xdg-utils \
+        fonts-noto-cjk fonts-noto-cjk-extra fonts-noto-core fonts-noto-extra \
+        fonts-liberation fonts-linuxlibertine \
+        fonts-noto-color-emoji \
+        libnss3 \
+        fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
+        libasound2 \
+        libatk-bridge2.0-0 \
+        libgtk-3-0 \
+        libgbm1 \
+        zstd gnupg  \
+        tar make bash tini tar zstd git ca-certificates curl wget \
+        gconf-service libasound2 libatk1.0-0 libc6 libcairo2 \
+        libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libgconf-2-4 \
+        libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 \
+        libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
+        libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 \
+        libxss1 libxtst6 ca-certificates fonts-liberation libnss3 lsb-release \
+        xdg-utils wget \
+        xvfb gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 \
+        libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 \
+        libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 \
+        libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 \
+        libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget; \
     # 清理
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
@@ -58,7 +79,7 @@ WORKDIR /app
 
 # 4. 安装 Node 依赖
 COPY package.json package-lock.json* .puppeteerrc.* ./
-RUN npm ci
+RUN npm ci && npx puppeteer browsers install
 
 # 5. 安装 Python 项目依赖
 COPY pyproject.toml .python-version ./
@@ -68,7 +89,6 @@ RUN uv sync --locked --no-cache
 COPY src/ ./src/
 COPY scripts/ ./scripts/
 COPY templates/ ./templates/
-COPY --chmod=755 bin/ /usr/local/bin/
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["npm", "start"]

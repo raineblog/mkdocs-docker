@@ -70,13 +70,13 @@ jobs:
       
       - name: Puppeteer - Print Web to PDF
         run: |
-          node src/index.js "${{ matrix.book }}"
+          node /app/src/index.js "${{ matrix.book }}"
         env:
           CONCURRENCY: 4
       
       - name: Python - Prepare TeX & Planning
         run: |
-          uv run scripts/processor.py "${{ matrix.book }}.json" --plan-only
+          uv run /app/scripts/processor.py "${{ matrix.book }}.json" --plan-only
           
       - name: LaTeX - Compile Decorations
         uses: docker://ghcr.io/rainppr/texlive-full:latest
@@ -85,7 +85,7 @@ jobs:
           
       - name: Python - Final Synthesis & Bookmarks
         run: |
-          uv run scripts/processor.py "${{ matrix.book }}.json" --merge
+          uv run /app/scripts/processor.py "${{ matrix.book }}.json" --merge
           
       - name: Upload Book Product
         uses: actions/upload-artifact@v4
