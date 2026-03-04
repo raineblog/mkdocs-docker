@@ -1,0 +1,21 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{fontspec}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\setmainfont{Noto Sans CJK SC}
+
+\begin{document}
+\begin{titlepage}
+    \centering
+    \vspace*{5cm}
+    {\Huge \bfseries {{ title }}} \par
+    \vspace{1cm}
+    {\Large {{ subtitle }}} \par
+    \vspace{2cm}
+    {\large 作者: {{ authors | join(', ') }}} \par
+    \vfill
+    {\large 日期: \today}
+\end{titlepage}
+\end{document}

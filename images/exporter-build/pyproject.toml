@@ -1,0 +1,14 @@
+[project]
+name = "exporter-build"
+version = "0.1.0"
+description = "Python PDF processing and TeX generation"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pymupdf",
+    "jinja2",
+    "pyyaml",
+]
+
+[tool.uv]
+managed = true

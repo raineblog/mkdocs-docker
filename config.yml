@@ -5,18 +5,25 @@ images:
   - name: mkdocs
     context: ./images/mkdocs
     image: raineblog/mkdocs-docker
+
   - name: fragment
     context: ./images/fragment
     image: raineblog/mkdocs-docker-fragment
   - name: rspress
     context: ./images/rspress
     image: raineblog/mkdocs-rspress-docker
+
   - name: exporter
     context: ./images/exporter
     image: raineblog/mkdocs-exporter
-  - name: exporter-puppeteer
-    context: ./images/exporter-puppeteer
-    image: raineblog/mkdocs-exporter-puppeteer
-  - name: exporter-texlive
-    context: ./images/exporter-texlive
-    image: raineblog/mkdocs-exporter-texlive
+    
+  - name: exporter-build
+    context: ./images/exporter-build
+    image: raineblog/mkdocs-exporter-build
+
+  # - name: exporter-puppeteer
+  #   context: ./images/exporter-puppeteer
+  #   image: raineblog/mkdocs-exporter-puppeteer
+  # - name: exporter-texlive
+  #   context: ./images/exporter-texlive
+  #   image: raineblog/mkdocs-exporter-texlive

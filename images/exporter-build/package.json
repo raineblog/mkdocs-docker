@@ -1,0 +1,13 @@
+{
+  "name": "exporter-build",
+  "version": "1.0.0",
+  "description": "Integrated Puppeteer and Python PDF Exporter",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "mime-types": "^3.0.2",
+    "puppeteer": "^24.0.0"
+  }
+}
