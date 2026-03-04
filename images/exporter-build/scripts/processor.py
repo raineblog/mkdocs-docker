@@ -22,35 +22,48 @@ class PDFProcessor:
 
     def extract_precise_toc(self, doc, offset):
         """
-        使用 get_text("dict") 提取标题精确位置，并同步到 TOC。
+        根据 get_toc() 返回的初步目录，在对应页码进行文本定位，获取 y 坐标并偏移。
         """
+        # PyMuPDF get_toc() 可能返回 3 或 4 个元素的列表: [lvl, title, page, (dest_dict)]
         raw_toc = doc.get_toc()
-        # 获取所有文本块，识别可能的标题 (font size > 14)
-        headings_map = {}
-        for page_num in range(len(doc)):
-            page = doc[page_num]
-            blocks = page.get_text("dict")["blocks"]
-            for b in blocks:
-                if "lines" in b:
-                    for line in b["lines"]:
-                        for s in line["spans"]:
-                            # 粗放式匹配：字体大且粗的可能是标题
-                            if s["size"] > 12:
-                                text = s["text"].strip()
-                                # 存入映射，对 key 进行标准化处理（去除空格、处理罕见字符等）
-                                if text:
-                                    headings_map[text.lower()] = (page_num, s["bbox"][1])
-
         refined_toc = []
+        
         for entry in raw_toc:
-            lvl, title, page, dest = entry
-            # 尝试匹配文本高度，使用小写标准化匹配
-            match_title = title.strip().lower()
-            if match_title in headings_map:
-                p_idx, y_coord = headings_map[match_title]
-                dest = {"kind": fitz.LINK_GOTO, "to": fitz.Point(0, y_coord)}
+            lvl = entry[0]
+            title = entry[1]
+            page_1 = entry[2] # 1st-based page in current doc
+            
+            # 默认目标 (整页跳转)
+            # PyMuPDF set_toc 期待 dest 为字典，或者 None (默认跳转到页顶)
+            new_page_1 = page_1 + offset
+            dest = {"kind": fitz.LINK_GOTO, "page": new_page_1 - 1, "to": fitz.Point(0, 0)}
+            
+            # 尝试在特定页面查找标题以获取精确 Y 坐标
+            page_0 = page_1 - 1
+            if 0 <= page_0 < len(doc):
+                found_y = None
+                page_obj = doc[page_0]
+                # get_text("dict") 包含了文本块的边界框
+                blocks = page_obj.get_text("dict")["blocks"]
+                target_title_norm = title.strip().lower()
                 
-            refined_toc.append([lvl, title, page + offset, dest])
+                for b in blocks:
+                    if "lines" in b:
+                        for line in b["lines"]:
+                            for s in line["spans"]:
+                                if s["text"].strip().lower() == target_title_norm:
+                                    found_y = s["bbox"][1] # y0 (top coordinate)
+                                    break
+                            if found_y is not None: break
+                    if found_y is not None: break
+                
+                if found_y is not None:
+                    dest["to"] = fitz.Point(0, found_y)
+                else:
+                    print(f"    Note: Could not find precise position for '{title}' on page {page_1}, using page top.")
+            
+            refined_toc.append([lvl, title, new_page_1, dest])
+            
         return refined_toc
 
     def process(self):
