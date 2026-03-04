@@ -121,23 +121,37 @@ if __name__ == "__main__":
     if args.plan_only:
         # 仅生成 TeX 模板供后续容器编译
         print("Rendering TeX templates...")
+        generated_tex_files = []
+        
         # 渲染封面
+        cover_filename = f"{processor.book_data.get('title', 'Unknown')}_cover.tex"
         cover_tex = processor.jinja_env.get_template("cover.tex.j2").render(
             title=processor.book_data.get("title", "Unknown"),
             subtitle=processor.book_data.get("subtitle", ""),
             authors=processor.book_data.get("authors", [])
         )
-        with open(processor.output_dir / f"{processor.book_data['title']}_cover.tex", "w", encoding="utf-8") as f:
+        cover_path = processor.output_dir / cover_filename
+        with open(cover_path, "w", encoding="utf-8") as f:
             f.write(cover_tex)
+        generated_tex_files.append(str(cover_path))
             
         # 渲染章首页
         for idx, section in enumerate(processor.book_data["sections"], 1):
+            opener_filename = f"opener_{section['title']}.tex"
             opener_tex = processor.jinja_env.get_template("opener.tex.j2").render(
                 chapter_num=idx,
                 chapter_title=section["title"]
             )
-            with open(processor.output_dir / f"opener_{section['title']}.tex", "w", encoding="utf-8") as f:
+            opener_path = processor.output_dir / opener_filename
+            with open(opener_path, "w", encoding="utf-8") as f:
                 f.write(opener_tex)
+            generated_tex_files.append(str(opener_path))
+            
+        # 写入任务列表供 CI 循环调用
+        with open(processor.output_dir / "tex_tasks.txt", "w", encoding="utf-8") as f:
+            for tf in generated_tex_files:
+                f.write(f"{tf}\n")
+        print(f"Generated {len(generated_tex_files)} TeX files. List saved to {processor.output_dir / 'tex_tasks.txt'}")
     if args.merge:
         # 执行最终的 PDF 合体
         processor.process()
