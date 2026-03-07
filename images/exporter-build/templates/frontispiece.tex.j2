@@ -9,31 +9,24 @@
 
 \begin{document}
 \thispagestyle{empty}
-\vspace*{3cm}
+\vspace*{2cm}
+
 \begin{center}
-    {\Huge \bfseries {{ title }}} \par
-    \vspace{0.8cm}
-    {\huge \itshape \color{graycolor} {{ subtitle }}} \par
-    \vspace{3cm}
-    {\large 作者：{{ authors | join(', ') }}} \par
-    
-    \vfill
-    
-    \begin{minipage}{0.8\textwidth}
-        \centering
-        {\Large \textbf{丛书简介}} \par \vspace{1cm}
-        {\large \setlength{\parindent}{2em}
-        {% for line in info.abstract %}
-            {{ line }} \par \vspace{0.4cm}
-        {% endfor %}
-        }
-    \end{minipage}
-    
-    \vfill
-    
-    {\large {{ info.publishing }}} \par
-    \vspace{0.5cm}
-    {\large {{ info.date or "\today" }}}
+    {\Large \textbf{从书简介}} \par \vspace{1.5cm}
 \end{center}
+
+{\large 
+{% for line in info.abstract %}
+    {{ line }} \par \vspace{0.6cm}
+{% endfor %}
+}
+
+\vfill
+
+\begin{center}
+    {\large {{ info.publishing }}}
+\end{center}
+\vspace*{0.5cm} % 留出底边距，对齐封面的日期高度
+
 \newpage
 \end{document}

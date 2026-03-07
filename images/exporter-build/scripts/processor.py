@@ -100,30 +100,38 @@ class PDFProcessor:
             return True
         return False
 
-    def draw_decorations(self, doc, start_page_num, book_title, section_title):
-        font_name = "china-ss" 
+    def draw_decorations(self, doc, start_page_num, book_title, section_title, sub_title):
+        font_name = "china-sr" # 使用宋体/衬线体匹配 Noto Serif
         for i in range(len(doc)):
             page = doc[i]
             abs_page = start_page_num + i
             if abs_page in self.skip_decoration_pages:
                 continue
+            
             is_odd = abs_page % 2 != 0
             footer_font = "helv"
             footer_size = 9
             footer_y = page.rect.height - 30
             footer_text = f"{abs_page}"
+            
+            # 页脚：始终居中
             page.insert_text((page.rect.width / 2 - 5, footer_y), footer_text, fontsize=footer_size, fontname=footer_font, color=(0.4, 0.4, 0.4))
+            
             header_y = 35
             line_y = 45
             header_size = 9
             color = (0.5, 0.5, 0.5)
+            
             if is_odd:
+                # 奇数页：页眉在左上，内容为章节标题 (L1)
                 text = section_title
+                page.insert_text((40, header_y), text, fontsize=header_size, fontname=font_name, color=color)
+            else:
+                # 偶数页：页眉在右上，内容为小节标题 (L2)
+                text = sub_title
                 tw = fitz.get_text_length(text, fontname=font_name, fontsize=header_size)
                 page.insert_text((page.rect.width - tw - 40, header_y), text, fontsize=header_size, fontname=font_name, color=color)
-            else:
-                text = book_title
-                page.insert_text((40, header_y), text, fontsize=header_size, fontname=font_name, color=color)
+            
             page.draw_line((40, line_y), (page.rect.width - 40, line_y), color=(0.8, 0.8, 0.8), width=0.4)
 
     def get_english_filename(self):
@@ -217,7 +225,7 @@ class PDFProcessor:
                     else:
                         self.toc_data.append([2, sub_title, self.page_offset + 1])
                         self.toc_data.extend(chapter_headings)
-                    self.draw_decorations(doc, self.page_offset + 1, book_title, sec_title)
+                    self.draw_decorations(doc, self.page_offset + 1, book_title, sec_title, sub_title)
                     self.final_doc.insert_pdf(doc)
                     self.page_offset += len(doc)
                     doc.close()
