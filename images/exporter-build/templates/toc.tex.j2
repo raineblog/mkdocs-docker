@@ -1,20 +1,22 @@
 \documentclass[12pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
 \usepackage{fontspec}
 \usepackage{geometry}
+\usepackage{xcolor}
 \geometry{a4paper, margin=1in}
 
 \setmainfont{Noto Serif CJK SC}
+\definecolor{maincolor}{RGB}{45, 52, 54}
 
 \begin{document}
 \thispagestyle{empty}
-\section*{目录}
-\vspace{1cm}
-% 这里只是一个占位符，实际目录逻辑由 Python 处理器控制书签
-% 或者在此渲染更精美的目录
-\begin{enumerate}
+\begin{center}
+    {\Huge \bfseries \color{maincolor} 目录} \par
+    \vspace{1.5cm}
+\end{center}
+
+\begin{description}
 {% for section in toc_outline %}
-    \item {{ section.title }} \dotfill {{ section.page }}
+    \item[\large {{ loop.index }}. {{ section.title }}] \dotfill {{ section.page }}
     {% if section.children %}
     \begin{itemize}
         {% for child in section.children %}
@@ -22,7 +24,9 @@
         {% endfor %}
     \end{itemize}
     {% endif %}
+    \vspace{0.3cm}
 {% endfor %}
-\end{enumerate}
+\end{description}
+
 \newpage
 \end{document}

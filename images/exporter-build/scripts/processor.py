@@ -13,38 +13,28 @@ class PDFProcessor:
         with open(self.book_json_path, "r", encoding="utf-8") as f:
             self.book_data = json.load(f)
             
-        # 锚定模板目录到镜像内的绝对路径
         template_dir = os.environ.get("TEMPLATES_DIR", "/app/templates")
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         self.final_doc = fitz.open()
         self.page_offset = 0
-        self.toc_data = []
+        self.toc_data = [] # [[lvl, title, page, dest]]
+        self.skip_decoration_pages = set() # 1-based
+        self.book_meta = {}
 
     def extract_precise_toc(self, doc, offset):
-        """
-        根据 get_toc() 返回的初步目录，在对应页码进行文本定位，获取 y 坐标并偏移。
-        调整层级以适应整体书籍结构 (Headings 设为 Level 3+)。
-        """
         raw_toc = doc.get_toc()
         refined_toc = []
-        
         for entry in raw_toc:
-            lvl = entry[0]
-            title = entry[1]
-            page_1 = entry[2] 
-            
-            # 原始 PDF 的 H1 (lvl 1) 在合集中应设为 Level 3
+            lvl, title, page_1 = entry[0], entry[1], entry[2]
             new_lvl = lvl + 2
             new_page_1 = page_1 + offset
             dest = {"kind": fitz.LINK_GOTO, "page": new_page_1 - 1, "to": fitz.Point(0, 0)}
-            
             page_0 = page_1 - 1
             if 0 <= page_0 < len(doc):
                 found_y = None
                 page_obj = doc[page_0]
                 blocks = page_obj.get_text("dict")["blocks"]
                 target_title_norm = title.strip().lower()
-                
                 for b in blocks:
                     if "lines" in b:
                         for line in b["lines"]:
@@ -53,121 +43,153 @@ class PDFProcessor:
                                     found_y = s["bbox"][1]
                                     break
                             if found_y is not None: break
+                        if found_y is not None: break
                     if found_y is not None: break
-                
                 if found_y is not None:
                     dest["to"] = fitz.Point(0, found_y)
-            
             refined_toc.append([new_lvl, title, new_page_1, dest])
-            
         return refined_toc
 
+    def add_toc_links(self, toc_page_num):
+        if toc_page_num > len(self.final_doc): return
+        page = self.final_doc[toc_page_num - 1]
+        blocks = page.get_text("blocks")
+        for ent in self.toc_data:
+            lvl, title, target_page = ent[0], ent[1], ent[2]
+            if lvl > 2: continue
+            for b in blocks:
+                if title in b[4]:
+                    rect = fitz.Rect(b[:4])
+                    page.insert_link({"kind": fitz.LINK_GOTO, "page": target_page - 1, "from": rect})
+                    break
+
+    def ensure_parity(self, target_parity):
+        current_page = self.page_offset + 1
+        if current_page % 2 != target_parity:
+            self.final_doc.new_page(width=fitz.paper_size("a4")[0], height=fitz.paper_size("a4")[1])
+            self.page_offset += 1
+            self.skip_decoration_pages.add(self.page_offset)
+            return True
+        return False
+
+    def draw_decorations(self, doc, start_page_num, book_title, section_title):
+        font_name = "china-ss" 
+        for i in range(len(doc)):
+            page = doc[i]
+            abs_page = start_page_num + i
+            if abs_page in self.skip_decoration_pages: continue
+            is_odd = abs_page % 2 != 0
+            footer_font = "helv"
+            footer_size = 9
+            footer_y = page.rect.height - 30
+            footer_text = f"{abs_page}"
+            page.insert_text((page.rect.width / 2 - 5, footer_y), footer_text, fontsize=footer_size, fontname=footer_font, color=(0.4, 0.4, 0.4))
+            header_y = 35
+            line_y = 45
+            header_size = 9
+            color = (0.5, 0.5, 0.5)
+            if is_odd:
+                text = section_title
+                tw = fitz.get_text_length(text, fontname=font_name, fontsize=header_size)
+                page.insert_text((page.rect.width - tw - 40, header_y), text, fontsize=header_size, fontname=font_name, color=color)
+            else:
+                text = book_title
+                page.insert_text((40, header_y), text, fontsize=header_size, fontname=font_name, color=color)
+            page.draw_line((40, line_y), (page.rect.width - 40, line_y), color=(0.8, 0.8, 0.8), width=0.4)
+
     def get_english_filename(self):
-        """从 nav.json 中查找对应的英文文件名"""
-        nav_path = Path("D:/Github/blog/whk/config/nav.json")
-        if nav_path.exists():
-            try:
-                with open(nav_path, "r", encoding="utf-8") as f:
-                    nav_data = json.load(f)
-                    for item in nav_data:
-                        if item.get("title") == self.book_data.get("title"):
-                            return item.get("export", {}).get("filename", f"{self.book_data['title']}.pdf")
-            except Exception as e:
-                print(f"Error reading nav.json: {e}")
+        paths = [Path("D:/Github/blog/whk/config/nav.json"), Path("config/nav.json"), Path("/app/config/nav.json"), Path("../../whk/config/nav.json")]
+        for p in paths:
+            if p.exists():
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        nav_data = json.load(f)
+                        for item in nav_data:
+                            if item.get("title") == self.book_data.get("title"):
+                                return item.get("export", {}).get("filename", f"{self.book_data['title']}.pdf")
+                except Exception: pass
         return f"{self.book_data['title']}.pdf"
 
     def process(self):
         book_title = self.book_data['title']
-        print(f"Processing Book: {book_title}")
         temp_files = []
-        
-        # 1. 插入封面与装饰页
-        decorative_pages = [
-            ("cover", f"{book_title}_cover.pdf", "封面"),
-            ("frontispiece", f"{book_title}_frontispiece.pdf", "扉页"),
-            ("toc", f"{book_title}_toc.pdf", "目录")
-        ]
-        
-        for key, fname, label in decorative_pages:
+        output_file = self.output_dir / self.get_english_filename()
+        decorative_pages = [("cover", f"{book_title}_cover.pdf", "封面", 1), ("frontispiece", f"{book_title}_frontispiece.pdf", "扉页", 0), ("toc", f"{book_title}_toc.pdf", "目录", 1)]
+        toc_page_num = 0
+        for key, fname, label, target_parity in decorative_pages:
+            self.ensure_parity(target_parity)
             p = self.output_dir / fname
             if p.exists():
                 doc = fitz.open(p)
+                p_start = self.page_offset + 1
+                if key == "toc": toc_page_num = p_start
+                self.skip_decoration_pages.add(p_start)
                 self.final_doc.insert_pdf(doc)
                 self.page_offset += len(doc)
-                self.toc_data.append([1, label, self.page_offset - len(doc) + 1])
+                self.toc_data.append([1, label, p_start])
                 doc.close()
                 temp_files.append(p)
-
-        # 2. 遍历章节
         for section in self.book_data["sections"]:
             sec_title = section['title']
-            print(f"  Inserting Section: {sec_title}")
-            
-            # 章节首页 (Level 1)
+            self.ensure_parity(1)
             opener_path = self.output_dir / f"opener_{sec_title}.pdf"
             if opener_path.exists():
                 opener_doc = fitz.open(opener_path)
+                p_start = self.page_offset + 1
+                self.skip_decoration_pages.add(p_start)
                 self.final_doc.insert_pdf(opener_doc)
                 self.page_offset += len(opener_doc)
-                self.toc_data.append([1, sec_title, self.page_offset - len(opener_doc) + 1])
+                self.toc_data.append([1, sec_title, p_start])
                 opener_doc.close()
                 temp_files.append(opener_path)
             else:
                 self.toc_data.append([1, sec_title, self.page_offset + 1])
-
-            # 插入内容页 (Level 2)
             for sub in section["sections"]:
                 sub_title = sub['title']
+                self.ensure_parity(0)
                 content_path = self.book_json_path.parent / sub["path"]
-                if not content_path.exists():
-                     content_path = Path("site/build") / sub["path"]
-                     
+                if not content_path.exists(): content_path = Path("site/build") / sub["path"]
                 if content_path.exists():
                     doc = fitz.open(content_path)
-                    # 记录页面标题作为 Level 2 书签
-                    self.toc_data.append([2, sub_title, self.page_offset + 1])
-                    
-                    # 提取并偏移章节内的 headings (Level 3+)
                     chapter_headings = self.extract_precise_toc(doc, self.page_offset)
-                    self.toc_data.extend(chapter_headings)
-                    
+                    main_title_norm = sub_title.strip().lower()
+                    if chapter_headings and chapter_headings[0][1].strip().lower() == main_title_norm:
+                        chapter_headings[0][0] = 2
+                        self.toc_data.extend(chapter_headings)
+                    else:
+                        self.toc_data.append([2, sub_title, self.page_offset + 1])
+                        self.toc_data.extend(chapter_headings)
+                    self.draw_decorations(doc, self.page_offset + 1, book_title, sec_title)
                     self.final_doc.insert_pdf(doc)
                     self.page_offset += len(doc)
                     doc.close()
                     temp_files.append(content_path)
-                else:
-                    print(f"    Warning: Content not found at {content_path}")
-
-        # 3. 封底
+        self.ensure_parity(0)
         back_path = self.output_dir / f"{book_title}_backcover.pdf"
         if back_path.exists():
             doc = fitz.open(back_path)
+            p_start = self.page_offset + 1
+            self.skip_decoration_pages.add(p_start)
             self.final_doc.insert_pdf(doc)
             self.page_offset += len(doc)
-            self.toc_data.append([1, "封底", self.page_offset - len(doc) + 1])
+            self.toc_data.append([1, "封底", p_start])
             doc.close()
             temp_files.append(back_path)
-
-        # 4. 设置最终目录并保存
         self.final_doc.set_toc(self.toc_data)
-        
-        final_filename = self.get_english_filename()
-        output_file = self.output_dir / final_filename
+        if toc_page_num > 0: self.add_toc_links(toc_page_num)
         self.final_doc.save(output_file, deflate=True, garbage=4)
         self.final_doc.close()
-        
         print(f"Final PDF saved to {output_file}")
-        
-        # 5. 清理
-        print("Cleaning up temporary files...")
+        resolved_output = output_file.resolve()
         for f in temp_files:
             try:
-                if f.exists() and f != output_file:
-                    f.unlink()
-            except: pass
-        # 清理 tex 文件
-        for f in self.output_dir.glob("*.tex"): f.unlink()
-        if (self.output_dir / "tex_tasks.txt").exists(): (self.output_dir / "tex_tasks.txt").unlink()
+                if f.exists() and f.resolve() != resolved_output: f.unlink()
+            except Exception: pass
+        for f in self.output_dir.glob("*.tex"):
+            try: f.unlink()
+            except Exception: pass
+        if (self.output_dir / "tex_tasks.txt").exists():
+            (self.output_dir / "tex_tasks.txt").unlink()
 
 if __name__ == "__main__":
     import argparse
@@ -176,63 +198,48 @@ if __name__ == "__main__":
     parser.add_argument("--plan-only", action="store_true")
     parser.add_argument("--merge", action="store_true")
     args = parser.parse_args()
-    
     processor = PDFProcessor(args.book_json)
     if args.plan_only:
-        # 仅生成 TeX 模板供后续容器编译
-        print("Rendering TeX templates...")
         generated_tex_files = []
         book_title = processor.book_data.get('title', 'Unknown')
-        
-        common_data = {
-            "title": book_title,
-            "subtitle": processor.book_data.get("subtitle", ""),
-            "authors": processor.book_data.get("authors", []),
-            "info": processor.book_data.get("info", {})
-        }
-
-        # 1. 封面
-        cover_tex = processor.jinja_env.get_template("cover.tex.j2").render(**common_data)
+        est_offset = 3 
+        common_data = {"title": book_title, "subtitle": processor.book_data.get("subtitle", ""), "authors": processor.book_data.get("authors", []), "info": processor.book_data.get("info", {})}
         cover_path = processor.output_dir / f"{book_title}_cover.tex"
-        with open(cover_path, "w", encoding="utf-8") as f: f.write(cover_tex)
+        with open(cover_path, "w", encoding="utf-8") as f: f.write(processor.jinja_env.get_template("cover.tex.j2").render(**common_data))
         generated_tex_files.append(str(cover_path))
-            
-        # 2. 扉页
-        front_tex = processor.jinja_env.get_template("frontispiece.tex.j2").render(**common_data)
         front_path = processor.output_dir / f"{book_title}_frontispiece.tex"
-        with open(front_path, "w", encoding="utf-8") as f: f.write(front_tex)
+        with open(front_path, "w", encoding="utf-8") as f: f.write(processor.jinja_env.get_template("frontispiece.tex.j2").render(**common_data))
         generated_tex_files.append(str(front_path))
-
-        # 3. 目录页 (简版概要)
         toc_outline = []
-        for sec in processor.book_data["sections"]:
-            toc_outline.append({"title": sec['title'], "page": "?"}) # 物理页码在 plan 阶段未知，通常填 ? 或略过
+        running_page = est_offset + 1
+        for section in processor.book_data["sections"]:
+            if running_page % 2 == 0: running_page += 1
+            entry = {"title": section['title'], "page": running_page, "children": []}
+            running_page += 1
+            for sub in section["sections"]:
+                if running_page % 2 != 0: running_page += 1
+                content_path = processor.book_json_path.parent / sub["path"]
+                if not content_path.exists(): content_path = Path("site/build") / sub["path"]
+                content_page_count = 0
+                if content_path.exists():
+                    try:
+                        with fitz.open(content_path) as doc: content_page_count = len(doc)
+                    except Exception: pass
+                entry["children"].append({"title": sub['title'], "page": running_page})
+                running_page += content_page_count
+            toc_outline.append(entry)
         toc_tex = processor.jinja_env.get_template("toc.tex.j2").render(toc_outline=toc_outline, **common_data)
         toc_path = processor.output_dir / f"{book_title}_toc.tex"
         with open(toc_path, "w", encoding="utf-8") as f: f.write(toc_tex)
         generated_tex_files.append(str(toc_path))
-
-        # 4. 章首页
         for idx, section in enumerate(processor.book_data["sections"], 1):
-            opener_tex = processor.jinja_env.get_template("opener.tex.j2").render(
-                chapter_num=idx,
-                chapter_title=section["title"]
-            )
             opener_path = processor.output_dir / f"opener_{section['title']}.tex"
-            with open(opener_path, "w", encoding="utf-8") as f: f.write(opener_tex)
+            with open(opener_path, "w", encoding="utf-8") as f: f.write(processor.jinja_env.get_template("opener.tex.j2").render(chapter_num=idx, chapter_title=section["title"]))
             generated_tex_files.append(str(opener_path))
-            
-        # 5. 封底
-        back_tex = processor.jinja_env.get_template("backcover.tex.j2").render(**common_data)
         back_path = processor.output_dir / f"{book_title}_backcover.tex"
-        with open(back_path, "w", encoding="utf-8") as f: f.write(back_tex)
+        with open(back_path, "w", encoding="utf-8") as f: f.write(processor.jinja_env.get_template("backcover.tex.j2").render(**common_data))
         generated_tex_files.append(str(back_path))
-
-        # 写入任务列表供 CI 循环调用
         with open(processor.output_dir / "tex_tasks.txt", "w", encoding="utf-8") as f:
-            for tf in generated_tex_files:
-                f.write(f"{tf}\n")
-        print(f"Generated {len(generated_tex_files)} TeX files. List saved to {processor.output_dir / 'tex_tasks.txt'}")
+            for tf in generated_tex_files: f.write(f"{tf}\n")
     if args.merge:
-        # 执行最终的 PDF 合体
         processor.process()

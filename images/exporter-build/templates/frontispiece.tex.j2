@@ -1,31 +1,39 @@
 \documentclass[12pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
 \usepackage{fontspec}
 \usepackage{geometry}
-\geometry{a4paper, margin=1in}
+\usepackage{xcolor}
+\geometry{a4paper, margin=1.5in}
 
 \setmainfont{Noto Serif CJK SC}
+\definecolor{graycolor}{RGB}{120, 120, 120}
 
 \begin{document}
 \thispagestyle{empty}
 \vspace*{3cm}
 \begin{center}
     {\Huge \bfseries {{ title }}} \par
-    \vspace{1cm}
-    {\Large {{ subtitle }}} \par
-    \vspace{2cm}
+    \vspace{0.8cm}
+    {\huge \itshape \color{graycolor} {{ subtitle }}} \par
+    \vspace{3cm}
     {\large 作者：{{ authors | join(', ') }}} \par
+    
     \vfill
+    
     \begin{minipage}{0.8\textwidth}
-        {\itshape
+        \centering
+        {\Large \textbf{丛书简介}} \par \vspace{1cm}
+        {\large \setlength{\parindent}{2em}
         {% for line in info.abstract %}
-            {{ line }} \par \vspace{0.5cm}
+            {{ line }} \par \vspace{0.4cm}
         {% endfor %}
         }
     \end{minipage}
+    
     \vfill
+    
     {\large {{ info.publishing }}} \par
-    {\large \today}
+    \vspace{0.5cm}
+    {\large {{ info.date or "\today" }}}
 \end{center}
 \newpage
 \end{document}
