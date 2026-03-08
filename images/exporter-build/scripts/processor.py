@@ -101,7 +101,7 @@ class PDFProcessor:
         return False
 
     def draw_decorations(self, doc, start_page_num, book_title, section_title, sub_title):
-        font_name = "china-sr" # 使用宋体/衬线体匹配 Noto Serif
+        font_name = "china-ss"
         for i in range(len(doc)):
             page = doc[i]
             abs_page = start_page_num + i
